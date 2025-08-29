@@ -6,6 +6,36 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 )
 
+interface Team {
+  key: string
+  team_id: number
+}
+
+interface Game {
+  id: string
+  home_team_id: number
+  away_team_id: number
+  home_score: number | null
+  away_score: number | null
+  home_team: Team[]
+  away_team: Team[]
+}
+
+interface GameResult {
+  home_team_id: number
+  away_team_id: number
+  home_score: number | null
+  away_score: number | null
+  is_final: boolean
+}
+
+interface PickWithGame {
+  id: string
+  user_id: string
+  team_id: number
+  games: GameResult[]
+}
+
 export async function POST(request: Request) {
   try {
     const { action, week, leagueId } = await request.json()
@@ -76,8 +106,8 @@ async function generatePicks(leagueId: string, week: number) {
   for (const member of members) {
     // Get available teams (not used by this player)
     const usedTeams = usedTeamsByUser.get(member.user_id) || new Set()
-    const availableGames = games.filter(game => 
-      !usedTeams.has(game.home_team.team_id) && !usedTeams.has(game.away_team.team_id)
+    const availableGames = (games as Game[]).filter(game => 
+      !usedTeams.has(game.home_team[0].team_id) && !usedTeams.has(game.away_team[0].team_id)
     )
 
     if (availableGames.length === 0) continue
@@ -90,23 +120,25 @@ async function generatePicks(leagueId: string, week: number) {
     if (shouldPickWinner) {
       // Find a game with a clear winner
       const gameWithWinner = availableGames.find(game => {
-        if (game.home_score > game.away_score) return true
-        if (game.away_score > game.home_score) return true
+        if (game.home_score !== null && game.away_score !== null) {
+          if (game.home_score > game.away_score) return true
+          if (game.away_score > game.home_score) return true
+        }
         return false
       }) || availableGames[0]
       
-      if (gameWithWinner.home_score > gameWithWinner.away_score) {
-        selectedTeam = gameWithWinner.home_team
+      if (gameWithWinner.home_score !== null && gameWithWinner.away_score !== null && gameWithWinner.home_score > gameWithWinner.away_score) {
+        selectedTeam = gameWithWinner.home_team[0]
         selectedGame = gameWithWinner
       } else {
-        selectedTeam = gameWithWinner.away_team  
+        selectedTeam = gameWithWinner.away_team[0]
         selectedGame = gameWithWinner
       }
     } else {
       // Pick randomly from available games
       const randomGame = availableGames[Math.floor(Math.random() * availableGames.length)]
       const pickHome = Math.random() < 0.5
-      selectedTeam = pickHome ? randomGame.home_team : randomGame.away_team
+      selectedTeam = pickHome ? randomGame.home_team[0] : randomGame.away_team[0]
       selectedGame = randomGame
     }
 
@@ -156,11 +188,11 @@ async function processWeek(leagueId: string, week: number) {
 
   let processedCount = 0
 
-  for (const pick of picks) {
-    const game = pick.games
+  for (const pick of (picks as PickWithGame[])) {
+    const game = pick.games[0]
     if (!game.is_final) continue
 
-    const playerWon = (
+    const playerWon = game.home_score !== null && game.away_score !== null && (
       (game.home_team_id === pick.team_id && game.home_score > game.away_score) ||
       (game.away_team_id === pick.team_id && game.away_score > game.home_score)
     )

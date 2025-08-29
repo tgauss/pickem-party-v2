@@ -13,7 +13,7 @@ interface LeagueMember {
   users: {
     username: string
     display_name: string
-  }
+  }[]
 }
 
 interface Pick {
@@ -22,7 +22,7 @@ interface Pick {
   is_correct: boolean | null
   users: {
     username: string
-  }
+  }[]
 }
 
 export async function POST(request: Request) {
@@ -54,7 +54,7 @@ export async function POST(request: Request) {
     
     const picksByUser = new Map()
     pickCounts?.forEach((pick: Pick) => {
-      const username = pick.users.username
+      const username = pick.users[0].username
       if (!picksByUser.has(username)) {
         picksByUser.set(username, { total: 0, correct: 0, incorrect: 0, weeks: new Set() })
       }
@@ -66,12 +66,12 @@ export async function POST(request: Request) {
     })
     
     const standings = members?.map((member: LeagueMember) => ({
-      username: member.users.username,
-      displayName: member.users.display_name,
+      username: member.users[0].username,
+      displayName: member.users[0].display_name,
       lives: member.lives_remaining,
       eliminated: member.is_eliminated,
       eliminatedWeek: member.eliminated_week,
-      picks: picksByUser.get(member.users.username) || { total: 0, correct: 0, incorrect: 0, weeks: new Set() },
+      picks: picksByUser.get(member.users[0].username) || { total: 0, correct: 0, incorrect: 0, weeks: new Set() },
       status: member.lives_remaining === 2 ? '❤️❤️' : 
               member.lives_remaining === 1 ? '❤️' : '💀'
     }))
