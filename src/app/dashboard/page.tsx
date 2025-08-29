@@ -43,7 +43,7 @@ export default function DashboardPage() {
     const userData = JSON.parse(currentUser)
     setUser(userData)
     loadLeagues(userData.id)
-  }, [])
+  })
 
   const loadLeagues = async (userId: string) => {
     const { data } = await supabase

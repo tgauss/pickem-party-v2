@@ -49,6 +49,11 @@ interface Member {
   is_paid: boolean
 }
 
+interface Pick {
+  id: string
+  teams: Team
+}
+
 export default function LeaguePage({ params }: { params: { slug: string } }) {
   const [user, setUser] = useState<User | null>(null)
   const [league, setLeague] = useState<League | null>(null)
@@ -56,7 +61,7 @@ export default function LeaguePage({ params }: { params: { slug: string } }) {
   const [games, setGames] = useState<Game[]>([])
   const [members, setMembers] = useState<Member[]>([])
   const [selectedTeam, setSelectedTeam] = useState<Team | null>(null)
-  const [userPick, setUserPick] = useState<any>(null)
+  const [userPick, setUserPick] = useState<Pick | null>(null)
   const [loading, setLoading] = useState(false)
   const supabase = createClient()
 
@@ -70,7 +75,7 @@ export default function LeaguePage({ params }: { params: { slug: string } }) {
     const userData = JSON.parse(currentUser)
     setUser(userData)
     loadLeagueData(userData.id, params.slug)
-  }, [params.slug])
+  })
 
   const loadLeagueData = async (userId: string, slug: string) => {
     // Load league
