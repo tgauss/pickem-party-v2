@@ -69,7 +69,7 @@ export default function HomePage() {
             />
           </div>
           <h1 className="text-3xl font-bold mb-2 fight-text" style={{color: 'var(--primary)'}}>
-            PICKEM PARTY v2
+            PICK'EM PARTY
           </h1>
           <p className="text-muted-foreground">
             {isLogin ? 'ENTER THE ARENA' : 'JOIN THE BATTLE'}

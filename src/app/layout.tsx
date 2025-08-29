@@ -19,7 +19,7 @@ const goldman = Goldman({
 });
 
 export const metadata: Metadata = {
-  title: "Pickem Party v2 - NFL Survivor Pool",
+  title: "Pick'em Party - NFL Survivor Pool",
   description: "The ultimate NFL Survivor Pool platform with retro gaming vibes",
 };
 
