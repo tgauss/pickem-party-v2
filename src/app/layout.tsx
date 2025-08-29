@@ -19,8 +19,49 @@ const goldman = Goldman({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://pickem-party-v2.vercel.app'),
   title: "Pick'em Party - NFL Survivor Pool",
-  description: "The ultimate NFL Survivor Pool platform with retro gaming vibes",
+  description: "🏈 The ultimate NFL Survivor Pool with retro 8-bit vibes! Pick teams, survive eliminations, and claim victory in your league!",
+  keywords: ["NFL", "Survivor Pool", "Football", "Picks", "Elimination", "Fantasy Football", "Sports Betting"],
+  authors: [{ name: "Pick'em Party" }],
+  creator: "Pick'em Party",
+  publisher: "Pick'em Party",
+  openGraph: {
+    title: "Pick'em Party - NFL Survivor Pool 🏈",
+    description: "Join the ultimate NFL Survivor Pool experience! Pick teams, survive eliminations, and dominate your league with retro gaming style!",
+    images: [
+      {
+        url: "/football-pickem-party-app-meta-hero.webp",
+        width: 1024,
+        height: 1024,
+        alt: "Pick'em Party - Get in on the action!",
+      }
+    ],
+    locale: "en_US",
+    type: "website",
+    siteName: "Pick'em Party",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Pick'em Party - NFL Survivor Pool 🏈",
+    description: "Join the ultimate NFL Survivor Pool! Pick teams, survive eliminations, claim victory! 🎮⚡",
+    images: ["/football-pickem-party-app-meta-hero.webp"],
+    creator: "@pickemparty",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
+  verification: {
+    google: "your-google-verification-code",
+  },
 };
 
 export default function RootLayout({
