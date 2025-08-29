@@ -1,26 +1,129 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+@import url('https://fonts.googleapis.com/css2?family=Goldman:wght@400;700&display=swap');
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+@custom-variant dark (&:is(.dark *));
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+:root {
+  --radius: 0.75rem;
+  
+  /* Pickem Party Brand Colors */
+  --primary: #B0CA47;
+  --primary-hover: #C3D775;
+  --primary-active: #95AB3C;
+  --primary-foreground: #0B0E0C;
+  
+  --secondary: #C38B5A;
+  --secondary-hover: #D2A883;
+  --secondary-active: #A5764C;
+  --secondary-foreground: #0B0E0C;
+  
+  /* Dark Theme Base */
+  --background: #0B0E0C;
+  --background-2: #121512;
+  --surface: #171A17;
+  --border: #2B2A28;
+  
+  /* Text */
+  --foreground: #E6E8EA;
+  --text-secondary: #B7BDC3;
+  --text-muted: #8B949E;
+  
+  /* Component Colors */
+  --card: #171A17;
+  --card-foreground: #E6E8EA;
+  --popover: #171A17;
+  --popover-foreground: #E6E8EA;
+  --muted: #2B2A28;
+  --muted-foreground: #8B949E;
+  --accent: #B0CA47;
+  --accent-foreground: #0B0E0C;
+  
+  /* States */
+  --destructive: #E05656;
+  --success: #B0CA47;
+  --warning: #C38B5A;
+  --info: #A2A590;
+  --input: #2B2A28;
+  --ring: rgba(176, 202, 71, 0.55);
+  --selected-bg: rgba(176, 202, 71, 0.12);
+  
+  /* Sidebar */
+  --sidebar: #121512;
+  --sidebar-foreground: #E6E8EA;
+  --sidebar-primary: #B0CA47;
+  --sidebar-primary-foreground: #0B0E0C;
+  --sidebar-accent: #C38B5A;
+  --sidebar-accent-foreground: #0B0E0C;
+  --sidebar-border: #2B2A28;
+  --sidebar-ring: rgba(176, 202, 71, 0.55);
+}
+
+/* Using dark theme as default - remove this block since we're always dark */
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
   }
-}
-
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  body {
+    @apply bg-background text-foreground font-sans;
+    font-family: system-ui, -apple-system, sans-serif;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Goldman', system-ui, sans-serif;
+    font-weight: 700;
+  }
+  
+  .retro-border {
+    border: 2px solid var(--border);
+    box-shadow: 4px 4px 0px rgba(176, 202, 71, 0.3);
+  }
+  
+  .fight-text {
+    font-family: 'Goldman', system-ui, sans-serif;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
 }
