@@ -20,9 +20,11 @@ Ready-to-use friend accounts:
 - **dan** - Dan Evans
 
 ### **3. Join the Test League**
-- **League URL:** `/league/test-1`
-- **League Name:** "Test 1" 
-- All test users are already members with 2 lives each
+- **Primary League URL:** `/league/friends-test-1756501530176`
+- **League Name:** "Friends Test - Week 1 Ready"
+- **Invite Code:** FRD0176
+- **Members:** All 9 users (original 4 + 5 test friends) with 2 lives each
+- *(Also available: older test league at `/league/test-1`)*
 
 ---
 
@@ -130,20 +132,23 @@ Last simulation through Week 5:
 ### **For Developers/Power Users:**
 
 ```bash
-# Check league status via API
+# Create new fresh league with all users
+curl -X POST https://your-app.vercel.app/api/admin/create-friends-league
+
+# Check league status via API (use returned league ID)
 curl -X POST https://your-app.vercel.app/api/admin/league-status \
   -H "Content-Type: application/json" \
-  -d '{"leagueId": "c8879ee2-b3bc-4cb0-a9ee-05083e75f8ca"}'
+  -d '{"leagueId": "d9af439b-77c5-49ff-afe1-e1b32e3a3aa8"}'
 
 # Run fresh simulation  
 curl -X POST https://your-app.vercel.app/api/admin/simulate \
   -H "Content-Type: application/json" \
-  -d '{"action": "simulate-weeks", "leagueId": "c8879ee2-b3bc-4cb0-a9ee-05083e75f8ca", "week": 6}'
+  -d '{"action": "simulate-weeks", "leagueId": "d9af439b-77c5-49ff-afe1-e1b32e3a3aa8", "week": 6}'
 
 # Reset league for fresh testing
 curl -X POST https://your-app.vercel.app/api/admin/reset-league \
   -H "Content-Type: application/json" \
-  -d '{"leagueId": "c8879ee2-b3bc-4cb0-a9ee-05083e75f8ca"}'
+  -d '{"leagueId": "d9af439b-77c5-49ff-afe1-e1b32e3a3aa8"}'
 ```
 
 ---
