@@ -231,7 +231,14 @@ export default function LeaguePage({ params }: { params: { slug: string } }) {
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold mb-2 fight-text" style={{color: 'var(--primary)'}}>
+          <div className="mb-4">
+            <img 
+              src="/logos/Pickem Part App Logo.svg" 
+              alt="Pickem Party Logo"
+              className="w-20 h-20 mx-auto"
+            />
+          </div>
+          <h1 className="text-2xl font-bold mb-2 fight-text" style={{color: 'var(--primary)'}}>
             {league.name.toUpperCase()}
           </h1>
           <p className="text-muted-foreground">

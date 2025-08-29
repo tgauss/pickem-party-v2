@@ -61,12 +61,16 @@ export default function HomePage() {
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <Card className="w-full max-w-md p-6 retro-border">
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold mb-2 fight-text" style={{color: 'var(--primary)'}}>
-            PICKEM
+          <div className="mb-6">
+            <img 
+              src="/logos/Pickem Part App Logo.svg" 
+              alt="Pickem Party Logo"
+              className="w-32 h-32 mx-auto"
+            />
+          </div>
+          <h1 className="text-3xl font-bold mb-2 fight-text" style={{color: 'var(--primary)'}}>
+            PICKEM PARTY v2
           </h1>
-          <h2 className="text-2xl font-bold mb-4 fight-text" style={{color: 'var(--secondary)'}}>
-            PARTY v2
-          </h2>
           <p className="text-muted-foreground">
             {isLogin ? 'ENTER THE ARENA' : 'JOIN THE BATTLE'}
           </p>

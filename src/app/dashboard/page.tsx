@@ -129,7 +129,14 @@ export default function DashboardPage() {
     <div className="min-h-screen bg-background p-4">
       <div className="max-w-2xl mx-auto">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold mb-2 fight-text" style={{color: 'var(--primary)'}}>
+          <div className="mb-4">
+            <img 
+              src="/logos/Pickem Part App Logo.svg" 
+              alt="Pickem Party Logo"
+              className="w-24 h-24 mx-auto"
+            />
+          </div>
+          <h1 className="text-2xl font-bold mb-2 fight-text" style={{color: 'var(--primary)'}}>
             WELCOME, {user.display_name.toUpperCase()}!
           </h1>
           <p className="text-muted-foreground">READY FOR WEEK 1 BATTLE?</p>
