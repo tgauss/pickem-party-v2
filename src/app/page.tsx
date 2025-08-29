@@ -80,7 +80,7 @@ export default function HomePage() {
               placeholder="Enter username"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              className="bg-surface border-border"
+              className="bg-surface border-border min-h-[44px] text-base"
             />
           </div>
 
@@ -93,7 +93,7 @@ export default function HomePage() {
                   placeholder="What they'll call you"
                   value={displayName}
                   onChange={(e) => setDisplayName(e.target.value)}
-                  className="bg-surface border-border"
+                  className="bg-surface border-border min-h-[44px] text-base"
                 />
               </div>
               <div>
@@ -104,7 +104,7 @@ export default function HomePage() {
                   placeholder="your@email.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="bg-surface border-border"
+                  className="bg-surface border-border min-h-[44px] text-base"
                 />
               </div>
             </>
@@ -118,7 +118,7 @@ export default function HomePage() {
               placeholder="4-digit PIN"
               value={pin}
               onChange={(e) => setPin(e.target.value.slice(0, 4))}
-              className="bg-surface border-border"
+              className="bg-surface border-border min-h-[44px] text-base"
             />
           </div>
 

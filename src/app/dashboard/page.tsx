@@ -33,6 +33,17 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(false)
   const supabase = createClient()
 
+  const loadLeagues = async (userId: string) => {
+    const { data } = await supabase
+      .from('league_members')
+      .select(`
+        leagues(*)
+      `)
+      .eq('user_id', userId)
+    
+    setLeagues(data?.map((d: any) => d.leagues as League).filter(Boolean) || [])
+  }
+
   useEffect(() => {
     const currentUser = localStorage.getItem('currentUser')
     if (!currentUser) {
@@ -43,18 +54,7 @@ export default function DashboardPage() {
     const userData = JSON.parse(currentUser)
     setUser(userData)
     loadLeagues(userData.id)
-  })
-
-  const loadLeagues = async (userId: string) => {
-    const { data } = await supabase
-      .from('league_members')
-      .select(`
-        leagues(*)
-      `)
-      .eq('user_id', userId)
-    
-    setLeagues(data?.map(d => d.leagues).filter(Boolean) || [])
-  }
+  }, [])
 
   const createLeague = async () => {
     if (!user) return
@@ -212,7 +212,7 @@ export default function DashboardPage() {
                   id="leagueName"
                   value={leagueName}
                   onChange={(e) => setLeagueName(e.target.value)}
-                  className="bg-surface border-border"
+                  className="bg-surface border-border min-h-[44px] text-base"
                 />
               </div>
               <div>
@@ -222,7 +222,7 @@ export default function DashboardPage() {
                   type="number"
                   value={buyInAmount}
                   onChange={(e) => setBuyInAmount(e.target.value)}
-                  className="bg-surface border-border"
+                  className="bg-surface border-border min-h-[44px] text-base"
                 />
               </div>
               <div className="flex gap-2">
@@ -257,7 +257,7 @@ export default function DashboardPage() {
                   onChange={(e) => setInviteCode(e.target.value.toUpperCase())}
                   placeholder="6-character code"
                   maxLength={6}
-                  className="bg-surface border-border"
+                  className="bg-surface border-border min-h-[44px] text-base"
                 />
               </div>
               <div className="flex gap-2">

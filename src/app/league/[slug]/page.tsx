@@ -65,18 +65,6 @@ export default function LeaguePage({ params }: { params: { slug: string } }) {
   const [loading, setLoading] = useState(false)
   const supabase = createClient()
 
-  useEffect(() => {
-    const currentUser = localStorage.getItem('currentUser')
-    if (!currentUser) {
-      window.location.href = '/'
-      return
-    }
-    
-    const userData = JSON.parse(currentUser)
-    setUser(userData)
-    loadLeagueData(userData.id, params.slug)
-  })
-
   const loadLeagueData = async (userId: string, slug: string) => {
     // Load league
     const { data: leagueData } = await supabase
@@ -124,8 +112,8 @@ export default function LeaguePage({ params }: { params: { slug: string } }) {
       `)
       .eq('league_id', leagueData.id)
     
-    setMembers(membersData?.map(m => ({
-      user: m.users,
+    setMembers(membersData?.map((m: any) => ({
+      user: m.users as User,
       lives_remaining: m.lives_remaining,
       is_eliminated: m.is_eliminated,
       is_paid: m.is_paid
@@ -146,8 +134,32 @@ export default function LeaguePage({ params }: { params: { slug: string } }) {
     }
   }
 
+  useEffect(() => {
+    const currentUser = localStorage.getItem('currentUser')
+    if (!currentUser) {
+      window.location.href = '/'
+      return
+    }
+    
+    const userData = JSON.parse(currentUser)
+    setUser(userData)
+    loadLeagueData(userData.id, params.slug)
+  }, [params.slug])
+
   const submitPick = async () => {
-    if (!user || !league || !selectedTeam) return
+    if (!user || !league || !selectedTeam) {
+      alert('Please select a team first!')
+      return
+    }
+    
+    // Check if deadline has passed (basic validation)
+    const now = new Date()
+    const firstGame = games.find(g => new Date(g.game_time) <= now)
+    if (firstGame) {
+      alert('⏰ DEADLINE PASSED! Week 1 picks are locked.')
+      return
+    }
+    
     setLoading(true)
     
     // Find the game this team is playing
@@ -283,12 +295,12 @@ export default function LeaguePage({ params }: { params: { slug: string } }) {
             <h2 className="text-xl font-bold mb-4 fight-text text-center">
               CHOOSE YOUR FIGHTER - WEEK 1
             </h2>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
               {teams.map(team => (
                 <div
                   key={team.team_id}
                   onClick={() => setSelectedTeam(team)}
-                  className={`p-3 rounded-lg cursor-pointer transition-all border-2 ${
+                  className={`p-3 rounded-lg cursor-pointer transition-all border-2 min-h-[80px] ${
                     selectedTeam?.team_id === team.team_id
                       ? 'border-primary bg-selected-bg'
                       : 'border-border hover:border-muted-foreground'

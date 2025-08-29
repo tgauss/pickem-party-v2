@@ -1,0 +1,417 @@
+{
+  "season": 2025,
+  "teams": {
+    "1": "ARI",
+    "2": "ATL",
+    "3": "BAL",
+    "4": "BUF",
+    "5": "CAR",
+    "6": "CHI",
+    "7": "CIN",
+    "8": "CLE",
+    "9": "DAL",
+    "10": "DEN",
+    "11": "DET",
+    "12": "GB",
+    "13": "HOU",
+    "14": "IND",
+    "15": "JAX",
+    "16": "KC",
+    "19": "MIA",
+    "20": "MIN",
+    "21": "NE",
+    "22": "NO",
+    "23": "NYG",
+    "24": "NYJ",
+    "25": "LV",
+    "26": "PHI",
+    "28": "PIT",
+    "29": "LAC",
+    "30": "SEA",
+    "31": "SF",
+    "32": "LAR",
+    "33": "TB",
+    "34": "TEN",
+    "35": "WAS"
+  },
+  "schedule": [
+    {
+      "week": 1,
+      "games": [
+        {"date": "2025-09-04", "time": "20:20", "away": "DAL", "home": "PHI"},
+        {"date": "2025-09-05", "time": "20:00", "away": "KC", "home": "LAC"},
+        {"date": "2025-09-07", "time": "13:00", "away": "TB", "home": "ATL"},
+        {"date": "2025-09-07", "time": "13:00", "away": "CIN", "home": "CLE"},
+        {"date": "2025-09-07", "time": "13:00", "away": "MIA", "home": "IND"},
+        {"date": "2025-09-07", "time": "13:00", "away": "CAR", "home": "JAX"},
+        {"date": "2025-09-07", "time": "13:00", "away": "LV", "home": "NE"},
+        {"date": "2025-09-07", "time": "13:00", "away": "ARI", "home": "NO"},
+        {"date": "2025-09-07", "time": "13:00", "away": "PIT", "home": "NYJ"},
+        {"date": "2025-09-07", "time": "13:00", "away": "NYG", "home": "WAS"},
+        {"date": "2025-09-07", "time": "16:05", "away": "TEN", "home": "DEN"},
+        {"date": "2025-09-07", "time": "16:05", "away": "SF", "home": "SEA"},
+        {"date": "2025-09-07", "time": "16:25", "away": "DET", "home": "GB"},
+        {"date": "2025-09-07", "time": "16:25", "away": "HOU", "home": "LAR"},
+        {"date": "2025-09-07", "time": "20:20", "away": "BAL", "home": "BUF"},
+        {"date": "2025-09-08", "time": "20:15", "away": "MIN", "home": "CHI"}
+      ]
+    },
+    {
+      "week": 2,
+      "games": [
+        {"date": "2025-09-11", "time": "20:15", "away": "WAS", "home": "GB"},
+        {"date": "2025-09-14", "time": "13:00", "away": "CLE", "home": "BAL"},
+        {"date": "2025-09-14", "time": "13:00", "away": "JAX", "home": "CIN"},
+        {"date": "2025-09-14", "time": "13:00", "away": "NYG", "home": "DAL"},
+        {"date": "2025-09-14", "time": "13:00", "away": "CHI", "home": "DET"},
+        {"date": "2025-09-14", "time": "13:00", "away": "NE", "home": "MIA"},
+        {"date": "2025-09-14", "time": "13:00", "away": "SF", "home": "NO"},
+        {"date": "2025-09-14", "time": "13:00", "away": "BUF", "home": "NYJ"},
+        {"date": "2025-09-14", "time": "13:00", "away": "SEA", "home": "PIT"},
+        {"date": "2025-09-14", "time": "13:00", "away": "LAR", "home": "TEN"},
+        {"date": "2025-09-14", "time": "16:05", "away": "CAR", "home": "ARI"},
+        {"date": "2025-09-14", "time": "16:05", "away": "DEN", "home": "IND"},
+        {"date": "2025-09-14", "time": "16:25", "away": "PHI", "home": "KC"},
+        {"date": "2025-09-14", "time": "20:20", "away": "ATL", "home": "MIN"},
+        {"date": "2025-09-15", "time": "19:00", "away": "TB", "home": "HOU"},
+        {"date": "2025-09-15", "time": "22:00", "away": "LAC", "home": "LV"}
+      ]
+    },
+    {
+      "week": 3,
+      "games": [
+        {"date": "2025-09-18", "time": "20:15", "away": "MIA", "home": "BUF"},
+        {"date": "2025-09-21", "time": "13:00", "away": "ATL", "home": "CAR"},
+        {"date": "2025-09-21", "time": "13:00", "away": "GB", "home": "CLE"},
+        {"date": "2025-09-21", "time": "13:00", "away": "HOU", "home": "JAX"},
+        {"date": "2025-09-21", "time": "13:00", "away": "CIN", "home": "MIN"},
+        {"date": "2025-09-21", "time": "13:00", "away": "PIT", "home": "NE"},
+        {"date": "2025-09-21", "time": "13:00", "away": "LAR", "home": "PHI"},
+        {"date": "2025-09-21", "time": "13:00", "away": "NYJ", "home": "TB"},
+        {"date": "2025-09-21", "time": "13:00", "away": "IND", "home": "TEN"},
+        {"date": "2025-09-21", "time": "13:00", "away": "LV", "home": "WAS"},
+        {"date": "2025-09-21", "time": "16:05", "away": "DEN", "home": "LAC"},
+        {"date": "2025-09-21", "time": "16:05", "away": "NO", "home": "SEA"},
+        {"date": "2025-09-21", "time": "16:25", "away": "DAL", "home": "CHI"},
+        {"date": "2025-09-21", "time": "16:25", "away": "ARI", "home": "SF"},
+        {"date": "2025-09-21", "time": "20:20", "away": "KC", "home": "NYG"},
+        {"date": "2025-09-22", "time": "20:15", "away": "DET", "home": "BAL"}
+      ]
+    },
+    {
+      "week": 4,
+      "games": [
+        {"date": "2025-09-25", "time": "20:15", "away": "SEA", "home": "ARI"},
+        {"date": "2025-09-28", "time": "09:30", "away": "MIN", "home": "PIT", "location": "International"},
+        {"date": "2025-09-28", "time": "13:00", "away": "WAS", "home": "ATL"},
+        {"date": "2025-09-28", "time": "13:00", "away": "NO", "home": "BUF"},
+        {"date": "2025-09-28", "time": "13:00", "away": "CLE", "home": "DET"},
+        {"date": "2025-09-28", "time": "13:00", "away": "TEN", "home": "HOU"},
+        {"date": "2025-09-28", "time": "13:00", "away": "CAR", "home": "NE"},
+        {"date": "2025-09-28", "time": "13:00", "away": "LAC", "home": "NYG"},
+        {"date": "2025-09-28", "time": "13:00", "away": "PHI", "home": "TB"},
+        {"date": "2025-09-28", "time": "16:05", "away": "IND", "home": "LAR"},
+        {"date": "2025-09-28", "time": "16:05", "away": "JAX", "home": "SF"},
+        {"date": "2025-09-28", "time": "16:25", "away": "BAL", "home": "KC"},
+        {"date": "2025-09-28", "time": "16:25", "away": "CHI", "home": "LV"},
+        {"date": "2025-09-28", "time": "20:20", "away": "GB", "home": "DAL"},
+        {"date": "2025-09-29", "time": "19:15", "away": "NYJ", "home": "MIA"},
+        {"date": "2025-09-29", "time": "20:15", "away": "CIN", "home": "DEN"}
+      ]
+    },
+    {
+      "week": 5,
+      "bye_teams": ["ATL", "CHI", "GB", "PIT"],
+      "games": [
+        {"date": "2025-10-02", "time": "20:15", "away": "SF", "home": "LAR"},
+        {"date": "2025-10-05", "time": "09:30", "away": "MIN", "home": "CLE", "location": "International"},
+        {"date": "2025-10-05", "time": "13:00", "away": "HOU", "home": "BAL"},
+        {"date": "2025-10-05", "time": "13:00", "away": "MIA", "home": "CAR"},
+        {"date": "2025-10-05", "time": "13:00", "away": "LV", "home": "IND"},
+        {"date": "2025-10-05", "time": "13:00", "away": "NYG", "home": "NO"},
+        {"date": "2025-10-05", "time": "13:00", "away": "DAL", "home": "NYJ"},
+        {"date": "2025-10-05", "time": "13:00", "away": "DEN", "home": "PHI"},
+        {"date": "2025-10-05", "time": "16:05", "away": "TEN", "home": "ARI"},
+        {"date": "2025-10-05", "time": "16:05", "away": "TB", "home": "SEA"},
+        {"date": "2025-10-05", "time": "16:25", "away": "DET", "home": "CIN"},
+        {"date": "2025-10-05", "time": "16:25", "away": "WAS", "home": "LAC"},
+        {"date": "2025-10-05", "time": "20:20", "away": "NE", "home": "BUF"},
+        {"date": "2025-10-06", "time": "20:15", "away": "KC", "home": "JAX"}
+      ]
+    },
+    {
+      "week": 6,
+      "bye_teams": ["HOU", "MIN"],
+      "games": [
+        {"date": "2025-10-09", "time": "20:15", "away": "PHI", "home": "NYG"},
+        {"date": "2025-10-12", "time": "09:30", "away": "DEN", "home": "NYJ", "location": "International"},
+        {"date": "2025-10-12", "time": "13:00", "away": "LAR", "home": "BAL"},
+        {"date": "2025-10-12", "time": "13:00", "away": "DAL", "home": "CAR"},
+        {"date": "2025-10-12", "time": "13:00", "away": "ARI", "home": "IND"},
+        {"date": "2025-10-12", "time": "13:00", "away": "SEA", "home": "JAX"},
+        {"date": "2025-10-12", "time": "13:00", "away": "LAC", "home": "MIA"},
+        {"date": "2025-10-12", "time": "13:00", "away": "CLE", "home": "PIT"},
+        {"date": "2025-10-12", "time": "13:00", "away": "SF", "home": "TB"},
+        {"date": "2025-10-12", "time": "16:05", "away": "TEN", "home": "LV"},
+        {"date": "2025-10-12", "time": "16:25", "away": "CIN", "home": "GB"},
+        {"date": "2025-10-12", "time": "16:25", "away": "NE", "home": "NO"},
+        {"date": "2025-10-12", "time": "20:20", "away": "DET", "home": "KC"},
+        {"date": "2025-10-13", "time": "19:15", "away": "BUF", "home": "ATL"},
+        {"date": "2025-10-13", "time": "20:15", "away": "CHI", "home": "WAS"}
+      ]
+    },
+    {
+      "week": 7,
+      "bye_teams": ["BAL", "BUF"],
+      "games": [
+        {"date": "2025-10-16", "time": "20:15", "away": "PIT", "home": "CIN"},
+        {"date": "2025-10-19", "time": "09:30", "away": "LAR", "home": "JAX", "location": "International"},
+        {"date": "2025-10-19", "time": "13:00", "away": "NO", "home": "CHI"},
+        {"date": "2025-10-19", "time": "13:00", "away": "MIA", "home": "CLE"},
+        {"date": "2025-10-19", "time": "13:00", "away": "LV", "home": "KC"},
+        {"date": "2025-10-19", "time": "13:00", "away": "PHI", "home": "MIN"},
+        {"date": "2025-10-19", "time": "13:00", "away": "CAR", "home": "NYJ"},
+        {"date": "2025-10-19", "time": "13:00", "away": "NE", "home": "TEN"},
+        {"date": "2025-10-19", "time": "16:05", "away": "NYG", "home": "DEN"},
+        {"date": "2025-10-19", "time": "16:05", "away": "IND", "home": "LAC"},
+        {"date": "2025-10-19", "time": "16:25", "away": "GB", "home": "ARI"},
+        {"date": "2025-10-19", "time": "16:25", "away": "WAS", "home": "DAL"},
+        {"date": "2025-10-19", "time": "20:20", "away": "ATL", "home": "SF"},
+        {"date": "2025-10-20", "time": "19:00", "away": "TB", "home": "DET"},
+        {"date": "2025-10-20", "time": "22:00", "away": "HOU", "home": "SEA"}
+      ]
+    },
+    {
+      "week": 8,
+      "bye_teams": ["ARI", "DET", "JAX", "LAR", "LV", "SEA"],
+      "games": [
+        {"date": "2025-10-23", "time": "20:15", "away": "MIN", "home": "LAC"},
+        {"date": "2025-10-26", "time": "13:00", "away": "MIA", "home": "ATL"},
+        {"date": "2025-10-26", "time": "13:00", "away": "CHI", "home": "BAL"},
+        {"date": "2025-10-26", "time": "13:00", "away": "BUF", "home": "CAR"},
+        {"date": "2025-10-26", "time": "13:00", "away": "NYJ", "home": "CIN"},
+        {"date": "2025-10-26", "time": "13:00", "away": "SF", "home": "HOU"},
+        {"date": "2025-10-26", "time": "13:00", "away": "CLE", "home": "NE"},
+        {"date": "2025-10-26", "time": "13:00", "away": "NYG", "home": "PHI"},
+        {"date": "2025-10-26", "time": "16:05", "away": "TB", "home": "NO"},
+        {"date": "2025-10-26", "time": "16:25", "away": "DAL", "home": "DEN"},
+        {"date": "2025-10-26", "time": "16:25", "away": "TEN", "home": "IND"},
+        {"date": "2025-10-26", "time": "20:20", "away": "GB", "home": "PIT"},
+        {"date": "2025-10-27", "time": "20:15", "away": "WAS", "home": "KC"}
+      ]
+    },
+    {
+      "week": 9,
+      "bye_teams": ["CLE", "NYJ", "PHI", "TB"],
+      "games": [
+        {"date": "2025-10-30", "time": "20:15", "away": "BAL", "home": "MIA"},
+        {"date": "2025-11-02", "time": "13:00", "away": "CHI", "home": "CIN"},
+        {"date": "2025-11-02", "time": "13:00", "away": "MIN", "home": "DET"},
+        {"date": "2025-11-02", "time": "13:00", "away": "CAR", "home": "GB"},
+        {"date": "2025-11-02", "time": "13:00", "away": "DEN", "home": "HOU"},
+        {"date": "2025-11-02", "time": "13:00", "away": "ATL", "home": "NE"},
+        {"date": "2025-11-02", "time": "13:00", "away": "SF", "home": "NYG"},
+        {"date": "2025-11-02", "time": "13:00", "away": "IND", "home": "PIT"},
+        {"date": "2025-11-02", "time": "13:00", "away": "LAC", "home": "TEN"},
+        {"date": "2025-11-02", "time": "16:05", "away": "NO", "home": "LAR"},
+        {"date": "2025-11-02", "time": "16:05", "away": "JAX", "home": "LV"},
+        {"date": "2025-11-02", "time": "16:25", "away": "KC", "home": "BUF"},
+        {"date": "2025-11-02", "time": "20:20", "away": "SEA", "home": "WAS"},
+        {"date": "2025-11-03", "time": "20:15", "away": "ARI", "home": "DAL"}
+      ]
+    },
+    {
+      "week": 10,
+      "bye_teams": ["CIN", "DAL", "KC", "TEN"],
+      "games": [
+        {"date": "2025-11-06", "time": "20:15", "away": "LV", "home": "DEN"},
+        {"date": "2025-11-09", "time": "09:30", "away": "ATL", "home": "IND", "location": "International"},
+        {"date": "2025-11-09", "time": "13:00", "away": "NO", "home": "CAR"},
+        {"date": "2025-11-09", "time": "13:00", "away": "NYG", "home": "CHI"},
+        {"date": "2025-11-09", "time": "13:00", "away": "JAX", "home": "HOU"},
+        {"date": "2025-11-09", "time": "13:00", "away": "BUF", "home": "MIA"},
+        {"date": "2025-11-09", "time": "13:00", "away": "BAL", "home": "MIN"},
+        {"date": "2025-11-09", "time": "13:00", "away": "CLE", "home": "NYJ"},
+        {"date": "2025-11-09", "time": "13:00", "away": "NE", "home": "TB"},
+        {"date": "2025-11-09", "time": "16:05", "away": "ARI", "home": "SEA"},
+        {"date": "2025-11-09", "time": "16:25", "away": "LAR", "home": "SF"},
+        {"date": "2025-11-09", "time": "16:25", "away": "DET", "home": "WAS"},
+        {"date": "2025-11-09", "time": "20:20", "away": "PIT", "home": "LAC"},
+        {"date": "2025-11-10", "time": "20:15", "away": "PHI", "home": "GB"}
+      ]
+    },
+    {
+      "week": 11,
+      "bye_teams": ["IND", "NO"],
+      "games": [
+        {"date": "2025-11-13", "time": "20:15", "away": "NYJ", "home": "NE"},
+        {"date": "2025-11-16", "time": "09:30", "away": "WAS", "home": "MIA", "location": "International"},
+        {"date": "2025-11-16", "time": "13:00", "away": "CAR", "home": "ATL"},
+        {"date": "2025-11-16", "time": "13:00", "away": "TB", "home": "BUF"},
+        {"date": "2025-11-16", "time": "13:00", "away": "LAC", "home": "JAX"},
+        {"date": "2025-11-16", "time": "13:00", "away": "CHI", "home": "MIN"},
+        {"date": "2025-11-16", "time": "13:00", "away": "GB", "home": "NYG"},
+        {"date": "2025-11-16", "time": "13:00", "away": "CIN", "home": "PIT"},
+        {"date": "2025-11-16", "time": "13:00", "away": "HOU", "home": "TEN"},
+        {"date": "2025-11-16", "time": "16:05", "away": "SF", "home": "ARI"},
+        {"date": "2025-11-16", "time": "16:05", "away": "SEA", "home": "LAR"},
+        {"date": "2025-11-16", "time": "16:25", "away": "BAL", "home": "CLE"},
+        {"date": "2025-11-16", "time": "16:25", "away": "KC", "home": "DEN"},
+        {"date": "2025-11-16", "time": "20:20", "away": "DET", "home": "PHI"},
+        {"date": "2025-11-17", "time": "20:15", "away": "DAL", "home": "LV"}
+      ]
+    },
+    {
+      "week": 12,
+      "bye_teams": ["DEN", "LAC", "MIA", "WAS"],
+      "games": [
+        {"date": "2025-11-20", "time": "20:15", "away": "BUF", "home": "HOU"},
+        {"date": "2025-11-23", "time": "13:00", "away": "NYJ", "home": "BAL"},
+        {"date": "2025-11-23", "time": "13:00", "away": "PIT", "home": "CHI"},
+        {"date": "2025-11-23", "time": "13:00", "away": "NE", "home": "CIN"},
+        {"date": "2025-11-23", "time": "13:00", "away": "NYG", "home": "DET"},
+        {"date": "2025-11-23", "time": "13:00", "away": "MIN", "home": "GB"},
+        {"date": "2025-11-23", "time": "13:00", "away": "IND", "home": "KC"},
+        {"date": "2025-11-23", "time": "13:00", "away": "SEA", "home": "TEN"},
+        {"date": "2025-11-23", "time": "16:05", "away": "JAX", "home": "ARI"},
+        {"date": "2025-11-23", "time": "16:05", "away": "CLE", "home": "LV"},
+        {"date": "2025-11-23", "time": "16:25", "away": "PHI", "home": "DAL"},
+        {"date": "2025-11-23", "time": "16:25", "away": "ATL", "home": "NO"},
+        {"date": "2025-11-23", "time": "20:20", "away": "TB", "home": "LAR"},
+        {"date": "2025-11-24", "time": "20:15", "away": "CAR", "home": "SF"}
+      ]
+    },
+    {
+      "week": 13,
+      "thanksgiving_games": [
+        {"date": "2025-11-27", "time": "13:00", "away": "GB", "home": "DET"},
+        {"date": "2025-11-27", "time": "16:30", "away": "KC", "home": "DAL"},
+        {"date": "2025-11-27", "time": "20:20", "away": "CIN", "home": "BAL"}
+      ],
+      "black_friday_game": [
+        {"date": "2025-11-28", "time": "15:00", "away": "CHI", "home": "PHI"}
+      ],
+      "games": [
+        {"date": "2025-11-30", "time": "13:00", "away": "LAR", "home": "CAR"},
+        {"date": "2025-11-30", "time": "13:00", "away": "SF", "home": "CLE"},
+        {"date": "2025-11-30", "time": "13:00", "away": "HOU", "home": "IND"},
+        {"date": "2025-11-30", "time": "13:00", "away": "NO", "home": "MIA"},
+        {"date": "2025-11-30", "time": "13:00", "away": "ATL", "home": "NYJ"},
+        {"date": "2025-11-30", "time": "13:00", "away": "ARI", "home": "TB"},
+        {"date": "2025-11-30", "time": "13:00", "away": "JAX", "home": "TEN"},
+        {"date": "2025-11-30", "time": "16:05", "away": "MIN", "home": "SEA"},
+        {"date": "2025-11-30", "time": "16:25", "away": "LV", "home": "LAC"},
+        {"date": "2025-11-30", "time": "16:25", "away": "BUF", "home": "PIT"},
+        {"date": "2025-11-30", "time": "20:20", "away": "DEN", "home": "WAS"},
+        {"date": "2025-12-01", "time": "20:15", "away": "NYG", "home": "NE"}
+      ]
+    },
+    {
+      "week": 14,
+      "bye_teams": ["CAR", "NE", "NYG", "SF"],
+      "games": [
+        {"date": "2025-12-04", "time": "20:15", "away": "DAL", "home": "DET"},
+        {"date": "2025-12-07", "time": "13:00", "away": "SEA", "home": "ATL"},
+        {"date": "2025-12-07", "time": "13:00", "away": "PIT", "home": "BAL"},
+        {"date": "2025-12-07", "time": "13:00", "away": "TEN", "home": "CLE"},
+        {"date": "2025-12-07", "time": "13:00", "away": "CHI", "home": "GB"},
+        {"date": "2025-12-07", "time": "13:00", "away": "IND", "home": "JAX"},
+        {"date": "2025-12-07", "time": "13:00", "away": "WAS", "home": "MIN"},
+        {"date": "2025-12-07", "time": "13:00", "away": "MIA", "home": "NYJ"},
+        {"date": "2025-12-07", "time": "13:00", "away": "NO", "home": "TB"},
+        {"date": "2025-12-07", "time": "16:05", "away": "DEN", "home": "LV"},
+        {"date": "2025-12-07", "time": "16:25", "away": "LAR", "home": "ARI"},
+        {"date": "2025-12-07", "time": "16:25", "away": "CIN", "home": "BUF"},
+        {"date": "2025-12-07", "time": "20:20", "away": "HOU", "home": "KC"},
+        {"date": "2025-12-08", "time": "20:15", "away": "PHI", "home": "LAC"}
+      ]
+    },
+    {
+      "week": 15,
+      "games": [
+        {"date": "2025-12-11", "time": "20:15", "away": "ATL", "home": "TB"},
+        {"date": "2025-12-14", "time": "13:00", "away": "CLE", "home": "CHI"},
+        {"date": "2025-12-14", "time": "13:00", "away": "BAL", "home": "CIN"},
+        {"date": "2025-12-14", "time": "13:00", "away": "ARI", "home": "HOU"},
+        {"date": "2025-12-14", "time": "13:00", "away": "NYJ", "home": "JAX"},
+        {"date": "2025-12-14", "time": "13:00", "away": "LAC", "home": "KC"},
+        {"date": "2025-12-14", "time": "13:00", "away": "BUF", "home": "NE"},
+        {"date": "2025-12-14", "time": "13:00", "away": "WAS", "home": "NYG"},
+        {"date": "2025-12-14", "time": "13:00", "away": "LV", "home": "PHI"},
+        {"date": "2025-12-14", "time": "16:25", "away": "GB", "home": "DEN"},
+        {"date": "2025-12-14", "time": "16:25", "away": "DET", "home": "LAR"},
+        {"date": "2025-12-14", "time": "16:25", "away": "CAR", "home": "NO"},
+        {"date": "2025-12-14", "time": "16:25", "away": "IND", "home": "SEA"},
+        {"date": "2025-12-14", "time": "16:25", "away": "TEN", "home": "SF"},
+        {"date": "2025-12-14", "time": "20:20", "away": "MIN", "home": "DAL"},
+        {"date": "2025-12-15", "time": "20:15", "away": "MIA", "home": "PIT"}
+      ]
+    },
+    {
+      "week": 16,
+      "games": [
+        {"date": "2025-12-18", "time": "20:15", "away": "LAR", "home": "SEA"},
+        {"date": "2025-12-20", "time": "TBD", "away": "GB", "home": "CHI"},
+        {"date": "2025-12-20", "time": "TBD", "away": "PHI", "home": "WAS"},
+        {"date": "2025-12-21", "time": "13:00", "away": "NE", "home": "BAL"},
+        {"date": "2025-12-21", "time": "13:00", "away": "TB", "home": "CAR"},
+        {"date": "2025-12-21", "time": "13:00", "away": "BUF", "home": "CLE"},
+        {"date": "2025-12-21", "time": "13:00", "away": "LAC", "home": "DAL"},
+        {"date": "2025-12-21", "time": "13:00", "away": "NYJ", "home": "NO"},
+        {"date": "2025-12-21", "time": "13:00", "away": "MIN", "home": "NYG"},
+        {"date": "2025-12-21", "time": "13:00", "away": "KC", "home": "TEN"},
+        {"date": "2025-12-21", "time": "16:05", "away": "ATL", "home": "ARI"},
+        {"date": "2025-12-21", "time": "16:05", "away": "JAX", "home": "DEN"},
+        {"date": "2025-12-21", "time": "16:25", "away": "PIT", "home": "DET"},
+        {"date": "2025-12-21", "time": "16:25", "away": "LV", "home": "HOU"},
+        {"date": "2025-12-21", "time": "20:20", "away": "CIN", "home": "MIA"},
+        {"date": "2025-12-22", "time": "20:15", "away": "SF", "home": "IND"}
+      ]
+    },
+    {
+      "week": 17,
+      "christmas_games": [
+        {"date": "2025-12-25", "time": "13:00", "away": "DAL", "home": "WAS"},
+        {"date": "2025-12-25", "time": "16:30", "away": "DET", "home": "MIN"},
+        {"date": "2025-12-25", "time": "20:15", "away": "DEN", "home": "KC"}
+      ],
+      "games": [
+        {"date": "2025-12-27", "time": "TBD", "away": "SEA", "home": "CAR"},
+        {"date": "2025-12-27", "time": "TBD", "away": "ARI", "home": "CIN"},
+        {"date": "2025-12-27", "time": "TBD", "away": "BAL", "home": "GB"},
+        {"date": "2025-12-27", "time": "TBD", "away": "HOU", "home": "LAC"},
+        {"date": "2025-12-27", "time": "TBD", "away": "NYG", "home": "LV"},
+        {"date": "2025-12-28", "time": "13:00", "away": "PIT", "home": "CLE"},
+        {"date": "2025-12-28", "time": "13:00", "away": "JAX", "home": "IND"},
+        {"date": "2025-12-28", "time": "13:00", "away": "TB", "home": "MIA"},
+        {"date": "2025-12-28", "time": "13:00", "away": "NE", "home": "NYJ"},
+        {"date": "2025-12-28", "time": "13:00", "away": "NO", "home": "TEN"},
+        {"date": "2025-12-28", "time": "16:25", "away": "PHI", "home": "BUF"},
+        {"date": "2025-12-28", "time": "20:20", "away": "CHI", "home": "SF"},
+        {"date": "2025-12-29", "time": "20:15", "away": "LAR", "home": "ATL"}
+      ]
+    },
+    {
+      "week": 18,
+      "note": "All Week 18 games TBD - exact times to be determined based on playoff implications",
+      "games": [
+        {"date": "2026-01-04", "time": "TBD", "away": "NO", "home": "ATL"},
+        {"date": "2026-01-04", "time": "TBD", "away": "NYJ", "home": "BUF"},
+        {"date": "2026-01-04", "time": "TBD", "away": "DET", "home": "CHI"},
+        {"date": "2026-01-04", "time": "TBD", "away": "CLE", "home": "CIN"},
+        {"date": "2026-01-04", "time": "TBD", "away": "LAC", "home": "DEN"},
+        {"date": "2026-01-04", "time": "TBD", "away": "IND", "home": "HOU"},
+        {"date": "2026-01-04", "time": "TBD", "away": "TEN", "home": "JAX"},
+        {"date": "2026-01-04", "time": "TBD", "away": "ARI", "home": "LAR"},
+        {"date": "2026-01-04", "time": "TBD", "away": "KC", "home": "LV"},
+        {"date": "2026-01-04", "time": "TBD", "away": "GB", "home": "MIN"},
+        {"date": "2026-01-04", "time": "TBD", "away": "MIA", "home": "NE"},
+        {"date": "2026-01-04", "time": "TBD", "away": "DAL", "home": "NYG"},
+        {"date": "2026-01-04", "time": "TBD", "away": "WAS", "home": "PHI"},
+        {"date": "2026-01-04", "time": "TBD", "away": "BAL", "home": "PIT"},
+        {"date": "2026-01-04", "time": "TBD", "away": "SEA", "home": "SF"},
+        {"date": "2026-01-04", "time": "TBD", "away": "CAR", "home": "TB"}
+      ]
+    }
+  ]
+}
