@@ -34,7 +34,7 @@ export async function POST(request: Request) {
       .eq('league_id', leagueId)
     
     const picksByUser = new Map()
-    pickCounts?.forEach(pick => {
+    pickCounts?.forEach((pick: any) => {
       const username = pick.users.username
       if (!picksByUser.has(username)) {
         picksByUser.set(username, { total: 0, correct: 0, incorrect: 0, weeks: new Set() })
@@ -46,7 +46,7 @@ export async function POST(request: Request) {
       if (pick.is_correct === false) userPicks.incorrect++
     })
     
-    const standings = members?.map(member => ({
+    const standings = members?.map((member: any) => ({
       username: member.users.username,
       displayName: member.users.display_name,
       lives: member.lives_remaining,
