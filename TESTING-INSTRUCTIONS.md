@@ -9,7 +9,7 @@ This build includes simulation tools and test data for pre-season testing. The p
 ## 🎮 **How to Join & Test**
 
 ### **1. Access the Platform**
-**Live URL:** `https://pickem-party-v2.vercel.app` *(replace with your actual Vercel URL)*
+**Live URL:** `https://www.pickemparty.app`
 
 ### **2. Test User Accounts (PIN: 1234)**
 Ready-to-use friend accounts:
@@ -55,7 +55,7 @@ Ready-to-use friend accounts:
 ## 🛠️ **Admin Testing Tools**
 
 ### **Admin Dashboard Access:**
-- **URL:** `/admin/dashboard`
+- **URL:** `https://www.pickemparty.app/admin/dashboard`
 - **Username:** `pickemking`
 - **Password:** `nfl2025champion`
 
@@ -133,20 +133,20 @@ Last simulation through Week 5:
 
 ```bash
 # Create new fresh league with all users
-curl -X POST https://your-app.vercel.app/api/admin/create-friends-league
+curl -X POST https://www.pickemparty.app/api/admin/create-friends-league
 
 # Check league status via API (use returned league ID)
-curl -X POST https://your-app.vercel.app/api/admin/league-status \
+curl -X POST https://www.pickemparty.app/api/admin/league-status \
   -H "Content-Type: application/json" \
   -d '{"leagueId": "d9af439b-77c5-49ff-afe1-e1b32e3a3aa8"}'
 
 # Run fresh simulation  
-curl -X POST https://your-app.vercel.app/api/admin/simulate \
+curl -X POST https://www.pickemparty.app/api/admin/simulate \
   -H "Content-Type: application/json" \
   -d '{"action": "simulate-weeks", "leagueId": "d9af439b-77c5-49ff-afe1-e1b32e3a3aa8", "week": 6}'
 
 # Reset league for fresh testing
-curl -X POST https://your-app.vercel.app/api/admin/reset-league \
+curl -X POST https://www.pickemparty.app/api/admin/reset-league \
   -H "Content-Type: application/json" \
   -d '{"leagueId": "d9af439b-77c5-49ff-afe1-e1b32e3a3aa8"}'
 ```

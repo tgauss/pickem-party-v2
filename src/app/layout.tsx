@@ -19,7 +19,7 @@ const goldman = Goldman({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://pickem-party-v2.vercel.app'),
+  metadataBase: new URL('https://www.pickemparty.app'),
   title: "Pick'em Party - NFL Survivor Pool",
   description: "🏈 The ultimate NFL Survivor Pool with retro 8-bit vibes! Pick teams, survive eliminations, and claim victory in your league!",
   keywords: ["NFL", "Survivor Pool", "Football", "Picks", "Elimination", "Fantasy Football", "Sports Betting"],
