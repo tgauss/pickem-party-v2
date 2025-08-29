@@ -6,6 +6,25 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 )
 
+interface LeagueMember {
+  lives_remaining: number
+  is_eliminated: boolean
+  eliminated_week: number | null
+  users: {
+    username: string
+    display_name: string
+  }
+}
+
+interface Pick {
+  user_id: string
+  week: number
+  is_correct: boolean | null
+  users: {
+    username: string
+  }
+}
+
 export async function POST(request: Request) {
   try {
     const { leagueId } = await request.json()
@@ -34,7 +53,7 @@ export async function POST(request: Request) {
       .eq('league_id', leagueId)
     
     const picksByUser = new Map()
-    pickCounts?.forEach((pick: any) => {
+    pickCounts?.forEach((pick: Pick) => {
       const username = pick.users.username
       if (!picksByUser.has(username)) {
         picksByUser.set(username, { total: 0, correct: 0, incorrect: 0, weeks: new Set() })
@@ -46,7 +65,7 @@ export async function POST(request: Request) {
       if (pick.is_correct === false) userPicks.incorrect++
     })
     
-    const standings = members?.map((member: any) => ({
+    const standings = members?.map((member: LeagueMember) => ({
       username: member.users.username,
       displayName: member.users.display_name,
       lives: member.lives_remaining,
