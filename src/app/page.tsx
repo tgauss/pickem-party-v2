@@ -77,34 +77,52 @@ export default function HomePage() {
           <p className="text-muted-foreground">
             {isLogin ? 'ENTER THE ARENA' : 'JOIN THE BATTLE'}
           </p>
+          {!isLogin && (
+            <div className="mt-4 p-3 bg-surface/50 rounded-lg text-sm text-muted-foreground">
+              <p className="mb-2">🏈 <strong>Quick Setup:</strong></p>
+              <p>• <strong>Username:</strong> How you login (like &quot;jaren&quot; or &quot;hayden&quot;)</p>
+              <p>• <strong>Display Name:</strong> What others see in the league</p>
+              <p>• <strong>PIN:</strong> Your 4-digit password to login</p>
+            </div>
+          )}
         </div>
 
         <div className="space-y-4">
           <div>
-            <Label htmlFor="username">Fighter Name</Label>
+            <Label htmlFor="username">
+              Username {isLogin ? '' : '(for login)'}
+            </Label>
             <Input
               id="username"
-              placeholder="Enter username"
+              placeholder={isLogin ? "Enter your username" : "Create username (e.g., jaren, hayden)"}
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               className="bg-surface border-border min-h-[44px] text-base"
             />
+            {!isLogin && (
+              <p className="text-xs text-muted-foreground mt-1">
+                This is what you&apos;ll type to login. Keep it simple!
+              </p>
+            )}
           </div>
 
           {!isLogin && (
             <>
               <div>
-                <Label htmlFor="displayName">Display Name</Label>
+                <Label htmlFor="displayName">Display Name (what others see)</Label>
                 <Input
                   id="displayName"
-                  placeholder="What they'll call you"
+                  placeholder="Your full name (e.g., Jaren Petrusich)"
                   value={displayName}
                   onChange={(e) => setDisplayName(e.target.value)}
                   className="bg-surface border-border min-h-[44px] text-base"
                 />
+                <p className="text-xs text-muted-foreground mt-1">
+                  This appears in leagues and standings
+                </p>
               </div>
               <div>
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email">Email Address</Label>
                 <Input
                   id="email"
                   type="email"
@@ -118,20 +136,29 @@ export default function HomePage() {
           )}
 
           <div>
-            <Label htmlFor="pin">PIN (Optional)</Label>
+            <Label htmlFor="pin">
+              4-Digit PIN {!isLogin && '(Required)'}
+            </Label>
             <Input
               id="pin"
               type="number"
-              placeholder="4-digit PIN"
+              placeholder="1234"
               value={pin}
               onChange={(e) => setPin(e.target.value.slice(0, 4))}
               className="bg-surface border-border min-h-[44px] text-base"
+              required={!isLogin}
             />
+            <p className="text-xs text-muted-foreground mt-1">
+              {isLogin 
+                ? "Enter your PIN to login" 
+                : "Your secret 4-digit password for logging in"
+              }
+            </p>
           </div>
 
           <Button 
             onClick={handleAuth}
-            disabled={loading || !username || (!isLogin && (!displayName || !email))}
+            disabled={loading || !username || !pin || (!isLogin && (!displayName || !email))}
             className="w-full fight-text"
             style={{
               backgroundColor: 'var(--primary)',
