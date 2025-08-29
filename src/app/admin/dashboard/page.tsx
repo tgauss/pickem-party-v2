@@ -48,6 +48,9 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(false)
   const [syncLoading, setSyncLoading] = useState(false)
   const [importLoading, setImportLoading] = useState(false)
+  const [simulateLoading, setSimulateLoading] = useState(false)
+  const [selectedLeague, setSelectedLeague] = useState('')
+  const [selectedWeek, setSelectedWeek] = useState(1)
   const supabase = createClient()
 
   const loadData = useCallback(async () => {
@@ -159,6 +162,74 @@ export default function AdminDashboard() {
     setSyncLoading(false)
   }
 
+  const createTestUsers = async () => {
+    setSimulateLoading(true)
+    try {
+      const response = await fetch('/api/admin/create-test-users', {
+        method: 'POST'
+      })
+      const result = await response.json()
+      if (result.success) {
+        alert(`✅ Created ${result.created} new users, ${result.existing} already existed`)
+        loadData()
+      } else {
+        alert('❌ Failed to create test users: ' + result.error)
+      }
+    } catch {
+      alert('❌ Test user creation error')
+    }
+    setSimulateLoading(false)
+  }
+
+  const import2024Results = async () => {
+    setSimulateLoading(true)
+    try {
+      const response = await fetch('/api/admin/import-2024-results', {
+        method: 'POST'
+      })
+      const result = await response.json()
+      if (result.success) {
+        alert(`✅ ${result.message}`)
+        loadData()
+      } else {
+        alert('❌ Failed to import 2024 results: ' + result.error)
+      }
+    } catch {
+      alert('❌ Import error')
+    }
+    setSimulateLoading(false)
+  }
+
+  const simulateWeeks = async (action: string) => {
+    if (!selectedLeague) {
+      alert('Please select a league first')
+      return
+    }
+    
+    setSimulateLoading(true)
+    try {
+      const response = await fetch('/api/admin/simulate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action,
+          week: selectedWeek,
+          leagueId: selectedLeague
+        })
+      })
+      const result = await response.json()
+      if (result.success) {
+        alert(`✅ ${result.message}`)
+        loadData()
+      } else {
+        alert('❌ Simulation failed: ' + result.error)
+      }
+    } catch {
+      alert('❌ Simulation error')
+    }
+    setSimulateLoading(false)
+  }
+
   const manualScoreUpdate = async (gameId: string, homeScore: number, awayScore: number) => {
     const { error } = await supabase
       .from('games')
@@ -195,7 +266,7 @@ export default function AdminDashboard() {
 
         {/* Tab Navigation */}
         <div className="flex gap-2 mb-6 justify-center flex-wrap">
-          {['leagues', 'users', 'games', 'resurrect', 'sync'].map(tab => (
+          {['leagues', 'users', 'games', 'resurrect', 'sync', 'simulate'].map(tab => (
             <Button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -437,6 +508,121 @@ export default function AdminDashboard() {
                 >
                   🏁 FINALIZE WEEK 1
                 </Button>
+              </div>
+            </Card>
+          </div>
+        )}
+
+        {/* Simulate Tab */}
+        {activeTab === 'simulate' && (
+          <div className="space-y-6">
+            <Card className="p-6 retro-border">
+              <h2 className="text-xl font-bold mb-4 fight-text">🎮 TESTING SIMULATION CENTER</h2>
+              
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <Button 
+                    onClick={createTestUsers}
+                    disabled={simulateLoading}
+                    className="w-full fight-text"
+                    style={{backgroundColor: 'var(--info)', color: 'var(--background)'}}
+                  >
+                    {simulateLoading ? 'CREATING...' : '👥 CREATE TEST USERS'}
+                  </Button>
+                  
+                  <Button 
+                    onClick={import2024Results}
+                    disabled={simulateLoading}
+                    className="w-full fight-text"
+                    style={{backgroundColor: 'var(--secondary)', color: 'var(--secondary-foreground)'}}
+                  >
+                    {simulateLoading ? 'IMPORTING...' : '📊 IMPORT 2024 RESULTS'}
+                  </Button>
+                </div>
+
+                <div className="border-t pt-4">
+                  <h3 className="font-bold mb-3">Simulation Controls</h3>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Select League</label>
+                      <select 
+                        value={selectedLeague}
+                        onChange={(e) => setSelectedLeague(e.target.value)}
+                        className="w-full p-2 border rounded bg-surface border-border"
+                      >
+                        <option value="">Choose league...</option>
+                        {leagues.map(league => (
+                          <option key={league.id} value={league.id}>
+                            {league.name} ({league.member_count} members)
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Target Week</label>
+                      <select 
+                        value={selectedWeek}
+                        onChange={(e) => setSelectedWeek(Number(e.target.value))}
+                        className="w-full p-2 border rounded bg-surface border-border"
+                      >
+                        {Array.from({length: 6}, (_, i) => (
+                          <option key={i+1} value={i+1}>Week {i+1}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <Button 
+                      onClick={() => simulateWeeks('generate-picks')}
+                      disabled={simulateLoading || !selectedLeague}
+                      className="w-full fight-text"
+                      style={{backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)'}}
+                    >
+                      {simulateLoading ? '...' : '🎲 GENERATE PICKS'}
+                    </Button>
+                    
+                    <Button 
+                      onClick={() => simulateWeeks('process-week')}
+                      disabled={simulateLoading || !selectedLeague}
+                      className="w-full fight-text"
+                      style={{backgroundColor: 'var(--warning)', color: 'var(--background)'}}
+                    >
+                      {simulateLoading ? '...' : '⚡ PROCESS WEEK'}
+                    </Button>
+                    
+                    <Button 
+                      onClick={() => simulateWeeks('simulate-weeks')}
+                      disabled={simulateLoading || !selectedLeague}
+                      className="w-full fight-text"
+                      style={{backgroundColor: 'var(--success)', color: 'var(--background)'}}
+                    >
+                      {simulateLoading ? '...' : `🚀 SIMULATE TO WEEK ${selectedWeek}`}
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </Card>
+
+            <Card className="p-6 retro-border">
+              <h2 className="text-xl font-bold mb-4 fight-text">📋 TEST USER CREDENTIALS</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {[
+                  {name: 'Jaren Petrusich', username: 'jaren', email: 'jlpetrusich@gmail.com'},
+                  {name: 'Jordan Petrusich', username: 'jordan', email: 'jjpetrusich@gmail.com'},
+                  {name: 'Brandon O\'Dore', username: 'brandon', email: 'brandonodore@gmail.com'},
+                  {name: 'Hayden Gaussoin', username: 'hayden', email: 'haydeng4@gmail.com'},
+                  {name: 'Dan Evans', username: 'dan', email: 'danevanspersonal@gmail.com'}
+                ].map(user => (
+                  <div key={user.username} className="p-3 bg-surface rounded-lg">
+                    <p className="font-bold">{user.name}</p>
+                    <p className="text-sm text-muted-foreground">Username: {user.username}</p>
+                    <p className="text-sm text-muted-foreground">PIN: 1234</p>
+                    <p className="text-xs text-muted-foreground">{user.email}</p>
+                  </div>
+                ))}
               </div>
             </Card>
           </div>
