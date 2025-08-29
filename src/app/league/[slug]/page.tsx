@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -65,7 +65,45 @@ export default function LeaguePage({ params }: { params: { slug: string } }) {
   const [loading, setLoading] = useState(false)
   const supabase = createClient()
 
-  const loadLeagueData = async (userId: string, slug: string) => {
+  const getHelmetPath = (teamKey: string) => {
+    const helmetMap: { [key: string]: string } = {
+      'ARI': 'Arizona.gif',
+      'ATL': 'Atlanta.gif',
+      'BAL': 'Baltimore.gif', 
+      'BUF': 'Buffalo.gif',
+      'CAR': 'Carolina.gif',
+      'CHI': 'Chicago.gif',
+      'CIN': 'Cincinnati.gif',
+      'CLE': 'Cleveland.gif',
+      'DAL': 'Dallas.gif',
+      'DEN': 'Denver.gif',
+      'DET': 'Detroit.gif',
+      'GB': 'GreenBay.gif',
+      'HOU': 'Houston.gif',
+      'IND': 'Indianapolis.gif',
+      'JAX': 'Jacksonville.gif',
+      'KC': 'KansasCity.gif',
+      'LV': 'LasVegas.gif',
+      'LAC': 'LosAngelesChargers.gif',
+      'LAR': 'LosAngelesRams.gif',
+      'MIA': 'Miami.gif',
+      'MIN': 'Minnesota.gif',
+      'NE': 'NewEngland.gif',
+      'NO': 'NewOrleans.gif',
+      'NYG': 'NewYorkGiants.gif',
+      'NYJ': 'NewYorkJets.gif',
+      'PHI': 'Philadelphia.gif',
+      'PIT': 'Pittsburgh.gif',
+      'SF': 'SanFrancisco.gif',
+      'SEA': 'Seattle.gif',
+      'TB': 'TampaBay.gif',
+      'TEN': 'Tennessee.gif',
+      'WAS': 'Washington.gif'
+    }
+    return `/team-helmets/${helmetMap[teamKey] || 'Arizona.gif'}`
+  }
+
+  const loadLeagueData = useCallback(async (userId: string, slug: string) => {
     // Load league
     const { data: leagueData } = await supabase
       .from('leagues')
@@ -112,8 +150,8 @@ export default function LeaguePage({ params }: { params: { slug: string } }) {
       `)
       .eq('league_id', leagueData.id)
     
-    setMembers(membersData?.map((m: any) => ({
-      user: m.users as User,
+    setMembers(membersData?.map((m: Member & { users: User }) => ({
+      user: m.users,
       lives_remaining: m.lives_remaining,
       is_eliminated: m.is_eliminated,
       is_paid: m.is_paid
@@ -132,7 +170,7 @@ export default function LeaguePage({ params }: { params: { slug: string } }) {
       setUserPick(pickData)
       setSelectedTeam(pickData.teams)
     }
-  }
+  }, [supabase])
 
   useEffect(() => {
     const currentUser = localStorage.getItem('currentUser')
@@ -144,7 +182,7 @@ export default function LeaguePage({ params }: { params: { slug: string } }) {
     const userData = JSON.parse(currentUser)
     setUser(userData)
     loadLeagueData(userData.id, params.slug)
-  }, [params.slug])
+  }, [loadLeagueData, params.slug])
 
   const submitPick = async () => {
     if (!user || !league || !selectedTeam) {
@@ -162,52 +200,67 @@ export default function LeaguePage({ params }: { params: { slug: string } }) {
     
     setLoading(true)
     
-    // Find the game this team is playing
-    const game = games.find(g => 
-      g.home_team.team_id === selectedTeam.team_id || 
-      g.away_team.team_id === selectedTeam.team_id
-    )
-    
-    if (!game) {
-      alert('Game not found for selected team!')
-      setLoading(false)
-      return
-    }
-    
-    if (userPick) {
-      // Update existing pick
-      const { error } = await supabase
-        .from('picks')
-        .update({
-          team_id: selectedTeam.team_id,
-          game_id: game.id
-        })
-        .eq('id', userPick.id)
+    try {
+      // Find the game this team is playing
+      const game = games.find(g => 
+        g.home_team.team_id === selectedTeam.team_id || 
+        g.away_team.team_id === selectedTeam.team_id
+      )
       
-      if (error) {
-        alert('Failed to update pick: ' + error.message)
-      } else {
-        alert('PICK UPDATED! ⚔️')
-        await loadLeagueData(user.id, params.slug)
+      if (!game) {
+        alert('Game not found for selected team!')
+        setLoading(false)
+        return
       }
-    } else {
-      // Create new pick
-      const { error } = await supabase
-        .from('picks')
-        .insert({
-          user_id: user.id,
-          league_id: league.id,
-          game_id: game.id,
-          team_id: selectedTeam.team_id,
-          week: 1
-        })
-      
-      if (error) {
-        alert('Failed to submit pick: ' + error.message)
+
+      console.log('Submitting pick:', {
+        user_id: user.id,
+        league_id: league.id,
+        game_id: game.id,
+        team_id: selectedTeam.team_id,
+        week: 1
+      })
+
+      if (userPick) {
+        // Update existing pick
+        const { error } = await supabase
+          .from('picks')
+          .update({
+            team_id: selectedTeam.team_id,
+            game_id: game.id
+          })
+          .eq('id', userPick.id)
+        
+        if (error) {
+          console.error('Update pick error:', error)
+          alert('Failed to update pick: ' + error.message)
+        } else {
+          alert('PICK UPDATED! ⚔️')
+          await loadLeagueData(user.id, params.slug)
+        }
       } else {
-        alert('PICK SUBMITTED! ⚔️')
-        await loadLeagueData(user.id, params.slug)
+        // Create new pick
+        const { error } = await supabase
+          .from('picks')
+          .insert({
+            user_id: user.id,
+            league_id: league.id,
+            game_id: game.id,
+            team_id: selectedTeam.team_id,
+            week: 1
+          })
+        
+        if (error) {
+          console.error('Create pick error:', error)
+          alert('Failed to submit pick: ' + error.message)
+        } else {
+          alert('PICK SUBMITTED! ⚔️')
+          await loadLeagueData(user.id, params.slug)
+        }
       }
+    } catch (error) {
+      console.error('Pick submission error:', error)
+      alert('Network error submitting pick')
     }
     setLoading(false)
   }
@@ -232,10 +285,12 @@ export default function LeaguePage({ params }: { params: { slug: string } }) {
         {/* Header */}
         <div className="text-center mb-8">
           <div className="mb-4">
-            <img 
+            <Image 
               src="/logos/Pickem Part App Logo.svg" 
               alt="Pickem Party Logo"
-              className="w-20 h-20 mx-auto"
+              width={80}
+              height={80}
+              className="mx-auto"
             />
           </div>
           <h1 className="text-2xl font-bold mb-2 fight-text" style={{color: 'var(--primary)'}}>
@@ -274,7 +329,7 @@ export default function LeaguePage({ params }: { params: { slug: string } }) {
                   {opponent && (
                     <>
                       <Image
-                        src={opponent.logo_url}
+                        src={getHelmetPath(opponent.key)}
                         alt={opponent.full_name}
                         width={64}
                         height={64}
@@ -320,7 +375,7 @@ export default function LeaguePage({ params }: { params: { slug: string } }) {
                 >
                   <div className="text-center">
                     <Image
-                      src={team.logo_url}
+                      src={getHelmetPath(team.key)}
                       alt={team.full_name}
                       width={40}
                       height={40}

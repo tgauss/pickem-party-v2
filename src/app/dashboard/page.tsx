@@ -1,11 +1,12 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import Image from 'next/image'
 
 interface User {
   id: string
@@ -25,15 +26,12 @@ interface League {
 export default function DashboardPage() {
   const [user, setUser] = useState<User | null>(null)
   const [leagues, setLeagues] = useState<League[]>([])
-  const [showCreateLeague, setShowCreateLeague] = useState(false)
   const [showJoinLeague, setShowJoinLeague] = useState(false)
-  const [leagueName, setLeagueName] = useState('')
-  const [buyInAmount, setBuyInAmount] = useState('')
   const [inviteCode, setInviteCode] = useState('')
   const [loading, setLoading] = useState(false)
   const supabase = createClient()
 
-  const loadLeagues = async (userId: string) => {
+  const loadLeagues = useCallback(async (userId: string) => {
     const { data } = await supabase
       .from('league_members')
       .select(`
@@ -41,8 +39,9 @@ export default function DashboardPage() {
       `)
       .eq('user_id', userId)
     
-    setLeagues(data?.map((d: any) => d.leagues as League).filter(Boolean) || [])
-  }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    setLeagues(data?.map((d: any) => d.leagues).filter(Boolean) || [])
+  }, [supabase])
 
   useEffect(() => {
     const currentUser = localStorage.getItem('currentUser')
@@ -54,45 +53,7 @@ export default function DashboardPage() {
     const userData = JSON.parse(currentUser)
     setUser(userData)
     loadLeagues(userData.id)
-  }, [])
-
-  const createLeague = async () => {
-    if (!user) return
-    setLoading(true)
-    
-    const slug = leagueName.toLowerCase().replace(/[^a-z0-9]/g, '-')
-    const code = Math.random().toString(36).substring(2, 8).toUpperCase()
-    
-    const { data: league, error } = await supabase
-      .from('leagues')
-      .insert({
-        name: leagueName,
-        slug: slug,
-        buy_in_amount: parseFloat(buyInAmount) || 0,
-        invite_code: code,
-        commissioner_id: user.id,
-        season_year: 2025
-      })
-      .select()
-      .single()
-    
-    if (league) {
-      // Add creator as member
-      await supabase.from('league_members').insert({
-        league_id: league.id,
-        user_id: user.id,
-        is_paid: true
-      })
-      
-      await loadLeagues(user.id)
-      setShowCreateLeague(false)
-      setLeagueName('')
-      setBuyInAmount('')
-    } else {
-      alert('League creation failed: ' + (error?.message || 'Unknown error'))
-    }
-    setLoading(false)
-  }
+  }, [loadLeagues])
 
   const joinLeague = async () => {
     if (!user) return
@@ -130,10 +91,12 @@ export default function DashboardPage() {
       <div className="max-w-2xl mx-auto">
         <div className="text-center mb-8">
           <div className="mb-4">
-            <img 
+            <Image 
               src="/logos/Pickem Part App Logo.svg" 
               alt="Pickem Party Logo"
-              className="w-24 h-24 mx-auto"
+              width={96}
+              height={96}
+              className="mx-auto"
             />
           </div>
           <h1 className="text-2xl font-bold mb-2 fight-text" style={{color: 'var(--primary)'}}>
@@ -145,19 +108,12 @@ export default function DashboardPage() {
         {leagues.length === 0 ? (
           <Card className="p-6 retro-border text-center">
             <h2 className="text-xl font-bold mb-4 fight-text">NO ACTIVE LEAGUES</h2>
-            <p className="text-muted-foreground mb-6">Create a league or join an existing one to start picking!</p>
-            <div className="flex gap-4 justify-center">
-              <Button 
-                onClick={() => setShowCreateLeague(true)}
-                className="fight-text"
-                style={{backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)'}}
-              >
-                CREATE LEAGUE
-              </Button>
+            <p className="text-muted-foreground mb-6">Join a league to start picking!</p>
+            <div className="flex justify-center">
               <Button 
                 onClick={() => setShowJoinLeague(true)}
-                variant="outline"
                 className="fight-text"
+                style={{backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)'}}
               >
                 JOIN LEAGUE
               </Button>
@@ -167,24 +123,14 @@ export default function DashboardPage() {
           <div className="space-y-4">
             <div className="flex justify-between items-center">
               <h2 className="text-2xl font-bold fight-text">YOUR LEAGUES</h2>
-              <div className="flex gap-2">
-                <Button 
-                  onClick={() => setShowCreateLeague(true)}
-                  size="sm"
-                  className="fight-text"
-                  style={{backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)'}}
-                >
-                  CREATE
-                </Button>
-                <Button 
-                  onClick={() => setShowJoinLeague(true)}
-                  size="sm"
-                  variant="outline"
-                  className="fight-text"
-                >
-                  JOIN
-                </Button>
-              </div>
+              <Button 
+                onClick={() => setShowJoinLeague(true)}
+                size="sm"
+                className="fight-text"
+                style={{backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)'}}
+              >
+                JOIN LEAGUE
+              </Button>
             </div>
             
             {leagues.map(league => (
@@ -209,48 +155,6 @@ export default function DashboardPage() {
           </div>
         )}
 
-        {showCreateLeague && (
-          <Card className="mt-6 p-6 retro-border">
-            <h3 className="text-xl font-bold mb-4 fight-text">CREATE NEW LEAGUE</h3>
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="leagueName">League Name</Label>
-                <Input
-                  id="leagueName"
-                  value={leagueName}
-                  onChange={(e) => setLeagueName(e.target.value)}
-                  className="bg-surface border-border min-h-[44px] text-base"
-                />
-              </div>
-              <div>
-                <Label htmlFor="buyIn">Buy-in Amount</Label>
-                <Input
-                  id="buyIn"
-                  type="number"
-                  value={buyInAmount}
-                  onChange={(e) => setBuyInAmount(e.target.value)}
-                  className="bg-surface border-border min-h-[44px] text-base"
-                />
-              </div>
-              <div className="flex gap-2">
-                <Button 
-                  onClick={createLeague}
-                  disabled={loading || !leagueName}
-                  className="fight-text"
-                  style={{backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)'}}
-                >
-                  {loading ? '...' : 'CREATE!'}
-                </Button>
-                <Button 
-                  onClick={() => setShowCreateLeague(false)}
-                  variant="outline"
-                >
-                  Cancel
-                </Button>
-              </div>
-            </div>
-          </Card>
-        )}
 
         {showJoinLeague && (
           <Card className="mt-6 p-6 retro-border">

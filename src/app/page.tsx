@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
+import Image from 'next/image'
 
 export default function HomePage() {
   const [username, setUsername] = useState('')
@@ -62,14 +63,16 @@ export default function HomePage() {
       <Card className="w-full max-w-md p-6 retro-border">
         <div className="text-center mb-8">
           <div className="mb-6">
-            <img 
+            <Image 
               src="/logos/Pickem Part App Logo.svg" 
               alt="Pickem Party Logo"
-              className="w-32 h-32 mx-auto"
+              width={128}
+              height={128}
+              className="mx-auto"
             />
           </div>
           <h1 className="text-3xl font-bold mb-2 fight-text" style={{color: 'var(--primary)'}}>
-            PICK'EM PARTY
+            PICK&apos;EM PARTY
           </h1>
           <p className="text-muted-foreground">
             {isLogin ? 'ENTER THE ARENA' : 'JOIN THE BATTLE'}
