@@ -28,6 +28,15 @@ interface Game {
   game_time: string
 }
 
+interface GameLine {
+  homeTeam: string
+  awayTeam: string
+  spread: number
+  overUnder: number
+  homeMoneyLine: number
+  awayMoneyLine: number
+}
+
 interface User {
   id: string
   username: string
@@ -63,6 +72,7 @@ export default function LeaguePage({ params }: { params: { slug: string } }) {
   const [selectedTeam, setSelectedTeam] = useState<Team | null>(null)
   const [userPick, setUserPick] = useState<Pick | null>(null)
   const [loading, setLoading] = useState(false)
+  const [gameLines, setGameLines] = useState<{ [key: string]: GameLine }>({})
   const supabase = createClient()
 
   const getHelmetPath = (teamKey: string) => {
@@ -170,6 +180,20 @@ export default function LeaguePage({ params }: { params: { slug: string } }) {
       setUserPick(pickData)
       setSelectedTeam(pickData.teams)
     }
+
+    // Fetch betting lines
+    const fetchLines = async () => {
+      try {
+        const response = await fetch('/api/lines')
+        const data = await response.json()
+        if (data.success) {
+          setGameLines(data.lines)
+        }
+      } catch (error) {
+        console.error('Failed to fetch lines:', error)
+      }
+    }
+    fetchLines()
   }, [supabase])
 
   useEffect(() => {
@@ -309,7 +333,7 @@ export default function LeaguePage({ params }: { params: { slug: string } }) {
           <Card className="mb-6 p-6 retro-border">
             <div className="text-center">
               <h2 className="text-xl font-bold mb-4 fight-text" style={{color: 'var(--secondary)'}}>
-                {user.display_name.toUpperCase()} VS {opponent?.city.toUpperCase()} {opponent?.name.toUpperCase()}
+                {user.display_name.toUpperCase()}({selectedTeam?.key}) {selectedGame?.home_team.team_id === selectedTeam?.team_id ? 'vs' : '@'} {opponent?.full_name.toUpperCase()}
               </h2>
               <div className="flex items-center justify-center gap-4 mb-4">
                 <div className="text-center">
@@ -358,40 +382,65 @@ export default function LeaguePage({ params }: { params: { slug: string } }) {
               CHOOSE YOUR FIGHTER - WEEK 1
             </h2>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
-              {teams.map(team => (
-                <div
-                  key={team.team_id}
-                  onClick={() => setSelectedTeam(team)}
-                  className={`p-3 rounded-lg cursor-pointer transition-all border-2 min-h-[80px] ${
-                    selectedTeam?.team_id === team.team_id
-                      ? 'border-primary bg-selected-bg'
-                      : 'border-border hover:border-muted-foreground'
-                  }`}
-                  style={{
-                    backgroundColor: selectedTeam?.team_id === team.team_id 
-                      ? `rgba(${parseInt(team.primary_color.slice(0,2), 16)}, ${parseInt(team.primary_color.slice(2,4), 16)}, ${parseInt(team.primary_color.slice(4,6), 16)}, 0.1)`
-                      : undefined
-                  }}
-                >
-                  <div className="text-center">
-                    <Image
-                      src={getHelmetPath(team.key)}
-                      alt={team.full_name}
-                      width={40}
-                      height={40}
-                      className="mx-auto mb-2"
-                    />
-                    <p className="text-sm font-bold">{team.city}</p>
-                    <p className="text-xs text-muted-foreground">{team.key}</p>
+              {teams.map(team => {
+                const teamGame = games.find(g => 
+                  g.home_team.team_id === team.team_id || 
+                  g.away_team.team_id === team.team_id
+                )
+                const teamOpponent = teamGame ? (
+                  teamGame.home_team.team_id === team.team_id 
+                    ? teamGame.away_team 
+                    : teamGame.home_team
+                ) : null
+                const isHome = teamGame?.home_team.team_id === team.team_id
+                const gameKey = teamGame ? `${teamGame.away_team.key}@${teamGame.home_team.key}` : null
+                const gameLine = gameKey && gameLines[gameKey]
+                const teamSpread = gameLine ? (isHome ? gameLine.spread : -gameLine.spread) : null
+                
+                return (
+                  <div
+                    key={team.team_id}
+                    onClick={() => setSelectedTeam(team)}
+                    className={`p-3 rounded-lg cursor-pointer transition-all border-2 min-h-[110px] ${
+                      selectedTeam?.team_id === team.team_id
+                        ? 'border-primary bg-selected-bg'
+                        : 'border-border hover:border-muted-foreground'
+                    }`}
+                    style={{
+                      backgroundColor: selectedTeam?.team_id === team.team_id 
+                        ? `rgba(${parseInt(team.primary_color.slice(0,2), 16)}, ${parseInt(team.primary_color.slice(2,4), 16)}, ${parseInt(team.primary_color.slice(4,6), 16)}, 0.1)`
+                        : undefined
+                    }}
+                  >
+                    <div className="text-center">
+                      <Image
+                        src={getHelmetPath(team.key)}
+                        alt={team.full_name}
+                        width={40}
+                        height={40}
+                        className="mx-auto mb-1"
+                      />
+                      <p className="text-sm font-bold">{team.key}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {isHome ? 'vs' : '@'} {teamOpponent?.key}
+                      </p>
+                      {teamSpread !== null && (
+                        <p className="text-xs font-semibold" style={{
+                          color: teamSpread > 0 ? 'var(--success)' : teamSpread < 0 ? 'var(--warning)' : 'var(--text-muted)'
+                        }}>
+                          {teamSpread > 0 ? '+' : ''}{teamSpread}
+                        </p>
+                      )}
+                    </div>
                   </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
             
             {selectedTeam && (
               <div className="mt-6 text-center">
                 <p className="text-lg font-bold mb-4 fight-text">
-                  {user.display_name.toUpperCase()} VS {opponent?.city.toUpperCase()} {opponent?.name.toUpperCase()}
+                  {user.display_name.toUpperCase()}({selectedTeam.key}) {selectedGame?.home_team.team_id === selectedTeam.team_id ? 'vs' : '@'} {opponent?.full_name.toUpperCase()}
                 </p>
                 <Button 
                   onClick={submitPick}
