@@ -59,7 +59,7 @@ export default function HomePage() {
   }
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
+    <div className="flex-1 bg-background flex items-center justify-center p-4">
       <Card className="w-full max-w-md p-6 retro-border">
         <div className="text-center mb-8">
           <div className="mb-6">

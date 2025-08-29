@@ -77,7 +77,24 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${goldman.variable} antialiased`}
       >
-        {children}
+        <div className="min-h-screen flex flex-col">
+          <main className="flex-1">
+            {children}
+          </main>
+          <footer className="border-t border-border bg-surface p-4">
+            <div className="text-center text-sm text-muted-foreground">
+              made with ❤️ & 🥃 by{' '}
+              <a 
+                href="https://x.com/tgauss" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-primary hover:text-primary-hover transition-colors"
+              >
+                @tgauss
+              </a>
+            </div>
+          </footer>
+        </div>
       </body>
     </html>
   );
