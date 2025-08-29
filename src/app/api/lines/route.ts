@@ -25,8 +25,8 @@ export async function GET() {
       
       // Get the most recent pregame odds
       const pregameOdds = game.GameOdds
-        .filter((o: any) => o.GameOddType === 'Game')
-        .sort((a: any, b: any) => new Date(b.Created).getTime() - new Date(a.Created).getTime())[0]
+        .filter((o: { GameOddType: string }) => o.GameOddType === 'Game')
+        .sort((a: { Created: string }, b: { Created: string }) => new Date(b.Created).getTime() - new Date(a.Created).getTime())[0]
       
       if (pregameOdds) {
         gameLines.set(game.GameKey, {

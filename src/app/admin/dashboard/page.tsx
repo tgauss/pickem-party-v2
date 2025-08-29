@@ -7,7 +7,6 @@ import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { ResurrectPlayers } from '@/components/admin/ResurrectPlayers'
-import Image from 'next/image'
 
 interface League {
   id: string
@@ -135,7 +134,7 @@ export default function AdminDashboard() {
       } else {
         alert('❌ Import failed: ' + result.error)
       }
-    } catch (error) {
+    } catch {
       alert('❌ Import error')
     }
     setImportLoading(false)
@@ -154,7 +153,7 @@ export default function AdminDashboard() {
       } else {
         alert('❌ Sync failed: ' + result.error)
       }
-    } catch (error) {
+    } catch {
       alert('❌ Sync error')
     }
     setSyncLoading(false)
@@ -176,21 +175,6 @@ export default function AdminDashboard() {
     }
   }
 
-  const resurrectPlayer = async (userId: string, leagueId: string) => {
-    const { error } = await supabase
-      .from('league_members')
-      .update({
-        lives_remaining: 2,
-        is_eliminated: false
-      })
-      .eq('user_id', userId)
-      .eq('league_id', leagueId)
-    
-    if (!error) {
-      alert('🔥 FIGHTER RESURRECTED!')
-      loadData()
-    }
-  }
 
   return (
     <div className="min-h-screen bg-background p-4">
