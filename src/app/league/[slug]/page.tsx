@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, use } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -83,26 +83,29 @@ interface Pick {
   user?: User
 }
 
-export default function LeaguePage({ params }: { params: { slug: string } }) {
+export default function LeaguePage({ 
+  params 
+}: { 
+  params: Promise<{ slug: string }> 
+}) {
+  const resolvedParams = use(params)
   const [user, setUser] = useState<User | null>(null)
   const [league, setLeague] = useState<League | null>(null)
-  const [teams, setTeams] = useState<Team[]>([])
   const [games, setGames] = useState<Game[]>([])
   const [members, setMembers] = useState<Member[]>([])
   const [picks, setPicks] = useState<Pick[]>([])
   const [userPicks, setUserPicks] = useState<Pick[]>([])
   const [gameLines, setGameLines] = useState<Record<string, GameLine>>({})
   const [loading, setLoading] = useState(false)
+  const [initialized, setInitialized] = useState(false)
   
   // Week navigation state
-  const [currentWeek, setCurrentWeek] = useState(1) // TODO: Calculate from actual date
+  const [currentWeek, setCurrentWeek] = useState(1)
   const [selectedWeek, setSelectedWeek] = useState(1)
   
   const supabase = createClient()
 
-  const loadWeekData = useCallback(async (week: number) => {
-    if (!league || !user) return
-    
+  const loadWeekData = useCallback(async (week: number, leagueId: string, userId: string) => {
     setLoading(true)
     
     // Load games for the selected week
@@ -126,7 +129,7 @@ export default function LeaguePage({ params }: { params: { slug: string } }) {
         teams(*),
         users(*)
       `)
-      .eq('league_id', league.id)
+      .eq('league_id', leagueId)
       .eq('week', week)
     
     setPicks(picksData || [])
@@ -135,13 +138,17 @@ export default function LeaguePage({ params }: { params: { slug: string } }) {
     const { data: userPicksData } = await supabase
       .from('picks')
       .select('*')
-      .eq('user_id', user.id)
-      .eq('league_id', league.id)
+      .eq('user_id', userId)
+      .eq('league_id', leagueId)
     
     setUserPicks(userPicksData || [])
     
     // Fetch betting lines for current/future weeks
-    if (week >= currentWeek) {
+    const calculatedCurrentWeek = Math.min(Math.max(1, 
+      Math.floor((new Date().getTime() - new Date('2024-09-05').getTime()) / (7 * 24 * 60 * 60 * 1000)) + 1
+    ), 18)
+    
+    if (week >= calculatedCurrentWeek) {
       try {
         const response = await fetch('/api/lines')
         const data = await response.json()
@@ -154,60 +161,62 @@ export default function LeaguePage({ params }: { params: { slug: string } }) {
     }
     
     setLoading(false)
-  }, [league, user, currentWeek, supabase])
+  }, [supabase])
 
   const loadLeagueData = useCallback(async (userId: string, slug: string) => {
-    // Load league
-    const { data: leagueData } = await supabase
-      .from('leagues')
-      .select('*')
-      .eq('slug', slug)
-      .single()
-    
-    if (!leagueData) {
-      alert('League not found!')
+    try {
+      // Load league
+      const { data: leagueData, error: leagueError } = await supabase
+        .from('leagues')
+        .select('*')
+        .eq('slug', slug)
+        .single()
+      
+      if (leagueError || !leagueData) {
+        console.error('League query error:', leagueError)
+        alert('League not found!')
+        window.location.href = '/dashboard'
+        return
+      }
+      
+      setLeague(leagueData)
+      
+      // Load league members with proper typing
+      const { data: membersData } = await supabase
+        .from('league_members')
+        .select(`
+          *,
+          users(*)
+        `)
+        .eq('league_id', leagueData.id)
+      
+      if (membersData) {
+        const formattedMembers = membersData.map((m) => ({
+          user: m.users as User,
+          lives_remaining: m.lives_remaining || 0,
+          is_eliminated: m.is_eliminated || false,
+          eliminated_week: m.eliminated_week,
+          is_paid: m.is_paid || false
+        }))
+        setMembers(formattedMembers)
+      }
+      
+      // Calculate current week
+      const now = new Date()
+      const seasonStart = new Date('2024-09-05')
+      const weeksPassed = Math.floor((now.getTime() - seasonStart.getTime()) / (7 * 24 * 60 * 60 * 1000))
+      const calculatedWeek = Math.min(Math.max(1, weeksPassed + 1), 18)
+      setCurrentWeek(calculatedWeek)
+      setSelectedWeek(calculatedWeek)
+      
+      // Load initial week data
+      await loadWeekData(calculatedWeek, leagueData.id, userId)
+      setInitialized(true)
+    } catch (error) {
+      console.error('Error loading league data:', error)
+      alert('Error loading league data')
       window.location.href = '/dashboard'
-      return
     }
-    
-    setLeague(leagueData)
-    
-    // Load teams
-    const { data: teamsData } = await supabase
-      .from('teams')
-      .select('*')
-      .order('conference', { ascending: true })
-      .order('division', { ascending: true })
-    
-    setTeams(teamsData || [])
-    
-    // Load league members
-    const { data: membersData } = await supabase
-      .from('league_members')
-      .select(`
-        *,
-        users(*)
-      `)
-      .eq('league_id', leagueData.id)
-    
-    setMembers(membersData?.map((m: Member & { users: User }) => ({
-      user: m.users,
-      lives_remaining: m.lives_remaining,
-      is_eliminated: m.is_eliminated,
-      eliminated_week: m.eliminated_week,
-      is_paid: m.is_paid
-    })) || [])
-    
-    // Calculate current week (simplified for now)
-    const now = new Date()
-    const seasonStart = new Date('2024-09-05') // NFL season start
-    const weeksPassed = Math.floor((now.getTime() - seasonStart.getTime()) / (7 * 24 * 60 * 60 * 1000))
-    const calculatedWeek = Math.min(Math.max(1, weeksPassed + 1), 18)
-    setCurrentWeek(calculatedWeek)
-    setSelectedWeek(calculatedWeek)
-    
-    // Load initial week data
-    await loadWeekData(calculatedWeek)
   }, [supabase, loadWeekData])
 
   useEffect(() => {
@@ -219,14 +228,14 @@ export default function LeaguePage({ params }: { params: { slug: string } }) {
     
     const userData = JSON.parse(currentUser)
     setUser(userData)
-    loadLeagueData(userData.id, params.slug)
-  }, [loadLeagueData, params.slug])
+    loadLeagueData(userData.id, resolvedParams.slug)
+  }, [loadLeagueData, resolvedParams.slug])
 
   useEffect(() => {
-    if (league && user && selectedWeek) {
-      loadWeekData(selectedWeek)
+    if (league && user && selectedWeek && initialized) {
+      loadWeekData(selectedWeek, league.id, user.id)
     }
-  }, [selectedWeek, league, user, loadWeekData])
+  }, [selectedWeek, league, user, initialized, loadWeekData])
 
   const handleWeekChange = (week: number) => {
     setSelectedWeek(week)
@@ -272,7 +281,7 @@ export default function LeaguePage({ params }: { params: { slug: string } }) {
           alert('Failed to update pick: ' + error.message)
         } else {
           alert('PICK UPDATED! ⚔️')
-          await loadWeekData(selectedWeek)
+          await loadWeekData(selectedWeek, league.id, user.id)
         }
       } else {
         // Create new pick
@@ -291,7 +300,7 @@ export default function LeaguePage({ params }: { params: { slug: string } }) {
           alert('Failed to submit pick: ' + error.message)
         } else {
           alert('PICK SUBMITTED! ⚔️')
-          await loadWeekData(selectedWeek)
+          await loadWeekData(selectedWeek, league.id, user.id)
         }
       }
     } catch (error) {
@@ -372,7 +381,6 @@ export default function LeaguePage({ params }: { params: { slug: string } }) {
               <CurrentWeekPicker
                 week={selectedWeek}
                 games={games}
-                teams={teams}
                 usedTeamIds={usedTeamIds}
                 currentPick={userCurrentPick}
                 gameLines={gameLines}
