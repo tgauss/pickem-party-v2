@@ -67,7 +67,7 @@ async function generatePicks(leagueId: string, week: number) {
     return NextResponse.json({ success: false, error: 'No active members found' })
   }
 
-  // Get games for the week (using 2024 historical data)
+  // Get games for the week (using 2024 ESPN data)
   const { data: games } = await supabase
     .from('games')
     .select(`
@@ -81,6 +81,7 @@ async function generatePicks(leagueId: string, week: number) {
     `)
     .eq('week', week)
     .eq('season_year', 2024)
+    .not('espn_event_id', 'is', null)
 
   if (!games || games.length === 0) {
     return NextResponse.json({ success: false, error: 'No games found for week' })
