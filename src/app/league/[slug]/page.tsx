@@ -5,6 +5,10 @@ import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { WeekNavigation } from '@/components/WeekNavigation'
+import { PastWeekResults } from '@/components/PastWeekResults'
+import { CurrentWeekPicker } from '@/components/CurrentWeekPicker'
+import { FutureWeekSchedule } from '@/components/FutureWeekSchedule'
 import Image from 'next/image'
 
 interface Team {
@@ -26,6 +30,11 @@ interface Game {
   home_team: Team
   away_team: Team
   game_time: string
+  home_team_id: number
+  away_team_id: number
+  home_score?: number | null
+  away_score?: number | null
+  is_final?: boolean
 }
 
 interface GameLine {
@@ -48,19 +57,30 @@ interface League {
   name: string
   slug: string
   invite_code: string
-  buy_in_amount: number
+  buy_in: number
+  season_year: number
+  max_weeks: number
+  lives_per_player: number
 }
 
 interface Member {
   user: User
   lives_remaining: number
   is_eliminated: boolean
+  eliminated_week?: number
   is_paid: boolean
 }
 
 interface Pick {
   id: string
-  teams: Team
+  user_id: string
+  league_id: string
+  game_id: string
+  team_id: number
+  week: number
+  is_correct?: boolean | null
+  teams?: Team
+  user?: User
 }
 
 export default function LeaguePage({ params }: { params: { slug: string } }) {
@@ -69,49 +89,72 @@ export default function LeaguePage({ params }: { params: { slug: string } }) {
   const [teams, setTeams] = useState<Team[]>([])
   const [games, setGames] = useState<Game[]>([])
   const [members, setMembers] = useState<Member[]>([])
-  const [selectedTeam, setSelectedTeam] = useState<Team | null>(null)
-  const [userPick, setUserPick] = useState<Pick | null>(null)
+  const [picks, setPicks] = useState<Pick[]>([])
+  const [userPicks, setUserPicks] = useState<Pick[]>([])
+  const [gameLines, setGameLines] = useState<Record<string, GameLine>>({})
   const [loading, setLoading] = useState(false)
-  const [gameLines, setGameLines] = useState<{ [key: string]: GameLine }>({})
+  
+  // Week navigation state
+  const [currentWeek, setCurrentWeek] = useState(1) // TODO: Calculate from actual date
+  const [selectedWeek, setSelectedWeek] = useState(1)
+  
   const supabase = createClient()
 
-  const getHelmetPath = (teamKey: string) => {
-    const helmetMap: { [key: string]: string } = {
-      'ARI': 'Arizona.gif',
-      'ATL': 'Atlanta.gif',
-      'BAL': 'Baltimore.gif', 
-      'BUF': 'Buffalo.gif',
-      'CAR': 'Carolina.gif',
-      'CHI': 'Chicago.gif',
-      'CIN': 'Cincinnati.gif',
-      'CLE': 'Cleveland.gif',
-      'DAL': 'Dallas.gif',
-      'DEN': 'Denver.gif',
-      'DET': 'Detroit.gif',
-      'GB': 'GreenBay.gif',
-      'HOU': 'Houston.gif',
-      'IND': 'Indianapolis.gif',
-      'JAX': 'Jacksonville.gif',
-      'KC': 'KansasCity.gif',
-      'LV': 'LasVegas.gif',
-      'LAC': 'LosAngelesChargers.gif',
-      'LAR': 'LosAngelesRams.gif',
-      'MIA': 'Miami.gif',
-      'MIN': 'Minnesota.gif',
-      'NE': 'NewEngland.gif',
-      'NO': 'NewOrleans.gif',
-      'NYG': 'NewYorkGiants.gif',
-      'NYJ': 'NewYorkJets.gif',
-      'PHI': 'Philadelphia.gif',
-      'PIT': 'Pittsburgh.gif',
-      'SF': 'SanFrancisco.gif',
-      'SEA': 'Seattle.gif',
-      'TB': 'TampaBay.gif',
-      'TEN': 'Tennessee.gif',
-      'WAS': 'Washington.gif'
+  const loadWeekData = useCallback(async (week: number) => {
+    if (!league || !user) return
+    
+    setLoading(true)
+    
+    // Load games for the selected week
+    const { data: gamesData } = await supabase
+      .from('games')
+      .select(`
+        *,
+        home_team:teams!games_home_team_id_fkey(*),
+        away_team:teams!games_away_team_id_fkey(*)
+      `)
+      .eq('week', week)
+      .eq('season_year', 2024) // Using 2024 data for testing
+    
+    setGames(gamesData || [])
+    
+    // Load picks for the selected week
+    const { data: picksData } = await supabase
+      .from('picks')
+      .select(`
+        *,
+        teams(*),
+        users(*)
+      `)
+      .eq('league_id', league.id)
+      .eq('week', week)
+    
+    setPicks(picksData || [])
+    
+    // Load user's picks history (all weeks) to track used teams
+    const { data: userPicksData } = await supabase
+      .from('picks')
+      .select('*')
+      .eq('user_id', user.id)
+      .eq('league_id', league.id)
+    
+    setUserPicks(userPicksData || [])
+    
+    // Fetch betting lines for current/future weeks
+    if (week >= currentWeek) {
+      try {
+        const response = await fetch('/api/lines')
+        const data = await response.json()
+        if (data.success) {
+          setGameLines(data.lines)
+        }
+      } catch (error) {
+        console.error('Failed to fetch lines:', error)
+      }
     }
-    return `/team-helmets/${helmetMap[teamKey] || 'Arizona.gif'}`
-  }
+    
+    setLoading(false)
+  }, [league, user, currentWeek, supabase])
 
   const loadLeagueData = useCallback(async (userId: string, slug: string) => {
     // Load league
@@ -138,19 +181,6 @@ export default function LeaguePage({ params }: { params: { slug: string } }) {
     
     setTeams(teamsData || [])
     
-    // Load Week 1 games with team data
-    const { data: gamesData } = await supabase
-      .from('games')
-      .select(`
-        *,
-        home_team:teams!games_home_team_id_fkey(*),
-        away_team:teams!games_away_team_id_fkey(*)
-      `)
-      .eq('week', 1)
-      .eq('season_year', 2025)
-    
-    setGames(gamesData || [])
-    
     // Load league members
     const { data: membersData } = await supabase
       .from('league_members')
@@ -164,37 +194,21 @@ export default function LeaguePage({ params }: { params: { slug: string } }) {
       user: m.users,
       lives_remaining: m.lives_remaining,
       is_eliminated: m.is_eliminated,
+      eliminated_week: m.eliminated_week,
       is_paid: m.is_paid
     })) || [])
     
-    // Load user's current pick
-    const { data: pickData } = await supabase
-      .from('picks')
-      .select('*, teams(*)')
-      .eq('user_id', userId)
-      .eq('league_id', leagueData.id)
-      .eq('week', 1)
-      .single()
+    // Calculate current week (simplified for now)
+    const now = new Date()
+    const seasonStart = new Date('2024-09-05') // NFL season start
+    const weeksPassed = Math.floor((now.getTime() - seasonStart.getTime()) / (7 * 24 * 60 * 60 * 1000))
+    const calculatedWeek = Math.min(Math.max(1, weeksPassed + 1), 18)
+    setCurrentWeek(calculatedWeek)
+    setSelectedWeek(calculatedWeek)
     
-    if (pickData) {
-      setUserPick(pickData)
-      setSelectedTeam(pickData.teams)
-    }
-
-    // Fetch betting lines
-    const fetchLines = async () => {
-      try {
-        const response = await fetch('/api/lines')
-        const data = await response.json()
-        if (data.success) {
-          setGameLines(data.lines)
-        }
-      } catch (error) {
-        console.error('Failed to fetch lines:', error)
-      }
-    }
-    fetchLines()
-  }, [supabase])
+    // Load initial week data
+    await loadWeekData(calculatedWeek)
+  }, [supabase, loadWeekData])
 
   useEffect(() => {
     const currentUser = localStorage.getItem('currentUser')
@@ -208,59 +222,57 @@ export default function LeaguePage({ params }: { params: { slug: string } }) {
     loadLeagueData(userData.id, params.slug)
   }, [loadLeagueData, params.slug])
 
-  const submitPick = async () => {
-    if (!user || !league || !selectedTeam) {
-      alert('Please select a team first!')
+  useEffect(() => {
+    if (league && user && selectedWeek) {
+      loadWeekData(selectedWeek)
+    }
+  }, [selectedWeek, league, user, loadWeekData])
+
+  const handleWeekChange = (week: number) => {
+    setSelectedWeek(week)
+  }
+
+  const submitPick = async (teamId: number, gameId: string) => {
+    if (!user || !league) {
+      alert('Please log in first!')
       return
     }
     
-    // Check if deadline has passed (basic validation)
-    const now = new Date()
-    const firstGame = games.find(g => new Date(g.game_time) <= now)
-    if (firstGame) {
-      alert('⏰ DEADLINE PASSED! Week 1 picks are locked.')
-      return
+    // Check if deadline has passed
+    const game = games.find(g => g.id === gameId)
+    if (game) {
+      const now = new Date()
+      const gameTime = new Date(game.game_time)
+      if (gameTime <= now) {
+        alert('⏰ DEADLINE PASSED! This game has already started.')
+        return
+      }
     }
     
     setLoading(true)
     
     try {
-      // Find the game this team is playing
-      const game = games.find(g => 
-        g.home_team.team_id === selectedTeam.team_id || 
-        g.away_team.team_id === selectedTeam.team_id
+      // Check if user already has a pick for this week
+      const existingPick = picks.find(p => 
+        p.user_id === user.id && p.week === selectedWeek
       )
-      
-      if (!game) {
-        alert('Game not found for selected team!')
-        setLoading(false)
-        return
-      }
 
-      console.log('Submitting pick:', {
-        user_id: user.id,
-        league_id: league.id,
-        game_id: game.id,
-        team_id: selectedTeam.team_id,
-        week: 1
-      })
-
-      if (userPick) {
+      if (existingPick) {
         // Update existing pick
         const { error } = await supabase
           .from('picks')
           .update({
-            team_id: selectedTeam.team_id,
-            game_id: game.id
+            team_id: teamId,
+            game_id: gameId
           })
-          .eq('id', userPick.id)
+          .eq('id', existingPick.id)
         
         if (error) {
           console.error('Update pick error:', error)
           alert('Failed to update pick: ' + error.message)
         } else {
           alert('PICK UPDATED! ⚔️')
-          await loadLeagueData(user.id, params.slug)
+          await loadWeekData(selectedWeek)
         }
       } else {
         // Create new pick
@@ -269,9 +281,9 @@ export default function LeaguePage({ params }: { params: { slug: string } }) {
           .insert({
             user_id: user.id,
             league_id: league.id,
-            game_id: game.id,
-            team_id: selectedTeam.team_id,
-            week: 1
+            game_id: gameId,
+            team_id: teamId,
+            week: selectedWeek
           })
         
         if (error) {
@@ -279,7 +291,7 @@ export default function LeaguePage({ params }: { params: { slug: string } }) {
           alert('Failed to submit pick: ' + error.message)
         } else {
           alert('PICK SUBMITTED! ⚔️')
-          await loadLeagueData(user.id, params.slug)
+          await loadWeekData(selectedWeek)
         }
       }
     } catch (error) {
@@ -291,21 +303,23 @@ export default function LeaguePage({ params }: { params: { slug: string } }) {
 
   if (!user || !league) return <div className="p-4">Loading arena...</div>
 
-  // Find opponent for selected team
-  const selectedGame = selectedTeam ? games.find(g => 
-    g.home_team.team_id === selectedTeam.team_id || 
-    g.away_team.team_id === selectedTeam.team_id
-  ) : null
-  
-  const opponent = selectedGame ? (
-    selectedGame.home_team.team_id === selectedTeam?.team_id 
-      ? selectedGame.away_team 
-      : selectedGame.home_team
-  ) : null
+  // Determine what type of week view to show
+  const getWeekViewType = () => {
+    if (selectedWeek < currentWeek) return 'past'
+    if (selectedWeek === currentWeek) return 'current'
+    return 'future'
+  }
+
+  const weekViewType = getWeekViewType()
+  const userCurrentPick = picks.find(p => p.user_id === user.id && p.week === selectedWeek)
+  const usedTeamIds = userPicks.filter(p => p.week < selectedWeek).map(p => p.team_id)
+
+  // Get bye week teams (simplified - would need actual schedule data)
+  const byeWeekTeams: string[] = [] // TODO: Fetch from actual schedule
 
   return (
     <div className="min-h-screen bg-background p-4">
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="text-center mb-8">
           <div className="mb-4">
@@ -317,193 +331,117 @@ export default function LeaguePage({ params }: { params: { slug: string } }) {
               className="mx-auto"
             />
           </div>
-          <h1 className="text-2xl font-bold mb-2 fight-text" style={{color: 'var(--primary)'}}>
+          <h1 className="text-2xl font-bold mb-2" style={{color: 'var(--primary)'}}>
             {league.name.toUpperCase()}
           </h1>
           <p className="text-muted-foreground">
-            WEEK 1 • {members.filter(m => !m.is_eliminated).length} FIGHTERS REMAIN
+            {members.filter(m => !m.is_eliminated).length} FIGHTERS REMAIN
           </p>
           <p className="text-sm text-muted-foreground mt-2">
             Invite Code: <strong>{league.invite_code}</strong>
           </p>
         </div>
 
-        {/* Current Pick Status */}
-        {userPick && (
-          <Card className="mb-6 p-6 retro-border">
-            <div className="text-center">
-              <h2 className="text-xl font-bold mb-4 fight-text" style={{color: 'var(--secondary)'}}>
-                {user.display_name.toUpperCase()}({selectedTeam?.key}) {selectedGame?.home_team.team_id === selectedTeam?.team_id ? 'vs' : '@'} {opponent?.full_name.toUpperCase()}
-              </h2>
-              <div className="flex items-center justify-center gap-4 mb-4">
-                <div className="text-center">
-                  <div 
-                    className="w-16 h-16 rounded-full flex items-center justify-center mb-2"
-                    style={{backgroundColor: `#${selectedTeam?.primary_color}`}}
-                  >
-                    <span className="text-white font-bold fight-text">
-                      {user.display_name[0]}
-                    </span>
-                  </div>
-                  <p className="text-sm font-bold">YOU</p>
-                  <p className="text-xs text-muted-foreground">({selectedTeam?.key})</p>
-                </div>
-                <div className="text-2xl font-bold fight-text">VS</div>
-                <div className="text-center">
-                  {opponent && (
-                    <>
-                      <Image
-                        src={getHelmetPath(opponent.key)}
-                        alt={opponent.full_name}
-                        width={64}
-                        height={64}
-                        className="mx-auto mb-2"
-                      />
-                      <p className="text-sm font-bold">{opponent.city}</p>
-                      <p className="text-xs text-muted-foreground">({opponent.key})</p>
-                    </>
-                  )}
-                </div>
-              </div>
-              <Badge 
-                className="fight-text"
-                style={{backgroundColor: 'var(--warning)', color: 'var(--background)'}}
-              >
-                PICK LOCKED IN
-              </Badge>
-            </div>
-          </Card>
+        {/* Week Navigation */}
+        <WeekNavigation
+          currentWeek={currentWeek}
+          selectedWeek={selectedWeek}
+          onWeekChange={handleWeekChange}
+          maxWeek={18}
+          minWeek={1}
+        />
+
+        {/* Conditional Week Views */}
+        {loading ? (
+          <div className="text-center py-12">
+            <p className="text-muted-foreground">Loading week {selectedWeek} data...</p>
+          </div>
+        ) : (
+          <>
+            {weekViewType === 'past' && (
+              <PastWeekResults
+                week={selectedWeek}
+                games={games}
+                picks={picks as (Pick & { user: User })[]}
+                members={members}
+                gameLines={gameLines}
+              />
+            )}
+
+            {weekViewType === 'current' && (
+              <CurrentWeekPicker
+                week={selectedWeek}
+                games={games}
+                teams={teams}
+                usedTeamIds={usedTeamIds}
+                currentPick={userCurrentPick}
+                gameLines={gameLines}
+                byeWeekTeams={byeWeekTeams}
+                onPickSubmit={submitPick}
+              />
+            )}
+
+            {weekViewType === 'future' && (
+              <FutureWeekSchedule
+                week={selectedWeek}
+                games={games}
+                gameLines={gameLines}
+                byeWeekTeams={byeWeekTeams}
+              />
+            )}
+          </>
         )}
 
-        {/* Team Selection */}
-        {!userPick && (
-          <Card className="mb-6 p-6 retro-border">
-            <h2 className="text-xl font-bold mb-4 fight-text text-center">
-              CHOOSE YOUR FIGHTER - WEEK 1
-            </h2>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
-              {teams.map(team => {
-                const teamGame = games.find(g => 
-                  g.home_team.team_id === team.team_id || 
-                  g.away_team.team_id === team.team_id
-                )
-                const teamOpponent = teamGame ? (
-                  teamGame.home_team.team_id === team.team_id 
-                    ? teamGame.away_team 
-                    : teamGame.home_team
-                ) : null
-                const isHome = teamGame?.home_team.team_id === team.team_id
-                const gameKey = teamGame ? `${teamGame.away_team.key}@${teamGame.home_team.key}` : null
-                const gameLine = gameKey && gameLines[gameKey]
-                const teamSpread = gameLine ? (isHome ? gameLine.spread : -gameLine.spread) : null
-                
-                return (
-                  <div
-                    key={team.team_id}
-                    onClick={() => setSelectedTeam(team)}
-                    className={`p-3 rounded-lg cursor-pointer transition-all border-2 min-h-[110px] ${
-                      selectedTeam?.team_id === team.team_id
-                        ? 'border-primary bg-selected-bg'
-                        : 'border-border hover:border-muted-foreground'
-                    }`}
-                    style={{
-                      backgroundColor: selectedTeam?.team_id === team.team_id 
-                        ? `rgba(${parseInt(team.primary_color.slice(0,2), 16)}, ${parseInt(team.primary_color.slice(2,4), 16)}, ${parseInt(team.primary_color.slice(4,6), 16)}, 0.1)`
-                        : undefined
-                    }}
+        {/* League Standings */}
+        <Card className="mt-6">
+          <div className="p-6">
+            <h2 className="text-xl font-bold mb-4">League Standings</h2>
+            <div className="space-y-2">
+              {members
+                .sort((a, b) => {
+                  if (a.is_eliminated && !b.is_eliminated) return 1
+                  if (!a.is_eliminated && b.is_eliminated) return -1
+                  return b.lives_remaining - a.lives_remaining
+                })
+                .map((member, index) => (
+                  <div 
+                    key={member.user.id}
+                    className={`flex items-center justify-between p-3 rounded-lg ${
+                      member.is_eliminated ? 'bg-muted opacity-50' : 'bg-background'
+                    } border`}
                   >
-                    <div className="text-center">
-                      <Image
-                        src={getHelmetPath(team.key)}
-                        alt={team.full_name}
-                        width={40}
-                        height={40}
-                        className="mx-auto mb-1"
-                      />
-                      <p className="text-sm font-bold">{team.key}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {isHome ? 'vs' : '@'} {teamOpponent?.key}
-                      </p>
-                      {teamSpread !== null && (
-                        <p className="text-xs font-semibold" style={{
-                          color: teamSpread > 0 ? 'var(--success)' : teamSpread < 0 ? 'var(--warning)' : 'var(--text-muted)'
-                        }}>
-                          {teamSpread > 0 ? '+' : ''}{teamSpread}
-                        </p>
+                    <div className="flex items-center gap-3">
+                      <span className="font-mono text-sm">#{index + 1}</span>
+                      <span className="font-medium">{member.user.display_name}</span>
+                      {member.is_eliminated && (
+                        <Badge variant="destructive" className="text-xs">
+                          Eliminated Week {member.eliminated_week}
+                        </Badge>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm">
+                        {'❤️'.repeat(member.lives_remaining)}
+                      </span>
+                      {!member.is_paid && (
+                        <Badge variant="outline" className="text-xs">
+                          Unpaid
+                        </Badge>
                       )}
                     </div>
                   </div>
-                )
-              })}
+                ))}
             </div>
-            
-            {selectedTeam && (
-              <div className="mt-6 text-center">
-                <p className="text-lg font-bold mb-4 fight-text">
-                  {user.display_name.toUpperCase()}({selectedTeam.key}) {selectedGame?.home_team.team_id === selectedTeam.team_id ? 'vs' : '@'} {opponent?.full_name.toUpperCase()}
-                </p>
-                <Button 
-                  onClick={submitPick}
-                  disabled={loading}
-                  className="fight-text px-8"
-                  style={{backgroundColor: 'var(--primary)', color: 'var(--primary-foreground)'}}
-                >
-                  {loading ? '...' : 'LOCK IN PICK! ⚔️'}
-                </Button>
-              </div>
-            )}
-          </Card>
-        )}
-
-        {/* Standings */}
-        <Card className="p-6 retro-border">
-          <h2 className="text-xl font-bold mb-4 fight-text">FIGHTER STANDINGS</h2>
-          <div className="space-y-3">
-            {members.map((member, index) => (
-              <div 
-                key={member.user.id}
-                className={`flex justify-between items-center p-3 rounded-lg ${
-                  member.is_eliminated ? 'opacity-50' : ''
-                }`}
-                style={{
-                  backgroundColor: member.is_eliminated ? 'var(--muted)' : 'var(--surface)'
-                }}
-              >
-                <div className="flex items-center gap-3">
-                  <span className="font-bold fight-text">#{index + 1}</span>
-                  <div>
-                    <p className="font-bold">{member.user.display_name}</p>
-                    <p className="text-xs text-muted-foreground">@{member.user.username}</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Badge 
-                    variant={member.is_paid ? "default" : "secondary"}
-                    className="text-xs"
-                  >
-                    {member.is_paid ? 'PAID' : 'UNPAID'}
-                  </Badge>
-                  <div className="flex">
-                    {Array.from({ length: member.lives_remaining }, (_, i) => (
-                      <span key={i} className="text-red-500">❤️</span>
-                    ))}
-                    {member.lives_remaining === 0 && (
-                      <span className="text-destructive font-bold fight-text">K.O.</span>
-                    )}
-                  </div>
-                </div>
-              </div>
-            ))}
           </div>
         </Card>
 
-        <div className="mt-6 text-center">
+        {/* Back to Dashboard */}
+        <div className="text-center mt-8">
           <Button 
+            variant="outline" 
             onClick={() => window.location.href = '/dashboard'}
-            variant="outline"
-            className="fight-text"
           >
-            ← BACK TO HQ
+            Back to Dashboard
           </Button>
         </div>
       </div>
