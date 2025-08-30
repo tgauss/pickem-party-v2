@@ -143,7 +143,7 @@ export function PastWeekResults({ week, games, picks, members, gameLines }: Past
                   <div className="flex items-center gap-2">
                     {member && (
                       <div className="text-sm">
-                        {'❤️'.repeat(member.lives_remaining)}
+                        {'❤️'.repeat(Math.max(0, member.lives_remaining))}
                       </div>
                     )}
                     {pick.is_correct === true && (

@@ -429,7 +429,7 @@ export default function LeaguePage({
                     </div>
                     <div className="flex items-center gap-2">
                       <span className="text-sm">
-                        {'❤️'.repeat(member.lives_remaining)}
+                        {'❤️'.repeat(Math.max(0, member.lives_remaining))}
                       </span>
                       {!member.is_paid && (
                         <Badge variant="outline" className="text-xs">
