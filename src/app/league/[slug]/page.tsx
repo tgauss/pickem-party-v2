@@ -310,6 +310,75 @@ export default function LeaguePage({
     setLoading(false)
   }
 
+  const submitAdminPick = async (userId: string, teamId: number, gameId: string) => {
+    if (!user || !league) {
+      alert('Admin not authorized!')
+      return
+    }
+
+    // Check if deadline has passed
+    const game = games.find(g => g.id === gameId)
+    if (game) {
+      const now = new Date()
+      const gameTime = new Date(game.game_time)
+      if (gameTime <= now) {
+        alert('⏰ DEADLINE PASSED! This game has already started.')
+        return
+      }
+    }
+    
+    setLoading(true)
+    
+    try {
+      // Check if user already has a pick for this week
+      const existingPick = picks.find(p => 
+        p.user_id === userId && p.week === selectedWeek
+      )
+
+      if (existingPick) {
+        // Update existing pick
+        const { error } = await supabase
+          .from('picks')
+          .update({
+            team_id: teamId,
+            game_id: gameId
+          })
+          .eq('id', existingPick.id)
+        
+        if (error) {
+          console.error('Admin update pick error:', error)
+          alert('Failed to update pick: ' + error.message)
+        } else {
+          alert('ADMIN PICK SET! ⚔️')
+          await loadWeekData(selectedWeek, league.id, user.id)
+        }
+      } else {
+        // Create new pick
+        const { error } = await supabase
+          .from('picks')
+          .insert({
+            user_id: userId,
+            league_id: league.id,
+            game_id: gameId,
+            team_id: teamId,
+            week: selectedWeek
+          })
+        
+        if (error) {
+          console.error('Admin create pick error:', error)
+          alert('Failed to set admin pick: ' + error.message)
+        } else {
+          alert('ADMIN PICK SET! ⚔️')
+          await loadWeekData(selectedWeek, league.id, user.id)
+        }
+      }
+    } catch (error) {
+      console.error('Admin pick submission error:', error)
+      alert('Network error setting admin pick')
+    }
+    setLoading(false)
+  }
+
   if (!user || !league) return <div className="p-4">Loading arena...</div>
 
   // Determine what type of week view to show
@@ -385,7 +454,12 @@ export default function LeaguePage({
                 currentPick={userCurrentPick}
                 gameLines={gameLines}
                 byeWeekTeams={byeWeekTeams}
+                members={members}
+                picks={picks}
+                currentUser={user}
+                isAdmin={true} // TODO: Add proper admin check
                 onPickSubmit={submitPick}
+                onAdminPickSubmit={submitAdminPick}
               />
             )}
 

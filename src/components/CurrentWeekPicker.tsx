@@ -5,7 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Home, Plane, Star, Clock, AlertTriangle, TrendingUp, TrendingDown } from 'lucide-react'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Home, Plane, Star, Clock, AlertTriangle, TrendingUp, TrendingDown, Users, CheckCircle, XCircle, Shield, Eye, EyeOff } from 'lucide-react'
 import Image from 'next/image'
 
 interface Team {
@@ -25,10 +26,39 @@ interface Game {
   away_team_id: number
 }
 
+interface Member {
+  user: {
+    id: string
+    username: string
+    display_name: string
+  }
+  lives_remaining: number
+  is_eliminated: boolean
+  eliminated_week?: number
+  is_paid: boolean
+}
+
+interface Pick {
+  id: string
+  user_id: string
+  team_id: number
+  team?: Team
+  user?: {
+    id: string
+    username: string
+    display_name: string
+  }
+  users?: {
+    id: string
+    username: string
+    display_name: string
+  }
+}
+
 interface CurrentWeekPickerProps {
   week: number
   games: Game[]
-  teams?: Team[] // Made optional since not used
+  teams?: Team[]
   usedTeamIds: number[]
   currentPick?: { team_id: number, team?: Team }
   gameLines?: Record<string, { 
@@ -40,7 +70,16 @@ interface CurrentWeekPickerProps {
     awayMoneyLine?: number
   }>
   byeWeekTeams?: string[]
+  members: Member[]
+  picks: Pick[]
+  currentUser: {
+    id: string
+    username: string
+    display_name: string
+  }
+  isAdmin?: boolean
   onPickSubmit: (teamId: number, gameId: string) => void
+  onAdminPickSubmit?: (userId: string, teamId: number, gameId: string) => void
 }
 
 export function CurrentWeekPicker({ 
@@ -50,10 +89,17 @@ export function CurrentWeekPicker({
   currentPick,
   gameLines,
   byeWeekTeams = [],
-  onPickSubmit 
+  members,
+  picks,
+  currentUser: _currentUser,
+  isAdmin = false,
+  onPickSubmit,
+  onAdminPickSubmit 
 }: CurrentWeekPickerProps) {
   const [selectedTeamId, setSelectedTeamId] = useState<number | null>(currentPick?.team_id || null)
   const [selectedGameId, setSelectedGameId] = useState<string | null>(null)
+  const [adminPickingFor, setAdminPickingFor] = useState<string | null>(null)
+  const [showPrivatePicks, setShowPrivatePicks] = useState(false)
 
   const getTeamHelmet = (teamKey: string) => {
     const helmetMap: Record<string, string> = {
@@ -128,9 +174,35 @@ export function CurrentWeekPicker({
 
   const handleSubmit = () => {
     if (selectedTeamId && selectedGameId) {
-      onPickSubmit(selectedTeamId, selectedGameId)
+      if (adminPickingFor && onAdminPickSubmit) {
+        onAdminPickSubmit(adminPickingFor, selectedTeamId, selectedGameId)
+      } else {
+        onPickSubmit(selectedTeamId, selectedGameId)
+      }
+      setAdminPickingFor(null)
+      setSelectedTeamId(null)
+      setSelectedGameId(null)
     }
   }
+
+  // Get active (non-eliminated) members
+  const activeMembers = members.filter(member => !member.is_eliminated)
+  
+  // Get members who have made picks this week
+  const membersWithPicks = activeMembers.filter(member => 
+    picks.some(pick => pick.user_id === member.user.id)
+  )
+  
+  // Get members who haven't made picks yet
+  const membersWithoutPicks = activeMembers.filter(member =>
+    !picks.some(pick => pick.user_id === member.user.id)
+  )
+  
+  // Check if all active members have submitted picks
+  const allPicksSubmitted = membersWithoutPicks.length === 0
+  
+  // Determine if picks should be private (not all submitted yet)
+  const picksArePrivate = !allPicksSubmitted && !showPrivatePicks
 
   const availableGames = games.filter(game => {
     const homeAvailable = !usedTeamIds.includes(game.home_team_id)
@@ -152,6 +224,113 @@ export function CurrentWeekPicker({
 
   return (
     <div className="space-y-6">
+      {/* Pick Status Summary */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Users className="h-5 w-5" />
+            Week {week} Pick Status
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+            <div className="text-center">
+              <div className="text-2xl font-bold text-green-600">{membersWithPicks.length}</div>
+              <div className="text-sm text-muted-foreground">Picks Submitted</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-orange-600">{membersWithoutPicks.length}</div>
+              <div className="text-sm text-muted-foreground">Still Pending</div>
+            </div>
+            <div className="text-center">
+              <div className="text-2xl font-bold">{activeMembers.length}</div>
+              <div className="text-sm text-muted-foreground">Total Active</div>
+            </div>
+          </div>
+
+          {/* Members Status List */}
+          <div className="space-y-2">
+            <div className="flex items-center gap-2 mb-2">
+              <h3 className="font-medium">Player Status:</h3>
+              {isAdmin && !allPicksSubmitted && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowPrivatePicks(!showPrivatePicks)}
+                >
+                  {showPrivatePicks ? (
+                    <>
+                      <EyeOff className="h-4 w-4 mr-1" />
+                      Hide Picks
+                    </>
+                  ) : (
+                    <>
+                      <Eye className="h-4 w-4 mr-1" />
+                      Show Picks
+                    </>
+                  )}
+                </Button>
+              )}
+            </div>
+            
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
+              {activeMembers.map(member => {
+                const hasPick = picks.some(pick => pick.user_id === member.user.id)
+                const memberPick = picks.find(pick => pick.user_id === member.user.id)
+                
+                return (
+                  <div
+                    key={member.user.id}
+                    className={`flex items-center justify-between p-2 rounded border ${
+                      hasPick ? 'bg-green-50 border-green-200' : 'bg-orange-50 border-orange-200'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2">
+                      {hasPick ? (
+                        <CheckCircle className="h-4 w-4 text-green-600" />
+                      ) : (
+                        <XCircle className="h-4 w-4 text-orange-600" />
+                      )}
+                      <span className="text-sm font-medium">{member.user.display_name}</span>
+                    </div>
+                    
+                    {hasPick && !picksArePrivate && memberPick?.team && (
+                      <Badge variant="secondary" className="text-xs">
+                        {memberPick.team.key}
+                      </Badge>
+                    )}
+                    
+                    {hasPick && picksArePrivate && (
+                      <Badge variant="outline" className="text-xs">
+                        Picked
+                      </Badge>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+
+          {!allPicksSubmitted && (
+            <Alert className="mt-4">
+              <Clock className="h-4 w-4" />
+              <AlertDescription>
+                Waiting for {membersWithoutPicks.length} more pick(s). All picks will be revealed once everyone has submitted.
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {allPicksSubmitted && (
+            <Alert className="mt-4 bg-green-50 border-green-200">
+              <CheckCircle className="h-4 w-4 text-green-600" />
+              <AlertDescription className="text-green-700">
+                All picks are in! You can now see everyone&apos;s selections below.
+              </AlertDescription>
+            </Alert>
+          )}
+        </CardContent>
+      </Card>
+
       {currentPick && (
         <Alert className="bg-primary/10 border-primary">
           <Star className="h-4 w-4" />
@@ -161,11 +340,52 @@ export function CurrentWeekPicker({
         </Alert>
       )}
 
+      {/* Admin Pick Override */}
+      {isAdmin && membersWithoutPicks.length > 0 && (
+        <Card className="border-orange-200 bg-orange-50">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-orange-800">
+              <Shield className="h-5 w-5" />
+              Admin: Set Pick for Player
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center gap-4">
+              <div className="flex-1">
+                <label className="text-sm font-medium">Select Player:</label>
+                <Select value={adminPickingFor || ''} onValueChange={setAdminPickingFor}>
+                  <SelectTrigger className="mt-1">
+                    <SelectValue placeholder="Choose a player who hasn't picked..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {membersWithoutPicks.map(member => (
+                      <SelectItem key={member.user.id} value={member.user.id}>
+                        {member.user.display_name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              {adminPickingFor && (
+                <Alert className="flex-1">
+                  <AlertTriangle className="h-4 w-4" />
+                  <AlertDescription>
+                    You are now setting a pick for <strong>{membersWithoutPicks.find(m => m.user.id === adminPickingFor)?.user.display_name}</strong>
+                  </AlertDescription>
+                </Alert>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       <Card>
         <CardHeader>
-          <CardTitle>Week {week} - Make Your Pick</CardTitle>
+          <CardTitle>
+            Week {week} - {adminPickingFor ? `Setting Pick for ${membersWithoutPicks.find(m => m.user.id === adminPickingFor)?.user.display_name}` : 'Make Your Pick'}
+          </CardTitle>
           <p className="text-sm text-muted-foreground">
-            Select from available teams (grayed out = already used)
+            Select from available teams (grayed out = already used) • Lines shown are current betting spreads
           </p>
         </CardHeader>
         <CardContent>
@@ -187,7 +407,7 @@ export function CurrentWeekPicker({
                     {/* Away Team */}
                     <button
                       onClick={() => awayAvailable && handleTeamSelect(game.away_team_id, game.id)}
-                      disabled={!awayAvailable || !!currentPick}
+                      disabled={!awayAvailable || (!adminPickingFor && !!currentPick)}
                       className={`w-full p-3 rounded-lg border transition-all ${
                         !awayAvailable 
                           ? 'opacity-50 cursor-not-allowed bg-muted' 
@@ -238,7 +458,7 @@ export function CurrentWeekPicker({
                     {/* Home Team */}
                     <button
                       onClick={() => homeAvailable && handleTeamSelect(game.home_team_id, game.id)}
-                      disabled={!homeAvailable || !!currentPick}
+                      disabled={!homeAvailable || (!adminPickingFor && !!currentPick)}
                       className={`w-full p-3 rounded-lg border transition-all ${
                         !homeAvailable 
                           ? 'opacity-50 cursor-not-allowed bg-muted' 
@@ -300,14 +520,22 @@ export function CurrentWeekPicker({
           )}
 
           {/* Submit Button */}
-          {selectedTeamId && !currentPick && (
+          {selectedTeamId && (!currentPick || adminPickingFor) && (
             <div className="mt-6 flex justify-center">
               <Button 
                 onClick={handleSubmit}
                 size="lg"
                 className="min-w-[200px]"
+                variant={adminPickingFor ? "destructive" : "default"}
               >
-                Lock In Pick
+                {adminPickingFor ? (
+                  <>
+                    <Shield className="h-4 w-4 mr-2" />
+                    Set Pick for {membersWithoutPicks.find(m => m.user.id === adminPickingFor)?.user.display_name}
+                  </>
+                ) : (
+                  'Lock In Pick'
+                )}
               </Button>
             </div>
           )}
