@@ -29,6 +29,8 @@ interface Pick {
   team_id: number
   is_correct?: boolean | null
   team?: Team
+  user?: User
+  users?: User
 }
 
 interface User {
@@ -119,7 +121,7 @@ export function PastWeekResults({ week, games, picks, members, gameLines }: Past
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {picks.map(pick => {
-              const member = members.find(m => m.user.id === pick.user_id)
+              const member = members.find(m => m.user?.id === pick.user_id)
               const wasEliminated = member?.eliminated_week === week
 
               return (
@@ -135,7 +137,7 @@ export function PastWeekResults({ week, games, picks, members, gameLines }: Past
                       />
                     </div>
                     <div>
-                      <p className="font-medium">{pick.user.display_name}</p>
+                      <p className="font-medium">{pick.user?.display_name || pick.users?.display_name || 'Unknown Player'}</p>
                       <p className="text-sm text-muted-foreground">{pick.team?.key}</p>
                     </div>
                   </div>
