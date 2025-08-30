@@ -17,8 +17,8 @@ interface Game {
   away_team_id: number
   home_score: number | null
   away_score: number | null
-  home_team: Team[]
-  away_team: Team[]
+  home_team: Team
+  away_team: Team
 }
 
 interface GameResult {
@@ -33,7 +33,7 @@ interface PickWithGame {
   id: string
   user_id: string
   team_id: number
-  games: GameResult[]
+  games: GameResult
 }
 
 export async function POST(request: Request) {
@@ -107,7 +107,8 @@ async function generatePicks(leagueId: string, week: number) {
     // Get available teams (not used by this player)
     const usedTeams = usedTeamsByUser.get(member.user_id) || new Set()
     const availableGames = (games as Game[]).filter(game => 
-      !usedTeams.has(game.home_team[0].team_id) && !usedTeams.has(game.away_team[0].team_id)
+      game.home_team?.team_id && game.away_team?.team_id &&
+      !usedTeams.has(game.home_team.team_id) && !usedTeams.has(game.away_team.team_id)
     )
 
     if (availableGames.length === 0) continue
@@ -128,32 +129,34 @@ async function generatePicks(leagueId: string, week: number) {
       }) || availableGames[0]
       
       if (gameWithWinner.home_score !== null && gameWithWinner.away_score !== null && gameWithWinner.home_score > gameWithWinner.away_score) {
-        selectedTeam = gameWithWinner.home_team[0]
+        selectedTeam = gameWithWinner.home_team
         selectedGame = gameWithWinner
       } else {
-        selectedTeam = gameWithWinner.away_team[0]
+        selectedTeam = gameWithWinner.away_team
         selectedGame = gameWithWinner
       }
     } else {
       // Pick randomly from available games
       const randomGame = availableGames[Math.floor(Math.random() * availableGames.length)]
       const pickHome = Math.random() < 0.5
-      selectedTeam = pickHome ? randomGame.home_team[0] : randomGame.away_team[0]
+      selectedTeam = pickHome ? randomGame.home_team : randomGame.away_team
       selectedGame = randomGame
     }
 
-    // Create the pick
-    const { error } = await supabase
-      .from('picks')
-      .insert({
-        user_id: member.user_id,
-        league_id: leagueId,
-        game_id: selectedGame.id,
-        team_id: selectedTeam.team_id,
-        week: week
-      })
+    // Create the pick (only if we have a valid team)
+    if (selectedTeam?.team_id) {
+      const { error } = await supabase
+        .from('picks')
+        .insert({
+          user_id: member.user_id,
+          league_id: leagueId,
+          game_id: selectedGame.id,
+          team_id: selectedTeam.team_id,
+          week: week
+        })
 
-    if (!error) generatedCount++
+      if (!error) generatedCount++
+    }
   }
 
   return NextResponse.json({ 
@@ -189,8 +192,8 @@ async function processWeek(leagueId: string, week: number) {
   let processedCount = 0
 
   for (const pick of (picks as PickWithGame[])) {
-    const game = pick.games[0]
-    if (!game.is_final) continue
+    const game = pick.games
+    if (!game?.is_final) continue
 
     const playerWon = game.home_score !== null && game.away_score !== null && (
       (game.home_team_id === pick.team_id && game.home_score > game.away_score) ||
