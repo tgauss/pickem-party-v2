@@ -8,10 +8,10 @@ const supabase = createClient(
 
 export async function GET(
   request: Request,
-  { params }: { params: { eventId: string } }
+  { params }: { params: Promise<{ eventId: string }> }
 ) {
   try {
-    const { eventId } = params
+    const { eventId } = await params
 
     // Check if we have recent odds (within last 5 minutes)
     const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString()
@@ -65,7 +65,7 @@ export async function GET(
 
         if (scoreboardResponse.ok) {
           const scoreboardData = await scoreboardResponse.json()
-          gameData = scoreboardData.events?.find(e => e.id === eventId)
+          gameData = scoreboardData.events?.find((e: { id: string }) => e.id === eventId)
         }
       }
 
@@ -90,9 +90,6 @@ export async function GET(
       }
 
       // Parse odds data
-      const homeCompetitor = competition.competitors.find(c => c.homeAway === 'home')
-      const awayCompetitor = competition.competitors.find(c => c.homeAway === 'away')
-
       const oddsData = {
         espn_event_id: eventId,
         provider_name: odds.provider?.name || 'ESPN',

@@ -25,9 +25,9 @@ export async function GET() {
       .order('week')
 
     // Group regular season by week
-    const regularSeasonSummary = {}
+    const regularSeasonSummary: Record<string, { total: number, completed: number }> = {}
     regularSeasonGames?.forEach(game => {
-      const week = game.week
+      const week = game.week.toString()
       if (!regularSeasonSummary[week]) {
         regularSeasonSummary[week] = { total: 0, completed: 0 }
       }
@@ -38,9 +38,9 @@ export async function GET() {
     })
 
     // Group playoffs by week
-    const playoffSummary = {}
+    const playoffSummary: Record<string, { total: number, completed: number }> = {}
     playoffGames?.forEach(game => {
-      const week = game.week
+      const week = game.week.toString()
       if (!playoffSummary[week]) {
         playoffSummary[week] = { total: 0, completed: 0 }
       }
@@ -79,10 +79,10 @@ export async function GET() {
       success: true,
       season: 2024,
       summary: {
-        total_games: totalGames,
-        completed_games: completedGames,
-        synced_to_main_games: synced_games,
-        completion_rate: totalGames ? Math.round((completedGames / totalGames) * 100) : 0
+        total_games: totalGames || 0,
+        completed_games: completedGames || 0,
+        synced_to_main_games: synced_games || 0,
+        completion_rate: totalGames && completedGames ? Math.round((completedGames / totalGames) * 100) : 0
       },
       regular_season: {
         weeks: Object.keys(regularSeasonSummary).length,

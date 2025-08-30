@@ -72,8 +72,16 @@ export async function POST(request: Request) {
         }
 
         // Get teams
-        const homeCompetitor = competition.competitors.find(c => c.homeAway === 'home')
-        const awayCompetitor = competition.competitors.find(c => c.homeAway === 'away')
+        interface Competitor {
+          homeAway: string
+          team: {
+            id: string
+            displayName: string
+          }
+          score?: string
+        }
+        const homeCompetitor = competition.competitors.find((c: Competitor) => c.homeAway === 'home')
+        const awayCompetitor = competition.competitors.find((c: Competitor) => c.homeAway === 'away')
         
         if (!homeCompetitor || !awayCompetitor) {
           console.log(`Skipping event ${event.id}: Could not determine home/away teams`)

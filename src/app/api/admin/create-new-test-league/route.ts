@@ -63,10 +63,9 @@ export async function POST(request: Request) {
       is_eliminated: false
     }))
 
-    const { data: members, error: membersError } = await supabase
+    const { error: membersError } = await supabase
       .from('league_members')
       .insert(leagueMembers)
-      .select()
 
     if (membersError) {
       return NextResponse.json({ success: false, error: 'Failed to add members: ' + membersError.message })
