@@ -86,6 +86,9 @@ async function generatePicks(leagueId: string, week: number) {
     return NextResponse.json({ success: false, error: 'No games found for week' })
   }
 
+  // Type assertion with proper conversion
+  const typedGames = games as unknown as Game[]
+
   // Get already used teams per player
   const { data: usedPicks } = await supabase
     .from('picks')
@@ -106,7 +109,7 @@ async function generatePicks(leagueId: string, week: number) {
   for (const member of members) {
     // Get available teams (not used by this player)
     const usedTeams = usedTeamsByUser.get(member.user_id) || new Set()
-    const availableGames = (games as Game[]).filter(game => 
+    const availableGames = typedGames.filter(game => 
       game.home_team?.team_id && game.away_team?.team_id &&
       !usedTeams.has(game.home_team.team_id) && !usedTeams.has(game.away_team.team_id)
     )
@@ -191,7 +194,10 @@ async function processWeek(leagueId: string, week: number) {
 
   let processedCount = 0
 
-  for (const pick of (picks as PickWithGame[])) {
+  // Type assertion with proper conversion
+  const typedPicks = picks as unknown as PickWithGame[]
+  
+  for (const pick of typedPicks) {
     const game = pick.games
     if (!game?.is_final) continue
 
