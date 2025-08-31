@@ -510,7 +510,10 @@ export default function LeaguePage({
                   >
                     <div className="flex items-center gap-2 sm:gap-3">
                       <span className="font-mono text-xs sm:text-sm">#{index + 1}</span>
-                      <span className="font-medium text-sm sm:text-base">{member.user.display_name}</span>
+                      <div className="flex flex-col">
+                        <span className="font-medium text-sm sm:text-base">{member.user.username}</span>
+                        <span className="text-xs text-muted-foreground">{member.user.display_name}</span>
+                      </div>
                       {member.is_eliminated && (
                         <Badge variant="destructive" className="text-xs px-2 py-0.5">
                           Eliminated Week {member.eliminated_week}

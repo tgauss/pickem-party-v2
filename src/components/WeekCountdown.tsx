@@ -163,19 +163,19 @@ export function WeekCountdown({ week, seasonYear = 2025, isPreSeason = false }: 
           {countdown && (
             <div className="grid grid-cols-4 gap-2 mb-3">
               <div className="text-center">
-                <div className="text-2xl font-bold text-primary">{countdown.days}</div>
+                <div className="text-xl sm:text-2xl font-bold text-primary font-['Press_Start_2P']">{countdown.days}</div>
                 <div className="text-xs text-muted-foreground">DAYS</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-primary">{countdown.hours}</div>
+                <div className="text-xl sm:text-2xl font-bold text-primary font-['Press_Start_2P']">{countdown.hours}</div>
                 <div className="text-xs text-muted-foreground">HRS</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-primary">{countdown.minutes}</div>
+                <div className="text-xl sm:text-2xl font-bold text-primary font-['Press_Start_2P']">{countdown.minutes}</div>
                 <div className="text-xs text-muted-foreground">MIN</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-primary">{countdown.seconds}</div>
+                <div className="text-xl sm:text-2xl font-bold text-primary font-['Press_Start_2P']">{countdown.seconds}</div>
                 <div className="text-xs text-muted-foreground">SEC</div>
               </div>
             </div>

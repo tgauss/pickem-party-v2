@@ -210,7 +210,7 @@ export function CurrentWeekPicker({
   }
 
   return (
-    <div className="space-y-6">
+    <div className={`space-y-6 ${selectedTeamId && !currentPick ? 'pb-20 sm:pb-0' : ''}`}>
       {/* Countdown Timer */}
       <WeekCountdown week={week} />
       
@@ -264,7 +264,7 @@ export function CurrentWeekPicker({
                       )}
                       <span className={`text-xs sm:text-sm font-medium ${
                         hasPick ? 'text-primary' : 'text-secondary'
-                      }`}>{member.user.display_name}</span>
+                      }`} title={member.user.display_name}>{member.user.username}</span>
                     </div>
                     
                     {hasPick && !picksArePrivate && memberPick?.team && (
@@ -484,13 +484,13 @@ export function CurrentWeekPicker({
             </Alert>
           )}
 
-          {/* Submit Button */}
+          {/* Submit Button - Desktop */}
           {selectedTeamId && !currentPick && (
-            <div className="mt-4 flex justify-center">
+            <div className="hidden sm:flex mt-4 justify-center">
               <Button 
                 onClick={handleSubmit}
                 size="lg"
-                className="w-full sm:w-auto sm:min-w-[200px] min-h-[48px]"
+                className="sm:min-w-[200px] min-h-[48px]"
               >
                 Lock In Pick
               </Button>
@@ -498,6 +498,19 @@ export function CurrentWeekPicker({
           )}
         </CardContent>
       </Card>
+
+      {/* Sticky Submit Button - Mobile Only */}
+      {selectedTeamId && !currentPick && (
+        <div className="sm:hidden fixed bottom-0 left-0 right-0 p-4 bg-background border-t border-border z-50">
+          <Button 
+            onClick={handleSubmit}
+            size="lg"
+            className="w-full min-h-[48px] bg-primary hover:bg-primary-hover"
+          >
+            Lock In Pick
+          </Button>
+        </div>
+      )}
     </div>
   )
 }

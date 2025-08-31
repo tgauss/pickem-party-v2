@@ -137,7 +137,7 @@ export function PastWeekResults({ week, games, picks, members, gameLines }: Past
                       />
                     </div>
                     <div>
-                      <p className="font-medium">{pick.user?.display_name || pick.users?.display_name || 'Unknown Player'}</p>
+                      <p className="font-medium" title={pick.user?.display_name || pick.users?.display_name}>{pick.user?.username || pick.users?.username || 'Unknown Player'}</p>
                       <p className="text-sm text-muted-foreground">{pick.team?.key}</p>
                     </div>
                   </div>
