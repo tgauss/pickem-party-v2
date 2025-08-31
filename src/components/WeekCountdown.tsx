@@ -12,11 +12,7 @@ interface WeekCountdownProps {
   isPreSeason?: boolean
 }
 
-interface GameTime {
-  game_time: string
-  home_team_id: number
-  away_team_id: number
-}
+// Removed unused interface
 
 export function WeekCountdown({ week, seasonYear = 2025, isPreSeason = false }: WeekCountdownProps) {
   const [firstGameTime, setFirstGameTime] = useState<Date | null>(null)
@@ -57,7 +53,7 @@ export function WeekCountdown({ week, seasonYear = 2025, isPreSeason = false }: 
     }
 
     fetchFirstGameTime()
-  }, [week, seasonYear, supabase])
+  }, [week, seasonYear, isPreSeason, supabase])
 
   useEffect(() => {
     if (!firstGameTime) return

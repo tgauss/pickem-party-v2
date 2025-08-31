@@ -64,7 +64,7 @@ interface CurrentWeekPickerProps {
   usedTeamIds: number[]
   currentPick?: { team_id: number, team?: Team }
   gameLines?: Record<string, { 
-    gameId: string
+    gameId?: string
     spread: number
     homeTeam: string
     awayTeam: string

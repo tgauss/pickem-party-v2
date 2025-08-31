@@ -1,6 +1,26 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
+interface BettingLineData {
+  gameId: string
+  homeTeam: string
+  awayTeam: string
+  spread: number
+  overUnder: number
+  homeMoneyLine: number
+  awayMoneyLine: number
+  fetchedAt: string
+}
+
+interface GameWithTeams {
+  id: string
+  home_team_id: number
+  away_team_id: number
+  game_time: string
+  home_team: { key: string; city: string; name: string }
+  away_team: { key: string; city: string; name: string }
+}
+
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -13,7 +33,7 @@ export async function GET(request: Request) {
     const seasonYear = searchParams.get('season') || '2025'
 
     // Get games for the specified week
-    const { data: games } = await supabase
+    const result = await supabase
       .from('games')
       .select(`
         id,
@@ -25,6 +45,8 @@ export async function GET(request: Request) {
       `)
       .eq('week', week)
       .eq('season_year', seasonYear)
+    
+    const games = result.data as GameWithTeams[] | null
 
     if (!games || games.length === 0) {
       return NextResponse.json({ 
@@ -63,7 +85,7 @@ export async function GET(request: Request) {
           }
         }
         return acc
-      }, {} as Record<string, any>)
+      }, {} as Record<string, BettingLineData>)
 
       return NextResponse.json({
         success: true,
@@ -74,7 +96,7 @@ export async function GET(request: Request) {
     }
 
     // Fetch fresh lines from external API (simulate for now)
-    const freshLines: Record<string, any> = {}
+    const freshLines: Record<string, BettingLineData> = {}
     const linesToStore = []
 
     for (const game of games) {

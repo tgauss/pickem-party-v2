@@ -6,9 +6,9 @@ interface Team {
 
 interface BettingLine {
   spread: number
-  overUnder: number
-  homeMoneyLine: number
-  awayMoneyLine: number
+  overUnder?: number
+  homeMoneyLine?: number
+  awayMoneyLine?: number
 }
 
 export function formatSpreadToNaturalLanguage(
@@ -34,6 +34,9 @@ export function formatSpreadToNaturalLanguage(
 }
 
 export function formatOverUnderToNaturalLanguage(line: BettingLine): string {
+  if (!line.overUnder) {
+    return `Total points info unavailable`
+  }
   return `Total points expected: ${line.overUnder}`
 }
 
@@ -44,6 +47,10 @@ export function formatMoneyLineToNaturalLanguage(
 ): string {
   const homeML = line.homeMoneyLine
   const awayML = line.awayMoneyLine
+  
+  if (!homeML || !awayML) {
+    return `Money line betting info unavailable`
+  }
   
   if (homeML < 0 && awayML > 0) {
     return `${homeTeam.key} is the betting favorite`
