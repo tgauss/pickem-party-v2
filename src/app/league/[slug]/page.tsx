@@ -402,26 +402,26 @@ export default function LeaguePage({
   const byeWeekTeams: string[] = [] // TODO: Fetch from actual schedule
 
   return (
-    <div className="min-h-screen bg-background p-4">
+    <div className="min-h-screen bg-background p-2 sm:p-4">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
-        <div className="text-center mb-8">
-          <div className="mb-4">
+        <div className="text-center mb-4 sm:mb-8">
+          <div className="mb-3">
             <Image 
               src="/logos/Pickem Part App Logo.svg" 
               alt="Pickem Party Logo"
-              width={80}
-              height={80}
-              className="mx-auto"
+              width={60}
+              height={60}
+              className="mx-auto sm:w-20 sm:h-20"
             />
           </div>
-          <h1 className="text-2xl font-bold mb-2" style={{color: 'var(--primary)'}}>
+          <h1 className="text-xl sm:text-2xl font-bold mb-2" style={{color: 'var(--primary)'}}>
             {league.name.toUpperCase()}
           </h1>
-          <p className="text-muted-foreground">
+          <p className="text-sm sm:text-base text-muted-foreground">
             {members.filter(m => !m.is_eliminated).length} FIGHTERS REMAIN
           </p>
-          <p className="text-sm text-muted-foreground mt-2">
+          <p className="text-xs sm:text-sm text-muted-foreground mt-1">
             Invite Code: <strong>{league.invite_code}</strong>
           </p>
         </div>
@@ -491,9 +491,9 @@ export default function LeaguePage({
         )}
 
         {/* League Standings */}
-        <Card className="mt-6">
-          <div className="p-6">
-            <h2 className="text-xl font-bold mb-4">League Standings</h2>
+        <Card className="mt-4 sm:mt-6">
+          <div className="p-3 sm:p-6">
+            <h2 className="text-lg sm:text-xl font-bold mb-3 sm:mb-4">League Standings</h2>
             <div className="space-y-2">
               {members
                 .sort((a, b) => {
@@ -504,21 +504,21 @@ export default function LeaguePage({
                 .map((member, index) => (
                   <div 
                     key={member.user.id}
-                    className={`flex items-center justify-between p-3 rounded-lg ${
+                    className={`flex items-center justify-between p-2 sm:p-3 rounded-lg ${
                       member.is_eliminated ? 'bg-muted opacity-50' : 'bg-background'
                     } border`}
                   >
-                    <div className="flex items-center gap-3">
-                      <span className="font-mono text-sm">#{index + 1}</span>
-                      <span className="font-medium">{member.user.display_name}</span>
+                    <div className="flex items-center gap-2 sm:gap-3">
+                      <span className="font-mono text-xs sm:text-sm">#{index + 1}</span>
+                      <span className="font-medium text-sm sm:text-base">{member.user.display_name}</span>
                       {member.is_eliminated && (
-                        <Badge variant="destructive" className="text-xs">
+                        <Badge variant="destructive" className="text-xs px-2 py-0.5">
                           Eliminated Week {member.eliminated_week}
                         </Badge>
                       )}
                     </div>
-                    <div className="flex items-center gap-2">
-                      <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-1 sm:gap-2">
+                      <div className="flex items-center gap-0.5 sm:gap-1">
                         {Array.from({ length: Math.max(0, member.lives_remaining) }).map((_, index) => (
                           <CustomIcon 
                             key={index}
@@ -530,7 +530,7 @@ export default function LeaguePage({
                         ))}
                       </div>
                       {!member.is_paid && (
-                        <Badge variant="outline" className="text-xs">
+                        <Badge variant="outline" className="text-xs px-2 py-0.5">
                           Unpaid
                         </Badge>
                       )}

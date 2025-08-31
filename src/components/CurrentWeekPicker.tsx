@@ -223,18 +223,18 @@ export function CurrentWeekPicker({
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+          <div className="grid grid-cols-3 gap-2 mb-4">
             <div className="text-center">
-              <div className="text-2xl font-bold text-green-600">{membersWithPicks.length}</div>
-              <div className="text-sm text-muted-foreground">Picks Submitted</div>
+              <div className="text-xl sm:text-2xl font-bold text-green-600">{membersWithPicks.length}</div>
+              <div className="text-xs sm:text-sm text-muted-foreground">Picks Submitted</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-orange-600">{membersWithoutPicks.length}</div>
-              <div className="text-sm text-muted-foreground">Still Pending</div>
+              <div className="text-xl sm:text-2xl font-bold text-orange-600">{membersWithoutPicks.length}</div>
+              <div className="text-xs sm:text-sm text-muted-foreground">Still Pending</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold">{activeMembers.length}</div>
-              <div className="text-sm text-muted-foreground">Total Active</div>
+              <div className="text-xl sm:text-2xl font-bold">{activeMembers.length}</div>
+              <div className="text-xs sm:text-sm text-muted-foreground">Total Active</div>
             </div>
           </div>
 
@@ -244,7 +244,7 @@ export function CurrentWeekPicker({
               <h3 className="font-medium">Player Status:</h3>
             </div>
             
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               {activeMembers.map(member => {
                 const hasPick = picks.some(pick => pick.user_id === member.user.id)
                 const memberPick = picks.find(pick => pick.user_id === member.user.id)
@@ -262,19 +262,19 @@ export function CurrentWeekPicker({
                       ) : (
                         <CustomIcon name="hourglass" fallback="⏰" alt="Waiting" size="sm" />
                       )}
-                      <span className={`text-sm font-medium ${
+                      <span className={`text-xs sm:text-sm font-medium ${
                         hasPick ? 'text-primary' : 'text-secondary'
                       }`}>{member.user.display_name}</span>
                     </div>
                     
                     {hasPick && !picksArePrivate && memberPick?.team && (
-                      <Badge variant="secondary" className="text-xs">
+                      <Badge variant="secondary" className="text-xs px-2 py-0.5">
                         {memberPick.team.key}
                       </Badge>
                     )}
                     
                     {hasPick && picksArePrivate && (
-                      <Badge variant="outline" className="text-xs">
+                      <Badge variant="outline" className="text-xs px-2 py-0.5">
                         Picked
                       </Badge>
                     )}
@@ -324,7 +324,7 @@ export function CurrentWeekPicker({
           </p>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-3 sm:gap-4">
             {availableGames.map(game => {
               const homeAvailable = !usedTeamIds.includes(game.home_team_id)
               const awayAvailable = !usedTeamIds.includes(game.away_team_id)
@@ -333,7 +333,7 @@ export function CurrentWeekPicker({
 
               return (
                 <Card key={game.id} className="overflow-hidden">
-                  <div className="p-4 space-y-3">
+                  <div className="p-3 space-y-2">
                     <div className="text-xs text-muted-foreground flex items-center gap-1">
                       <Clock className="h-3 w-3" />
                       {getGameTime(game.game_time)}
@@ -347,12 +347,12 @@ export function CurrentWeekPicker({
                         const naturalLanguage = formatSpreadToNaturalLanguage(game.home_team, game.away_team, line)
                         const confidence = getSpreadConfidenceIndicator(line.spread)
                         return (
-                          <div className="bg-primary/10 border border-primary/30 rounded-lg p-3 text-center">
-                            <div className="flex items-center justify-center gap-2 mb-1">
+                          <div className="bg-primary/10 border border-primary/30 rounded-lg p-2 text-center">
+                            <div className="flex items-center justify-center gap-1 mb-1">
                               <Target className="h-3 w-3 text-primary" />
                               <span className="text-xs font-medium text-primary">BETTING LINE</span>
                             </div>
-                            <p className="text-sm font-medium">{naturalLanguage}</p>
+                            <p className="text-xs sm:text-sm font-medium leading-tight">{naturalLanguage}</p>
                             <div className="flex items-center justify-center gap-2 mt-1">
                               <span className={`text-xs ${confidence.color}`}>
                                 {confidence.description}
@@ -373,7 +373,7 @@ export function CurrentWeekPicker({
                     <button
                       onClick={() => awayAvailable && handleTeamSelect(game.away_team_id, game.id)}
                       disabled={!awayAvailable || !!currentPick}
-                      className={`w-full p-3 rounded-lg border transition-all ${
+                      className={`w-full p-2 rounded-lg border transition-all min-h-[60px] ${
                         !awayAvailable 
                           ? 'opacity-50 cursor-not-allowed bg-muted' 
                           : selectedTeamId === game.away_team_id
@@ -382,27 +382,27 @@ export function CurrentWeekPicker({
                       }`}
                     >
                       <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-2">
                           <Image
                             src={getTeamHelmet(game.away_team.key)}
                             alt={game.away_team.name}
-                            width={40}
-                            height={40}
+                            width={32}
+                            height={32}
                           />
                           <div className="text-left">
-                            <p className="font-medium">{game.away_team.city}</p>
-                            <p className="text-sm text-muted-foreground">{game.away_team.name}</p>
+                            <p className="font-medium text-sm">{game.away_team.city}</p>
+                            <p className="text-xs text-muted-foreground">{game.away_team.name}</p>
                           </div>
                         </div>
                         <div className="flex flex-col items-end gap-1">
-                          <Badge variant="secondary" className="text-xs">
+                          <Badge variant="secondary" className="text-xs px-2 py-0.5">
                             <CustomIcon name="away" fallback="✈️" alt="Away team" size="sm" />
                             <span className="ml-1">Away</span>
                           </Badge>
                           {awaySpread && (
                             <Badge 
                               variant={awaySpread.type === 'favorite' ? 'default' : 'outline'}
-                              className={awaySpread.type === 'favorite' ? 'bg-green-600' : ''}
+                              className={`text-xs px-2 py-0.5 ${awaySpread.type === 'favorite' ? 'bg-green-600' : ''}`}
                             >
                               {awaySpread.type === 'favorite' && <TrendingUp className="h-3 w-3 mr-1" />}
                               {awaySpread.type === 'underdog' && <TrendingDown className="h-3 w-3 mr-1" />}
@@ -410,7 +410,7 @@ export function CurrentWeekPicker({
                             </Badge>
                           )}
                           {!awayAvailable && (
-                            <Badge variant="destructive" className="text-xs">
+                            <Badge variant="destructive" className="text-xs px-2 py-0.5">
                               Already Used
                             </Badge>
                           )}
@@ -424,7 +424,7 @@ export function CurrentWeekPicker({
                     <button
                       onClick={() => homeAvailable && handleTeamSelect(game.home_team_id, game.id)}
                       disabled={!homeAvailable || !!currentPick}
-                      className={`w-full p-3 rounded-lg border transition-all ${
+                      className={`w-full p-2 rounded-lg border transition-all min-h-[60px] ${
                         !homeAvailable 
                           ? 'opacity-50 cursor-not-allowed bg-muted' 
                           : selectedTeamId === game.home_team_id
@@ -433,27 +433,27 @@ export function CurrentWeekPicker({
                       }`}
                     >
                       <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-2">
                           <Image
                             src={getTeamHelmet(game.home_team.key)}
                             alt={game.home_team.name}
-                            width={40}
-                            height={40}
+                            width={32}
+                            height={32}
                           />
                           <div className="text-left">
-                            <p className="font-medium">{game.home_team.city}</p>
-                            <p className="text-sm text-muted-foreground">{game.home_team.name}</p>
+                            <p className="font-medium text-sm">{game.home_team.city}</p>
+                            <p className="text-xs text-muted-foreground">{game.home_team.name}</p>
                           </div>
                         </div>
                         <div className="flex flex-col items-end gap-1">
-                          <Badge variant="default" className="text-xs bg-blue-600">
+                          <Badge variant="default" className="text-xs bg-blue-600 px-2 py-0.5">
                             <CustomIcon name="home" fallback="🏠" alt="Home team" size="sm" />
                             <span className="ml-1">Home</span>
                           </Badge>
                           {homeSpread && (
                             <Badge 
                               variant={homeSpread.type === 'favorite' ? 'default' : 'outline'}
-                              className={homeSpread.type === 'favorite' ? 'bg-green-600' : ''}
+                              className={`text-xs px-2 py-0.5 ${homeSpread.type === 'favorite' ? 'bg-green-600' : ''}`}
                             >
                               {homeSpread.type === 'favorite' && <TrendingUp className="h-3 w-3 mr-1" />}
                               {homeSpread.type === 'underdog' && <TrendingDown className="h-3 w-3 mr-1" />}
@@ -461,7 +461,7 @@ export function CurrentWeekPicker({
                             </Badge>
                           )}
                           {!homeAvailable && (
-                            <Badge variant="destructive" className="text-xs">
+                            <Badge variant="destructive" className="text-xs px-2 py-0.5">
                               Already Used
                             </Badge>
                           )}
@@ -486,11 +486,11 @@ export function CurrentWeekPicker({
 
           {/* Submit Button */}
           {selectedTeamId && !currentPick && (
-            <div className="mt-6 flex justify-center">
+            <div className="mt-4 flex justify-center">
               <Button 
                 onClick={handleSubmit}
                 size="lg"
-                className="min-w-[200px]"
+                className="w-full sm:w-auto sm:min-w-[200px] min-h-[48px]"
               >
                 Lock In Pick
               </Button>
