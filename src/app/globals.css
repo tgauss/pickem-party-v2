@@ -36,6 +36,24 @@
   image-rendering: crisp-edges;
 }
 
+/* Fix select dropdown visibility */
+[data-slot="select-content"] {
+  background: var(--popover) !important;
+  color: var(--popover-foreground) !important;
+  border: 1px solid var(--border) !important;
+}
+
+[data-slot="select-item"] {
+  background: transparent !important;
+  color: var(--popover-foreground) !important;
+}
+
+[data-slot="select-item"]:hover,
+[data-slot="select-item"][data-highlighted] {
+  background: var(--accent) !important;
+  color: var(--accent-foreground) !important;
+}
+
 :root {
   --radius: 0.75rem;
   

@@ -343,9 +343,9 @@ export function CurrentWeekPicker({
 
       {/* Admin Pick Override */}
       {isAdmin && membersWithoutPicks.length > 0 && (
-        <Card className="border-orange-200 bg-orange-50">
+        <Card className="border-orange-600 bg-orange-900/20">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-orange-800">
+            <CardTitle className="flex items-center gap-2 text-orange-400">
               <Shield className="h-5 w-5" />
               Admin: Set Pick for Player
             </CardTitle>
@@ -353,7 +353,7 @@ export function CurrentWeekPicker({
           <CardContent>
             <div className="flex items-center gap-4">
               <div className="flex-1">
-                <label className="text-sm font-medium">Select Player:</label>
+                <label className="text-sm font-medium text-orange-300">Select Player:</label>
                 <Select value={adminPickingFor || ''} onValueChange={setAdminPickingFor}>
                   <SelectTrigger className="mt-1">
                     <SelectValue placeholder="Choose a player who hasn't picked..." />
@@ -368,10 +368,10 @@ export function CurrentWeekPicker({
                 </Select>
               </div>
               {adminPickingFor && (
-                <Alert className="flex-1">
-                  <AlertTriangle className="h-4 w-4" />
-                  <AlertDescription>
-                    You are now setting a pick for <strong>{membersWithoutPicks.find(m => m.user.id === adminPickingFor)?.user.display_name}</strong>
+                <Alert className="flex-1 border-orange-600 bg-orange-900/30">
+                  <AlertTriangle className="h-4 w-4 text-orange-400" />
+                  <AlertDescription className="text-orange-300">
+                    You are now setting a pick for <strong className="text-orange-100">{membersWithoutPicks.find(m => m.user.id === adminPickingFor)?.user.display_name}</strong>
                   </AlertDescription>
                 </Alert>
               )}
