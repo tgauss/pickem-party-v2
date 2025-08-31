@@ -155,13 +155,13 @@ export default function LeaguePage({
     
     if (week >= calculatedCurrentWeek) {
       try {
-        const response = await fetch('/api/lines')
+        const response = await fetch(`/api/betting-lines?week=${week}&season=2025`)
         const data = await response.json()
         if (data.success) {
           setGameLines(data.lines)
         }
       } catch (error) {
-        console.error('Failed to fetch lines:', error)
+        console.error('Failed to fetch betting lines:', error)
       }
     }
     

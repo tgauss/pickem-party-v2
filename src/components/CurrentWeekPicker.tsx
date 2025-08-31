@@ -7,7 +7,8 @@ import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { CustomIcon } from '@/components/ui/custom-icon'
 import { WeekCountdown } from '@/components/WeekCountdown'
-import { Star, Clock, AlertTriangle, TrendingUp, TrendingDown, Users } from 'lucide-react'
+import { formatSpreadToNaturalLanguage, getSpreadConfidenceIndicator } from '@/lib/utils/betting-lines'
+import { Star, Clock, AlertTriangle, TrendingUp, TrendingDown, Users, Target } from 'lucide-react'
 import Image from 'next/image'
 
 interface Team {
@@ -63,12 +64,14 @@ interface CurrentWeekPickerProps {
   usedTeamIds: number[]
   currentPick?: { team_id: number, team?: Team }
   gameLines?: Record<string, { 
+    gameId: string
     spread: number
     homeTeam: string
     awayTeam: string
     overUnder?: number
     homeMoneyLine?: number
     awayMoneyLine?: number
+    fetchedAt?: string
   }>
   byeWeekTeams?: string[]
   members: Member[]
@@ -317,7 +320,7 @@ export function CurrentWeekPicker({
             Week {week} - Make Your Pick
           </CardTitle>
           <p className="text-sm text-muted-foreground">
-            Select from available teams (grayed out = already used) • Lines shown are current betting spreads
+            Select from available teams (grayed out = already used) • Betting lines help inform your decision
           </p>
         </CardHeader>
         <CardContent>
@@ -335,6 +338,36 @@ export function CurrentWeekPicker({
                       <Clock className="h-3 w-3" />
                       {getGameTime(game.game_time)}
                     </div>
+
+                    {/* Betting Line Information */}
+                    {(() => {
+                      const gameKey = `${game.away_team.key}@${game.home_team.key}`
+                      const line = gameLines?.[gameKey]
+                      if (line) {
+                        const naturalLanguage = formatSpreadToNaturalLanguage(game.home_team, game.away_team, line)
+                        const confidence = getSpreadConfidenceIndicator(line.spread)
+                        return (
+                          <div className="bg-primary/10 border border-primary/30 rounded-lg p-3 text-center">
+                            <div className="flex items-center justify-center gap-2 mb-1">
+                              <Target className="h-3 w-3 text-primary" />
+                              <span className="text-xs font-medium text-primary">BETTING LINE</span>
+                            </div>
+                            <p className="text-sm font-medium">{naturalLanguage}</p>
+                            <div className="flex items-center justify-center gap-2 mt-1">
+                              <span className={`text-xs ${confidence.color}`}>
+                                {confidence.description}
+                              </span>
+                              {line.overUnder && (
+                                <span className="text-xs text-muted-foreground">
+                                  • Total: {line.overUnder} pts
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        )
+                      }
+                      return null
+                    })()}
 
                     {/* Away Team */}
                     <button
