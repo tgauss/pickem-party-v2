@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { CustomIcon } from '@/components/ui/custom-icon'
+import { AdminControlWidget } from '@/components/AdminControlWidget'
 import { WeekNavigation } from '@/components/WeekNavigation'
 import { PastWeekResults } from '@/components/PastWeekResults'
 import { CurrentWeekPicker } from '@/components/CurrentWeekPicker'
@@ -105,6 +106,16 @@ export default function LeaguePage({
   const [selectedWeek, setSelectedWeek] = useState(1)
   
   const supabase = createClient()
+
+  // Simple admin check - in production, this should check database roles
+  const isUserAdmin = (user: User | null, league: League | null): boolean => {
+    if (!user || !league) return false
+    
+    // For now, check if user is admin by username
+    // In production, this should check a database role/permission system
+    const adminUsernames = ['admin', 'tgauss'] // Replace with actual admin usernames
+    return adminUsernames.includes(user.username.toLowerCase())
+  }
 
   const loadWeekData = useCallback(async (week: number, leagueId: string, userId: string) => {
     setLoading(true)
@@ -448,20 +459,33 @@ export default function LeaguePage({
             )}
 
             {weekViewType === 'current' && (
-              <CurrentWeekPicker
-                week={selectedWeek}
-                games={games}
-                usedTeamIds={usedTeamIds}
-                currentPick={userCurrentPick}
-                gameLines={gameLines}
-                byeWeekTeams={byeWeekTeams}
-                members={members}
-                picks={picks}
-                currentUser={user}
-                isAdmin={true} // TODO: Add proper admin check
-                onPickSubmit={submitPick}
-                onAdminPickSubmit={submitAdminPick}
-              />
+              <>
+                {/* Admin Control Widget - only shows to admins */}
+                <AdminControlWidget
+                  currentUser={user}
+                  league={league}
+                  members={members}
+                  membersWithoutPicks={members.filter(member =>
+                    !member.is_eliminated && !picks.some(pick => pick.user_id === member.user.id)
+                  )}
+                  onAdminPickSubmit={submitAdminPick}
+                />
+                
+                <CurrentWeekPicker
+                  week={selectedWeek}
+                  games={games}
+                  usedTeamIds={usedTeamIds}
+                  currentPick={userCurrentPick}
+                  gameLines={gameLines}
+                  byeWeekTeams={byeWeekTeams}
+                  members={members}
+                  picks={picks}
+                  currentUser={user}
+                  isAdmin={isUserAdmin(user, league)}
+                  onPickSubmit={submitPick}
+                  onAdminPickSubmit={submitAdminPick}
+                />
+              </>
             )}
 
             {weekViewType === 'future' && (

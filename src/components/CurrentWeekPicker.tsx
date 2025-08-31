@@ -5,9 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { CustomIcon } from '@/components/ui/custom-icon'
-import { Star, Clock, AlertTriangle, TrendingUp, TrendingDown, Users, CheckCircle, XCircle, Shield, Eye, EyeOff } from 'lucide-react'
+import { Star, Clock, AlertTriangle, TrendingUp, TrendingDown, Users, CheckCircle, XCircle, Eye, EyeOff } from 'lucide-react'
 import Image from 'next/image'
 
 interface Team {
@@ -95,11 +94,10 @@ export function CurrentWeekPicker({
   currentUser: _currentUser,
   isAdmin = false,
   onPickSubmit,
-  onAdminPickSubmit 
+  onAdminPickSubmit: _onAdminPickSubmit 
 }: CurrentWeekPickerProps) {
   const [selectedTeamId, setSelectedTeamId] = useState<number | null>(currentPick?.team_id || null)
   const [selectedGameId, setSelectedGameId] = useState<string | null>(null)
-  const [adminPickingFor, setAdminPickingFor] = useState<string | null>(null)
   const [showPrivatePicks, setShowPrivatePicks] = useState(false)
 
   const getTeamHelmet = (teamKey: string) => {
@@ -175,12 +173,7 @@ export function CurrentWeekPicker({
 
   const handleSubmit = () => {
     if (selectedTeamId && selectedGameId) {
-      if (adminPickingFor && onAdminPickSubmit) {
-        onAdminPickSubmit(adminPickingFor, selectedTeamId, selectedGameId)
-      } else {
-        onPickSubmit(selectedTeamId, selectedGameId)
-      }
-      setAdminPickingFor(null)
+      onPickSubmit(selectedTeamId, selectedGameId)
       setSelectedTeamId(null)
       setSelectedGameId(null)
     }
@@ -341,49 +334,11 @@ export function CurrentWeekPicker({
         </Alert>
       )}
 
-      {/* Admin Pick Override */}
-      {isAdmin && membersWithoutPicks.length > 0 && (
-        <Card className="border-orange-600 bg-orange-900/20">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-orange-400">
-              <Shield className="h-5 w-5" />
-              Admin: Set Pick for Player
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-4">
-              <div className="flex-1">
-                <label className="text-sm font-medium text-orange-300">Select Player:</label>
-                <Select value={adminPickingFor || ''} onValueChange={setAdminPickingFor}>
-                  <SelectTrigger className="mt-1">
-                    <SelectValue placeholder="Choose a player who hasn't picked..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {membersWithoutPicks.map(member => (
-                      <SelectItem key={member.user.id} value={member.user.id}>
-                        {member.user.display_name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              {adminPickingFor && (
-                <Alert className="flex-1 border-orange-600 bg-orange-900/30">
-                  <AlertTriangle className="h-4 w-4 text-orange-400" />
-                  <AlertDescription className="text-orange-300">
-                    You are now setting a pick for <strong className="text-orange-100">{membersWithoutPicks.find(m => m.user.id === adminPickingFor)?.user.display_name}</strong>
-                  </AlertDescription>
-                </Alert>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      )}
 
       <Card>
         <CardHeader>
           <CardTitle>
-            Week {week} - {adminPickingFor ? `Setting Pick for ${membersWithoutPicks.find(m => m.user.id === adminPickingFor)?.user.display_name}` : 'Make Your Pick'}
+            Week {week} - Make Your Pick
           </CardTitle>
           <p className="text-sm text-muted-foreground">
             Select from available teams (grayed out = already used) • Lines shown are current betting spreads
@@ -408,7 +363,7 @@ export function CurrentWeekPicker({
                     {/* Away Team */}
                     <button
                       onClick={() => awayAvailable && handleTeamSelect(game.away_team_id, game.id)}
-                      disabled={!awayAvailable || (!adminPickingFor && !!currentPick)}
+                      disabled={!awayAvailable || !!currentPick}
                       className={`w-full p-3 rounded-lg border transition-all ${
                         !awayAvailable 
                           ? 'opacity-50 cursor-not-allowed bg-muted' 
@@ -459,7 +414,7 @@ export function CurrentWeekPicker({
                     {/* Home Team */}
                     <button
                       onClick={() => homeAvailable && handleTeamSelect(game.home_team_id, game.id)}
-                      disabled={!homeAvailable || (!adminPickingFor && !!currentPick)}
+                      disabled={!homeAvailable || !!currentPick}
                       className={`w-full p-3 rounded-lg border transition-all ${
                         !homeAvailable 
                           ? 'opacity-50 cursor-not-allowed bg-muted' 
@@ -521,22 +476,14 @@ export function CurrentWeekPicker({
           )}
 
           {/* Submit Button */}
-          {selectedTeamId && (!currentPick || adminPickingFor) && (
+          {selectedTeamId && !currentPick && (
             <div className="mt-6 flex justify-center">
               <Button 
                 onClick={handleSubmit}
                 size="lg"
                 className="min-w-[200px]"
-                variant={adminPickingFor ? "destructive" : "default"}
               >
-                {adminPickingFor ? (
-                  <>
-                    <Shield className="h-4 w-4 mr-2" />
-                    Set Pick for {membersWithoutPicks.find(m => m.user.id === adminPickingFor)?.user.display_name}
-                  </>
-                ) : (
-                  'Lock In Pick'
-                )}
+                Lock In Pick
               </Button>
             </div>
           )}
