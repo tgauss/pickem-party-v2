@@ -227,7 +227,7 @@ export function TutorialWizard({ isOpen, onClose, playerName }: TutorialWizardPr
   return (
     <Dialog open={isOpen} onOpenChange={() => {}}>
       <DialogContent 
-        className="max-w-2xl retro-border bg-gradient-to-br from-background to-surface"
+        className="max-w-2xl retro-border bg-background border-2"
         showCloseButton={false}
       >
         <DialogHeader className="text-center">
