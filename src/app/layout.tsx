@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Goldman } from "next/font/google";
+import { Geist, Geist_Mono, Goldman, Press_Start_2P } from "next/font/google";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -16,6 +16,12 @@ const goldman = Goldman({
   variable: "--font-goldman",
   subsets: ["latin"],
   weight: ["400", "700"],
+});
+
+const pressStart2P = Press_Start_2P({
+  variable: "--font-press-start-2p",
+  subsets: ["latin"],
+  weight: "400",
 });
 
 export const metadata: Metadata = {
@@ -75,7 +81,7 @@ export default function RootLayout({
         <link rel="icon" type="image/png" href="/favicon.png" />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${goldman.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} ${goldman.variable} ${pressStart2P.variable} antialiased`}
       >
         <div className="min-h-screen flex flex-col">
           <main className="flex-1">
