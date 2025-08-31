@@ -7,12 +7,6 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-  --font-goldman: var(--font-goldman);
-  --font-press-start-2p: var(--font-press-start-2p);
-  
-  /* Font Selection Variables - Easy to toggle */
-  --font-heading: var(--font-press-start-2p); /* Change this to --font-goldman to revert */
-  --font-brand: var(--font-press-start-2p);   /* Change this to --font-goldman to revert */
   --color-ring: var(--ring);
   --color-input: var(--input);
   --color-border: var(--border);
@@ -114,7 +108,8 @@
   }
   
   h1, h2, h3, h4, h5, h6 {
-    font-family: var(--font-heading), system-ui, sans-serif;
+    /* To revert to Goldman font, change --font-press-start-2p to --font-goldman */
+    font-family: var(--font-press-start-2p), system-ui, sans-serif;
     font-weight: 400; /* Press Start 2P is already bold */
     line-height: 1.4; /* Better spacing for pixel font */
   }
@@ -125,7 +120,8 @@
   }
   
   .fight-text {
-    font-family: var(--font-brand), system-ui, sans-serif;
+    /* To revert to Goldman font, change --font-press-start-2p to --font-goldman */
+    font-family: var(--font-press-start-2p), system-ui, sans-serif;
     font-weight: 400; /* Press Start 2P is already bold */
     text-transform: uppercase;
     letter-spacing: 0.1em;
