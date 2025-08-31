@@ -10,18 +10,18 @@ export async function GET() {
   try {
     // Get game counts by week for regular season
     const { data: regularSeasonGames } = await supabase
-      .from('espn_games_raw')
-      .select('week, season_type, is_completed')
-      .eq('season_year', 2024)
-      .eq('season_type', 2)
+      .from('games')
+      .select('week, is_final')
+      .eq('season_year', 2025)
+      .lte('week', 18) // Regular season weeks 1-18
       .order('week')
 
     // Get playoff games
     const { data: playoffGames } = await supabase
-      .from('espn_games_raw')
-      .select('week, season_type, is_completed')
-      .eq('season_year', 2024)
-      .eq('season_type', 3)
+      .from('games')
+      .select('week, is_final')
+      .eq('season_year', 2025)
+      .gt('week', 18) // Playoff weeks 19+
       .order('week')
 
     // Group regular season by week
@@ -32,7 +32,7 @@ export async function GET() {
         regularSeasonSummary[week] = { total: 0, completed: 0 }
       }
       regularSeasonSummary[week].total++
-      if (game.is_completed) {
+      if (game.is_final) {
         regularSeasonSummary[week].completed++
       }
     })
@@ -45,39 +45,39 @@ export async function GET() {
         playoffSummary[week] = { total: 0, completed: 0 }
       }
       playoffSummary[week].total++
-      if (game.is_completed) {
+      if (game.is_final) {
         playoffSummary[week].completed++
       }
     })
 
     // Get total counts
     const { count: totalGames } = await supabase
-      .from('espn_games_raw')
+      .from('games')
       .select('*', { count: 'exact', head: true })
-      .eq('season_year', 2024)
+      .eq('season_year', 2025)
 
     const { count: completedGames } = await supabase
-      .from('espn_games_raw')
+      .from('games')
       .select('*', { count: 'exact', head: true })
-      .eq('season_year', 2024)
-      .eq('is_completed', true)
+      .eq('season_year', 2025)
+      .eq('is_final', true)
 
     const { count: synced_games } = await supabase
       .from('games')
       .select('*', { count: 'exact', head: true })
-      .eq('season_year', 2024)
+      .eq('season_year', 2025)
 
     // Sample of recent games for data quality check
     const { data: sampleGames } = await supabase
-      .from('espn_games_raw')
-      .select('espn_event_id, week, home_team_name, away_team_name, home_score, away_score, is_completed')
-      .eq('season_year', 2024)
+      .from('games')
+      .select('sports_data_game_id, week, home_team_id, away_team_id, home_score, away_score, is_final')
+      .eq('season_year', 2025)
       .order('week', { ascending: false })
       .limit(5)
 
     return NextResponse.json({
       success: true,
-      season: 2024,
+      season: 2025,
       summary: {
         total_games: totalGames || 0,
         completed_games: completedGames || 0,

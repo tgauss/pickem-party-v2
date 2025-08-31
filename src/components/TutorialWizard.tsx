@@ -24,7 +24,7 @@ const tutorialSteps = [
           <CustomIcon name="football" fallback="🏈" alt="Welcome" size="xl" />
         </div>
         <div>
-          <h3 className="text-2xl font-bold fight-text mb-2" style={{color: 'var(--primary)'}}>
+          <h3 className="text-xl font-bold fight-text mb-2" style={{color: 'var(--primary)'}}>
             FIGHTER {playerName.toUpperCase()}!
           </h3>
           <p className="text-muted-foreground">
@@ -167,7 +167,7 @@ const tutorialSteps = [
           <CustomIcon name="trophy" fallback="🏆" alt="Victory" size="xl" />
         </div>
         <div>
-          <h3 className="text-2xl font-bold fight-text mb-2" style={{color: 'var(--primary)'}}>
+          <h3 className="text-xl font-bold fight-text mb-2" style={{color: 'var(--primary)'}}>
             GOOD LUCK, {playerName.toUpperCase()}!
           </h3>
           <p className="text-muted-foreground mb-4">
@@ -236,7 +236,7 @@ export function TutorialWizard({ isOpen, onClose, playerName }: TutorialWizardPr
               TUTORIAL {currentStep + 1} / {tutorialSteps.length}
             </Badge>
           </div>
-          <DialogTitle className="text-2xl fight-text" style={{color: 'var(--primary)'}}>
+          <DialogTitle className="text-xl fight-text" style={{color: 'var(--primary)'}}>
             {currentStepData.title}
           </DialogTitle>
           <DialogDescription className="text-base">

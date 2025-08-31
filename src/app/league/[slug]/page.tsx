@@ -120,7 +120,7 @@ export default function LeaguePage({
         away_team:teams!games_away_team_id_fkey(*)
       `)
       .eq('week', week)
-      .eq('season_year', 2024) // Using 2024 data for testing
+      .eq('season_year', 2025) // Using 2025 data for testing
     
     setGames(gamesData || [])
     
@@ -147,8 +147,10 @@ export default function LeaguePage({
     setUserPicks(userPicksData || [])
     
     // Fetch betting lines for current/future weeks
-    const calculatedCurrentWeek = Math.min(Math.max(1, 
-      Math.floor((new Date().getTime() - new Date('2024-09-05').getTime()) / (7 * 24 * 60 * 60 * 1000)) + 1
+    const now = new Date()
+    const seasonStart = new Date('2025-09-04')
+    const calculatedCurrentWeek = now < seasonStart ? 1 : Math.min(Math.max(1, 
+      Math.floor((now.getTime() - seasonStart.getTime()) / (7 * 24 * 60 * 60 * 1000)) + 1
     ), 18)
     
     if (week >= calculatedCurrentWeek) {
@@ -206,9 +208,10 @@ export default function LeaguePage({
       
       // Calculate current week
       const now = new Date()
-      const seasonStart = new Date('2024-09-05')
+      const seasonStart = new Date('2025-09-04') // 2025 NFL season starts Sep 4th
       const weeksPassed = Math.floor((now.getTime() - seasonStart.getTime()) / (7 * 24 * 60 * 60 * 1000))
-      const calculatedWeek = Math.min(Math.max(1, weeksPassed + 1), 18)
+      // If before season start, show Week 1 as upcoming (current week for picking purposes)
+      const calculatedWeek = now < seasonStart ? 1 : Math.min(Math.max(1, weeksPassed + 1), 18)
       setCurrentWeek(calculatedWeek)
       setSelectedWeek(calculatedWeek)
       

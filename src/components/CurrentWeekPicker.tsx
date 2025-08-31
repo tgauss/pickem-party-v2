@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { CustomIcon } from '@/components/ui/custom-icon'
+import { WeekCountdown } from '@/components/WeekCountdown'
 import { Star, Clock, AlertTriangle, TrendingUp, TrendingDown, Users } from 'lucide-react'
 import Image from 'next/image'
 
@@ -207,6 +208,9 @@ export function CurrentWeekPicker({
 
   return (
     <div className="space-y-6">
+      {/* Countdown Timer */}
+      <WeekCountdown week={week} />
+      
       {/* Pick Status Summary */}
       <Card>
         <CardHeader>

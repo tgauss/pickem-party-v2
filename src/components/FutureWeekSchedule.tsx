@@ -2,6 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { WeekCountdown } from '@/components/WeekCountdown'
 import { Clock, Tv, Home, Plane, TrendingUp, TrendingDown } from 'lucide-react'
 import Image from 'next/image'
 
@@ -124,6 +125,9 @@ export function FutureWeekSchedule({
 
   return (
     <div className="space-y-6">
+      {/* Countdown Timer */}
+      <WeekCountdown week={week} />
+      
       <Card>
         <CardHeader>
           <CardTitle>Week {week} Schedule</CardTitle>
