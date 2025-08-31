@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { CustomIcon } from '@/components/ui/custom-icon'
+import { TutorialWizard } from '@/components/TutorialWizard'
 import Image from 'next/image'
 
 interface User {
@@ -27,6 +29,7 @@ export default function DashboardPage() {
   const [user, setUser] = useState<User | null>(null)
   const [leagues, setLeagues] = useState<League[]>([])
   const [showJoinLeague, setShowJoinLeague] = useState(false)
+  const [showTutorial, setShowTutorial] = useState(false)
   const [inviteCode, setInviteCode] = useState('')
   const [loading, setLoading] = useState(false)
   const supabase = createClient()
@@ -53,6 +56,17 @@ export default function DashboardPage() {
     const userData = JSON.parse(currentUser)
     setUser(userData)
     loadLeagues(userData.id)
+    
+    // Check if user has seen tutorial
+    const tutorialStatus = localStorage.getItem('tutorialSeen')
+    if (!tutorialStatus) {
+      setShowTutorial(true)
+    } else {
+      const status = JSON.parse(tutorialStatus)
+      if (status.userId !== userData.id || !status.seen) {
+        setShowTutorial(true)
+      }
+    }
   }, [loadLeagues])
 
   const joinLeague = async () => {
@@ -84,6 +98,13 @@ export default function DashboardPage() {
     setLoading(false)
   }
 
+  const handleTutorialComplete = () => {
+    setShowTutorial(false)
+    if (user) {
+      localStorage.setItem('tutorialSeen', JSON.stringify({ userId: user.id, seen: true }))
+    }
+  }
+
   if (!user) return <div>Loading...</div>
 
   return (
@@ -102,7 +123,16 @@ export default function DashboardPage() {
           <h1 className="text-2xl font-bold mb-2 fight-text" style={{color: 'var(--primary)'}}>
             WELCOME, {user.display_name.toUpperCase()}!
           </h1>
-          <p className="text-muted-foreground">READY FOR WEEK 1 BATTLE?</p>
+          <p className="text-muted-foreground mb-4">READY FOR WEEK 1 BATTLE?</p>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowTutorial(true)}
+            className="text-xs flex items-center gap-2"
+          >
+            <CustomIcon name="target" fallback="📚" alt="Tutorial" size="sm" />
+            How to Play Tutorial
+          </Button>
         </div>
 
         {leagues.length === 0 ? (
@@ -190,6 +220,13 @@ export default function DashboardPage() {
             </div>
           </Card>
         )}
+
+        {/* Tutorial Wizard */}
+        <TutorialWizard
+          isOpen={showTutorial}
+          onClose={handleTutorialComplete}
+          playerName={user?.display_name || ''}
+        />
       </div>
     </div>
   )

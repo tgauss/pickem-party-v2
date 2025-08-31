@@ -107,15 +107,6 @@ export default function LeaguePage({
   
   const supabase = createClient()
 
-  // Simple admin check - in production, this should check database roles
-  const isUserAdmin = (user: User | null, league: League | null): boolean => {
-    if (!user || !league) return false
-    
-    // For now, check if user is admin by username
-    // In production, this should check a database role/permission system
-    const adminUsernames = ['admin', 'tgauss'] // Replace with actual admin usernames
-    return adminUsernames.includes(user.username.toLowerCase())
-  }
 
   const loadWeekData = useCallback(async (week: number, leagueId: string, userId: string) => {
     setLoading(true)
@@ -480,10 +471,7 @@ export default function LeaguePage({
                   byeWeekTeams={byeWeekTeams}
                   members={members}
                   picks={picks}
-                  currentUser={user}
-                  isAdmin={isUserAdmin(user, league)}
                   onPickSubmit={submitPick}
-                  onAdminPickSubmit={submitAdminPick}
                 />
               </>
             )}

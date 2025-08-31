@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { CustomIcon } from '@/components/ui/custom-icon'
-import { Star, Clock, AlertTriangle, TrendingUp, TrendingDown, Users, CheckCircle, XCircle, Eye, EyeOff } from 'lucide-react'
+import { Star, Clock, AlertTriangle, TrendingUp, TrendingDown, Users, CheckCircle, XCircle } from 'lucide-react'
 import Image from 'next/image'
 
 interface Team {
@@ -72,14 +72,7 @@ interface CurrentWeekPickerProps {
   byeWeekTeams?: string[]
   members: Member[]
   picks: Pick[]
-  currentUser: {
-    id: string
-    username: string
-    display_name: string
-  }
-  isAdmin?: boolean
   onPickSubmit: (teamId: number, gameId: string) => void
-  onAdminPickSubmit?: (userId: string, teamId: number, gameId: string) => void
 }
 
 export function CurrentWeekPicker({ 
@@ -91,14 +84,10 @@ export function CurrentWeekPicker({
   byeWeekTeams = [],
   members,
   picks,
-  currentUser: _currentUser,
-  isAdmin = false,
-  onPickSubmit,
-  onAdminPickSubmit: _onAdminPickSubmit 
+  onPickSubmit 
 }: CurrentWeekPickerProps) {
   const [selectedTeamId, setSelectedTeamId] = useState<number | null>(currentPick?.team_id || null)
   const [selectedGameId, setSelectedGameId] = useState<string | null>(null)
-  const [showPrivatePicks, setShowPrivatePicks] = useState(false)
 
   const getTeamHelmet = (teamKey: string) => {
     const helmetMap: Record<string, string> = {
@@ -196,7 +185,7 @@ export function CurrentWeekPicker({
   const allPicksSubmitted = membersWithoutPicks.length === 0
   
   // Determine if picks should be private (not all submitted yet)
-  const picksArePrivate = !allPicksSubmitted && !showPrivatePicks
+  const picksArePrivate = !allPicksSubmitted
 
   const availableGames = games.filter(game => {
     const homeAvailable = !usedTeamIds.includes(game.home_team_id)
@@ -246,25 +235,6 @@ export function CurrentWeekPicker({
           <div className="space-y-2">
             <div className="flex items-center gap-2 mb-2">
               <h3 className="font-medium">Player Status:</h3>
-              {isAdmin && !allPicksSubmitted && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setShowPrivatePicks(!showPrivatePicks)}
-                >
-                  {showPrivatePicks ? (
-                    <>
-                      <EyeOff className="h-4 w-4 mr-1" />
-                      Hide Picks
-                    </>
-                  ) : (
-                    <>
-                      <Eye className="h-4 w-4 mr-1" />
-                      Show Picks
-                    </>
-                  )}
-                </Button>
-              )}
             </div>
             
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">

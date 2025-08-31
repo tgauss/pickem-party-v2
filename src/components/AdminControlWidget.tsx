@@ -44,10 +44,10 @@ function isUserAdmin(user: User): boolean {
 
 export function AdminControlWidget({ 
   currentUser, 
-  league: _league, 
+  league,
   members, 
   membersWithoutPicks,
-  onAdminPickSubmit: _onAdminPickSubmit,
+  onAdminPickSubmit,
   children 
 }: AdminControlWidgetProps) {
   const [isExpanded, setIsExpanded] = useState(false)
@@ -135,6 +135,9 @@ export function AdminControlWidget({
               <h3 className="text-blue-400 font-medium mb-3">League Management</h3>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-sm">
                 <div className="text-blue-300">
+                  <span className="font-medium">League:</span> {league.name}
+                </div>
+                <div className="text-blue-300">
                   <span className="font-medium">Total Members:</span> {members.length}
                 </div>
                 <div className="text-blue-300">
@@ -144,6 +147,11 @@ export function AdminControlWidget({
                   <span className="font-medium">Eliminated:</span> {members.filter(m => m.is_eliminated).length}
                 </div>
               </div>
+              {onAdminPickSubmit && (
+                <div className="text-xs text-blue-300 mt-2">
+                  Admin pick submission enabled
+                </div>
+              )}
             </div>
 
             {/* Developer Note */}
