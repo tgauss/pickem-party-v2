@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { CustomIcon } from '@/components/ui/custom-icon'
-import { Star, Clock, AlertTriangle, TrendingUp, TrendingDown, Users, CheckCircle, XCircle } from 'lucide-react'
+import { Star, Clock, AlertTriangle, TrendingUp, TrendingDown, Users } from 'lucide-react'
 import Image from 'next/image'
 
 interface Team {
@@ -245,17 +245,19 @@ export function CurrentWeekPicker({
                 return (
                   <div
                     key={member.user.id}
-                    className={`flex items-center justify-between p-2 rounded border ${
-                      hasPick ? 'bg-green-50 border-green-200' : 'bg-orange-50 border-orange-200'
+                    className={`flex items-center justify-between p-2 rounded-lg border ${
+                      hasPick ? 'bg-surface border-primary/30' : 'bg-surface border-secondary/30'
                     }`}
                   >
                     <div className="flex items-center gap-2">
                       {hasPick ? (
-                        <CheckCircle className="h-4 w-4 text-green-600" />
+                        <CustomIcon name="checkmark" fallback="✅" alt="Picked" size="sm" />
                       ) : (
-                        <XCircle className="h-4 w-4 text-orange-600" />
+                        <CustomIcon name="hourglass" fallback="⏰" alt="Waiting" size="sm" />
                       )}
-                      <span className="text-sm font-medium">{member.user.display_name}</span>
+                      <span className={`text-sm font-medium ${
+                        hasPick ? 'text-primary' : 'text-secondary'
+                      }`}>{member.user.display_name}</span>
                     </div>
                     
                     {hasPick && !picksArePrivate && memberPick?.team && (
@@ -285,9 +287,9 @@ export function CurrentWeekPicker({
           )}
 
           {allPicksSubmitted && (
-            <Alert className="mt-4 bg-green-50 border-green-200">
-              <CheckCircle className="h-4 w-4 text-green-600" />
-              <AlertDescription className="text-green-700">
+            <Alert className="mt-4 bg-primary/10 border-primary/50">
+              <CustomIcon name="checkmark" fallback="✅" alt="Complete" size="sm" className="inline" />
+              <AlertDescription className="text-primary">
                 All picks are in! You can now see everyone&apos;s selections below.
               </AlertDescription>
             </Alert>
