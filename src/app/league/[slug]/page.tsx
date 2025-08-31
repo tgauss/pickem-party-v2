@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { CustomIcon } from '@/components/ui/custom-icon'
 import { WeekNavigation } from '@/components/WeekNavigation'
 import { PastWeekResults } from '@/components/PastWeekResults'
 import { CurrentWeekPicker } from '@/components/CurrentWeekPicker'
@@ -502,9 +503,17 @@ export default function LeaguePage({
                       )}
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className="text-sm">
-                        {'❤️'.repeat(Math.max(0, member.lives_remaining))}
-                      </span>
+                      <div className="flex items-center gap-1">
+                        {Array.from({ length: Math.max(0, member.lives_remaining) }).map((_, index) => (
+                          <CustomIcon 
+                            key={index}
+                            name="heart" 
+                            fallback="❤️" 
+                            alt="Life remaining"
+                            size="sm"
+                          />
+                        ))}
+                      </div>
                       {!member.is_paid && (
                         <Badge variant="outline" className="text-xs">
                           Unpaid

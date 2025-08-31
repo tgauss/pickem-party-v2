@@ -4,6 +4,7 @@ import { ChevronLeft, ChevronRight, Calendar } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
+import { CustomIcon } from '@/components/ui/custom-icon'
 
 interface WeekNavigationProps {
   currentWeek: number
@@ -28,9 +29,9 @@ export function WeekNavigation({
 
   const getWeekLabel = (week: number) => {
     const type = getWeekType(week)
-    if (type === 'past') return `Week ${week} ✅`
-    if (type === 'current') return `Week ${week} 🎯`
-    return `Week ${week} 📅`
+    if (type === 'past') return { text: `Week ${week}`, icon: 'checkmark' }
+    if (type === 'current') return { text: `Week ${week}`, icon: 'target' }
+    return { text: `Week ${week}`, icon: 'calendar' }
   }
 
   const weeks = Array.from({ length: maxWeek - minWeek + 1 }, (_, i) => i + minWeek)
@@ -49,8 +50,14 @@ export function WeekNavigation({
 
         <div className="flex items-center gap-2">
           <Calendar className="h-5 w-5 text-primary" />
-          <h2 className="text-xl font-bold">
-            {getWeekLabel(selectedWeek)}
+          <h2 className="text-xl font-bold flex items-center gap-2">
+            {getWeekLabel(selectedWeek).text}
+            <CustomIcon 
+              name={getWeekLabel(selectedWeek).icon} 
+              fallback={getWeekType(selectedWeek) === 'past' ? '✅' : getWeekType(selectedWeek) === 'current' ? '🎯' : '📅'}
+              alt={`${getWeekType(selectedWeek)} week indicator`}
+              size="sm"
+            />
           </h2>
           {selectedWeek === currentWeek && (
             <Badge variant="default" className="bg-primary text-black">
@@ -88,11 +95,22 @@ export function WeekNavigation({
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            {weeks.map(week => (
-              <SelectItem key={week} value={week.toString()}>
-                {getWeekLabel(week)}
-              </SelectItem>
-            ))}
+            {weeks.map(week => {
+              const label = getWeekLabel(week)
+              return (
+                <SelectItem key={week} value={week.toString()}>
+                  <div className="flex items-center gap-2">
+                    {label.text}
+                    <CustomIcon 
+                      name={label.icon} 
+                      fallback={getWeekType(week) === 'past' ? '✅' : getWeekType(week) === 'current' ? '🎯' : '📅'}
+                      alt={`${getWeekType(week)} week indicator`}
+                      size="sm"
+                    />
+                  </div>
+                </SelectItem>
+              )
+            })}
           </SelectContent>
         </Select>
 

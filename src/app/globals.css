@@ -28,6 +28,14 @@
   --radius-xl: calc(var(--radius) + 4px);
 }
 
+/* 8-bit icon styles */
+.pixelated {
+  image-rendering: -moz-crisp-edges;
+  image-rendering: -webkit-crisp-edges;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
 :root {
   --radius: 0.75rem;
   

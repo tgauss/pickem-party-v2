@@ -6,7 +6,8 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Home, Plane, Star, Clock, AlertTriangle, TrendingUp, TrendingDown, Users, CheckCircle, XCircle, Shield, Eye, EyeOff } from 'lucide-react'
+import { CustomIcon } from '@/components/ui/custom-icon'
+import { Star, Clock, AlertTriangle, TrendingUp, TrendingDown, Users, CheckCircle, XCircle, Shield, Eye, EyeOff } from 'lucide-react'
 import Image from 'next/image'
 
 interface Team {
@@ -431,8 +432,8 @@ export function CurrentWeekPicker({
                         </div>
                         <div className="flex flex-col items-end gap-1">
                           <Badge variant="secondary" className="text-xs">
-                            <Plane className="h-3 w-3 mr-1" />
-                            Away
+                            <CustomIcon name="away" fallback="✈️" alt="Away team" size="sm" />
+                            <span className="ml-1">Away</span>
                           </Badge>
                           {awaySpread && (
                             <Badge 
@@ -482,8 +483,8 @@ export function CurrentWeekPicker({
                         </div>
                         <div className="flex flex-col items-end gap-1">
                           <Badge variant="default" className="text-xs bg-blue-600">
-                            <Home className="h-3 w-3 mr-1" />
-                            Home
+                            <CustomIcon name="home" fallback="🏠" alt="Home team" size="sm" />
+                            <span className="ml-1">Home</span>
                           </Badge>
                           {homeSpread && (
                             <Badge 

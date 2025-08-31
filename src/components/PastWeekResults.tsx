@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Check, X, Skull } from 'lucide-react'
+import { CustomIcon } from '@/components/ui/custom-icon'
 import Image from 'next/image'
 
 interface Team {
@@ -144,26 +144,34 @@ export function PastWeekResults({ week, games, picks, members, gameLines }: Past
                   
                   <div className="flex items-center gap-2">
                     {member && (
-                      <div className="text-sm">
-                        {'❤️'.repeat(Math.max(0, member.lives_remaining))}
+                      <div className="flex items-center gap-1">
+                        {Array.from({ length: Math.max(0, member.lives_remaining) }).map((_, index) => (
+                          <CustomIcon 
+                            key={index}
+                            name="heart" 
+                            fallback="❤️" 
+                            alt="Life remaining"
+                            size="sm"
+                          />
+                        ))}
                       </div>
                     )}
                     {pick.is_correct === true && (
                       <Badge variant="default" className="bg-green-600">
-                        <Check className="h-3 w-3 mr-1" />
-                        Won
+                        <CustomIcon name="checkmark" fallback="✅" alt="Correct pick" size="sm" />
+                        <span className="ml-1">Won</span>
                       </Badge>
                     )}
                     {pick.is_correct === false && !wasEliminated && (
                       <Badge variant="destructive">
-                        <X className="h-3 w-3 mr-1" />
-                        Lost
+                        <CustomIcon name="x-wrong" fallback="❌" alt="Wrong pick" size="sm" />
+                        <span className="ml-1">Lost</span>
                       </Badge>
                     )}
                     {wasEliminated && (
                       <Badge variant="destructive">
-                        <Skull className="h-3 w-3 mr-1" />
-                        Eliminated
+                        <CustomIcon name="skull" fallback="💀" alt="Eliminated" size="sm" />
+                        <span className="ml-1">Eliminated</span>
                       </Badge>
                     )}
                   </div>
