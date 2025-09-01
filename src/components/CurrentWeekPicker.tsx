@@ -369,105 +369,110 @@ export function CurrentWeekPicker({
                       return null
                     })()}
 
-                    {/* Away Team */}
-                    <button
-                      onClick={() => awayAvailable && handleTeamSelect(game.away_team_id, game.id)}
-                      disabled={!awayAvailable || !!currentPick}
-                      className={`w-full p-2 rounded-lg border transition-all min-h-[60px] ${
-                        !awayAvailable 
-                          ? 'opacity-50 cursor-not-allowed bg-muted' 
-                          : selectedTeamId === game.away_team_id
-                          ? 'border-primary bg-primary/10 ring-2 ring-primary'
-                          : 'hover:bg-accent cursor-pointer'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
+                    {/* Team Matchup - Horizontal Layout */}
+                    <div className="flex items-center gap-2 sm:gap-4">
+                      {/* Away Team */}
+                      <button
+                        onClick={() => awayAvailable && handleTeamSelect(game.away_team_id, game.id)}
+                        disabled={!awayAvailable || !!currentPick}
+                        className={`flex-1 p-3 sm:p-4 rounded-lg border transition-all min-h-[100px] sm:min-h-[120px] ${
+                          !awayAvailable 
+                            ? 'opacity-50 cursor-not-allowed bg-muted' 
+                            : selectedTeamId === game.away_team_id
+                            ? 'border-primary bg-primary/10 ring-2 ring-primary'
+                            : 'hover:bg-accent cursor-pointer'
+                        }`}
+                      >
+                        <div className="flex flex-col items-center text-center space-y-2">
                           <Image
                             src={getTeamHelmet(game.away_team.key)}
                             alt={game.away_team.name}
-                            width={32}
-                            height={32}
+                            width={48}
+                            height={48}
+                            className="sm:w-16 sm:h-16"
                           />
-                          <div className="text-left">
-                            <p className="font-medium text-sm">{game.away_team.city}</p>
-                            <p className="text-xs text-muted-foreground">{game.away_team.name}</p>
+                          <div>
+                            <p className="font-medium text-sm sm:text-base">{game.away_team.city}</p>
+                            <p className="text-xs sm:text-sm text-muted-foreground">{game.away_team.name}</p>
+                          </div>
+                          <div className="flex flex-col items-center gap-1">
+                            <Badge variant="secondary" className="text-xs px-2 py-1">
+                              <CustomIcon name="away" fallback="✈️" alt="Away team" size="sm" />
+                              <span className="ml-1">Away</span>
+                            </Badge>
+                            {awaySpread && (
+                              <Badge 
+                                variant={awaySpread.type === 'favorite' ? 'default' : 'outline'}
+                                className={`text-xs px-2 py-1 ${awaySpread.type === 'favorite' ? 'bg-green-600' : ''}`}
+                              >
+                                {awaySpread.type === 'favorite' && <TrendingUp className="h-3 w-3 mr-1" />}
+                                {awaySpread.type === 'underdog' && <TrendingDown className="h-3 w-3 mr-1" />}
+                                {awaySpread.text}
+                              </Badge>
+                            )}
+                            {!awayAvailable && (
+                              <Badge variant="destructive" className="text-xs px-2 py-1">
+                                Used
+                              </Badge>
+                            )}
                           </div>
                         </div>
-                        <div className="flex flex-col items-end gap-1">
-                          <Badge variant="secondary" className="text-xs px-2 py-0.5">
-                            <CustomIcon name="away" fallback="✈️" alt="Away team" size="sm" />
-                            <span className="ml-1">Away</span>
-                          </Badge>
-                          {awaySpread && (
-                            <Badge 
-                              variant={awaySpread.type === 'favorite' ? 'default' : 'outline'}
-                              className={`text-xs px-2 py-0.5 ${awaySpread.type === 'favorite' ? 'bg-green-600' : ''}`}
-                            >
-                              {awaySpread.type === 'favorite' && <TrendingUp className="h-3 w-3 mr-1" />}
-                              {awaySpread.type === 'underdog' && <TrendingDown className="h-3 w-3 mr-1" />}
-                              {awaySpread.text}
-                            </Badge>
-                          )}
-                          {!awayAvailable && (
-                            <Badge variant="destructive" className="text-xs px-2 py-0.5">
-                              Already Used
-                            </Badge>
-                          )}
-                        </div>
+                      </button>
+
+                      {/* VS Divider */}
+                      <div className="flex flex-col items-center px-1 sm:px-2">
+                        <div className="text-lg sm:text-xl font-bold text-muted-foreground">VS</div>
+                        <div className="text-xs text-muted-foreground hidden sm:block">@</div>
                       </div>
-                    </button>
 
-                    <div className="text-center text-xs text-muted-foreground">vs</div>
-
-                    {/* Home Team */}
-                    <button
-                      onClick={() => homeAvailable && handleTeamSelect(game.home_team_id, game.id)}
-                      disabled={!homeAvailable || !!currentPick}
-                      className={`w-full p-2 rounded-lg border transition-all min-h-[60px] ${
-                        !homeAvailable 
-                          ? 'opacity-50 cursor-not-allowed bg-muted' 
-                          : selectedTeamId === game.home_team_id
-                          ? 'border-primary bg-primary/10 ring-2 ring-primary'
-                          : 'hover:bg-accent cursor-pointer'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
+                      {/* Home Team */}
+                      <button
+                        onClick={() => homeAvailable && handleTeamSelect(game.home_team_id, game.id)}
+                        disabled={!homeAvailable || !!currentPick}
+                        className={`flex-1 p-3 sm:p-4 rounded-lg border transition-all min-h-[100px] sm:min-h-[120px] ${
+                          !homeAvailable 
+                            ? 'opacity-50 cursor-not-allowed bg-muted' 
+                            : selectedTeamId === game.home_team_id
+                            ? 'border-primary bg-primary/10 ring-2 ring-primary'
+                            : 'hover:bg-accent cursor-pointer'
+                        }`}
+                      >
+                        <div className="flex flex-col items-center text-center space-y-2">
                           <Image
                             src={getTeamHelmet(game.home_team.key)}
                             alt={game.home_team.name}
-                            width={32}
-                            height={32}
+                            width={48}
+                            height={48}
+                            className="sm:w-16 sm:h-16"
                           />
-                          <div className="text-left">
-                            <p className="font-medium text-sm">{game.home_team.city}</p>
-                            <p className="text-xs text-muted-foreground">{game.home_team.name}</p>
+                          <div>
+                            <p className="font-medium text-sm sm:text-base">{game.home_team.city}</p>
+                            <p className="text-xs sm:text-sm text-muted-foreground">{game.home_team.name}</p>
+                          </div>
+                          <div className="flex flex-col items-center gap-1">
+                            <Badge variant="default" className="text-xs bg-blue-600 px-2 py-1">
+                              <CustomIcon name="home" fallback="🏠" alt="Home team" size="sm" />
+                              <span className="ml-1">Home</span>
+                            </Badge>
+                            {homeSpread && (
+                              <Badge 
+                                variant={homeSpread.type === 'favorite' ? 'default' : 'outline'}
+                                className={`text-xs px-2 py-1 ${homeSpread.type === 'favorite' ? 'bg-green-600' : ''}`}
+                              >
+                                {homeSpread.type === 'favorite' && <TrendingUp className="h-3 w-3 mr-1" />}
+                                {homeSpread.type === 'underdog' && <TrendingDown className="h-3 w-3 mr-1" />}
+                                {homeSpread.text}
+                              </Badge>
+                            )}
+                            {!homeAvailable && (
+                              <Badge variant="destructive" className="text-xs px-2 py-1">
+                                Used
+                              </Badge>
+                            )}
                           </div>
                         </div>
-                        <div className="flex flex-col items-end gap-1">
-                          <Badge variant="default" className="text-xs bg-blue-600 px-2 py-0.5">
-                            <CustomIcon name="home" fallback="🏠" alt="Home team" size="sm" />
-                            <span className="ml-1">Home</span>
-                          </Badge>
-                          {homeSpread && (
-                            <Badge 
-                              variant={homeSpread.type === 'favorite' ? 'default' : 'outline'}
-                              className={`text-xs px-2 py-0.5 ${homeSpread.type === 'favorite' ? 'bg-green-600' : ''}`}
-                            >
-                              {homeSpread.type === 'favorite' && <TrendingUp className="h-3 w-3 mr-1" />}
-                              {homeSpread.type === 'underdog' && <TrendingDown className="h-3 w-3 mr-1" />}
-                              {homeSpread.text}
-                            </Badge>
-                          )}
-                          {!homeAvailable && (
-                            <Badge variant="destructive" className="text-xs px-2 py-0.5">
-                              Already Used
-                            </Badge>
-                          )}
-                        </div>
-                      </div>
-                    </button>
+                      </button>
+                    </div>
                   </div>
                 </Card>
               )
