@@ -3,8 +3,9 @@
 import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Shield, AlertTriangle, ChevronDown, ChevronUp, Settings } from 'lucide-react'
+import { Shield, AlertTriangle, Settings, ExternalLink, Users, Heart } from 'lucide-react'
 
 interface User {
   id: string
@@ -34,11 +35,9 @@ interface AdminControlWidgetProps {
   children?: React.ReactNode
 }
 
-// Simple admin check - in a real app, this would check database roles
+// Simple admin check
 function isUserAdmin(user: User): boolean {
-  // For now, check if user is admin by username
-  // This is a temporary solution - should be replaced with proper DB roles
-  const adminUsernames = ['admin', 'tgauss'] // Add actual admin usernames
+  const adminUsernames = ['admin', 'tgauss', 'pickemking']
   return adminUsernames.includes(user.username.toLowerCase())
 }
 
@@ -50,7 +49,6 @@ export function AdminControlWidget({
   onAdminPickSubmit,
   children 
 }: AdminControlWidgetProps) {
-  const [isExpanded, setIsExpanded] = useState(false)
   const [adminPickingFor, setAdminPickingFor] = useState<string | null>(null)
   
   const isAdmin = isUserAdmin(currentUser)
@@ -62,10 +60,7 @@ export function AdminControlWidget({
   return (
     <Card className="border-red-600 bg-red-900/10 mb-6">
       <CardHeader>
-        <CardTitle 
-          className="flex items-center justify-between text-red-400 cursor-pointer"
-          onClick={() => setIsExpanded(!isExpanded)}
-        >
+        <CardTitle className="flex items-center justify-between text-red-400">
           <div className="flex items-center gap-2">
             <Shield className="h-5 w-5" />
             <span>Admin Controls</span>
@@ -73,94 +68,95 @@ export function AdminControlWidget({
               ADMIN ONLY
             </div>
           </div>
-          {isExpanded ? (
-            <ChevronUp className="h-4 w-4" />
-          ) : (
-            <ChevronDown className="h-4 w-4" />
-          )}
         </CardTitle>
       </CardHeader>
       
-      {isExpanded && (
-        <CardContent>
-          <div className="space-y-4">
-            <Alert className="border-yellow-600 bg-yellow-900/20">
-              <AlertTriangle className="h-4 w-4 text-yellow-400" />
-              <AlertDescription className="text-yellow-300">
-                <strong>Admin Mode:</strong> You have elevated permissions in this league. Regular users cannot see these controls.
-              </AlertDescription>
-            </Alert>
+      <CardContent>
+        <div className="space-y-4">
+          <Alert className="border-yellow-600 bg-yellow-900/20">
+            <AlertTriangle className="h-4 w-4 text-yellow-400" />
+            <AlertDescription className="text-yellow-300">
+              <strong>Admin Mode:</strong> You have elevated permissions in this league.
+            </AlertDescription>
+          </Alert>
 
-            {/* Admin Pick Override Section */}
-            {membersWithoutPicks.length > 0 && (
-              <div className="border border-orange-600 bg-orange-900/20 rounded-lg p-4">
-                <h3 className="text-orange-400 font-medium mb-3 flex items-center gap-2">
-                  <Settings className="h-4 w-4" />
-                  Set Pick for Player
-                </h3>
-                
-                <div className="space-y-3">
-                  <div>
-                    <label className="text-sm font-medium text-orange-300">Select Player:</label>
-                    <Select value={adminPickingFor || ''} onValueChange={setAdminPickingFor}>
-                      <SelectTrigger className="mt-1">
-                        <SelectValue placeholder="Choose a player who hasn't picked..." />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {membersWithoutPicks.map(member => (
-                          <SelectItem key={member.user.id} value={member.user.id}>
-                            {member.user.display_name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  {adminPickingFor && (
-                    <Alert className="border-orange-600 bg-orange-900/30">
-                      <AlertTriangle className="h-4 w-4 text-orange-400" />
-                      <AlertDescription className="text-orange-300">
-                        You are now setting a pick for <strong className="text-orange-100">
-                          {membersWithoutPicks.find(m => m.user.id === adminPickingFor)?.user.display_name}
-                        </strong>. Select a team below to complete their pick.
-                      </AlertDescription>
-                    </Alert>
-                  )}
+          {/* Quick Admin Dashboard Access */}
+          <div className="border border-blue-600 bg-blue-900/20 rounded-lg p-4">
+            <h3 className="text-blue-400 font-medium mb-3 flex items-center gap-2">
+              <Settings className="h-4 w-4" />
+              Admin Dashboard
+            </h3>
+            
+            <div className="space-y-3">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-sm mb-4">
+                <div className="text-blue-300 flex items-center gap-2">
+                  <Users className="h-4 w-4" />
+                  <span>{members.filter(m => !m.is_eliminated).length} Active Players</span>
+                </div>
+                <div className="text-blue-300 flex items-center gap-2">
+                  <Heart className="h-4 w-4" />
+                  <span>{members.reduce((sum, m) => sum + m.lives_remaining, 0)} Total Lives</span>
+                </div>
+                <div className="text-blue-300">
+                  <span>{members.filter(m => m.is_eliminated).length} Eliminated</span>
                 </div>
               </div>
-            )}
 
-            {/* Additional Admin Controls */}
-            <div className="border border-blue-600 bg-blue-900/20 rounded-lg p-4">
-              <h3 className="text-blue-400 font-medium mb-3">League Management</h3>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-sm">
-                <div className="text-blue-300">
-                  <span className="font-medium">League:</span> {league.name}
-                </div>
-                <div className="text-blue-300">
-                  <span className="font-medium">Total Members:</span> {members.length}
-                </div>
-                <div className="text-blue-300">
-                  <span className="font-medium">Active:</span> {members.filter(m => !m.is_eliminated).length}
-                </div>
-                <div className="text-blue-300">
-                  <span className="font-medium">Eliminated:</span> {members.filter(m => m.is_eliminated).length}
-                </div>
-              </div>
-              {onAdminPickSubmit && (
-                <div className="text-xs text-blue-300 mt-2">
-                  Admin pick submission enabled
-                </div>
-              )}
-            </div>
-
-            {/* Developer Note */}
-            <div className="text-xs text-gray-500 border border-gray-700 bg-gray-900/20 rounded p-2">
-              <strong>Dev Note:</strong> This widget only appears for admin users. Current admin check is temporary - should be replaced with proper database roles.
+              <Button 
+                onClick={() => window.location.href = `/league/${league.slug}/admin`}
+                variant="default"
+                className="w-full bg-blue-600 hover:bg-blue-700 flex items-center gap-2"
+              >
+                <ExternalLink className="h-4 w-4" />
+                Open Full Admin Dashboard
+              </Button>
+              
+              <p className="text-xs text-blue-300">
+                Manage player lives, view activity logs, resurrect players, and more.
+              </p>
             </div>
           </div>
-        </CardContent>
-      )}
+
+          {/* Quick Pick Override for Current Week */}
+          {membersWithoutPicks.length > 0 && (
+            <div className="border border-orange-600 bg-orange-900/20 rounded-lg p-4">
+              <h3 className="text-orange-400 font-medium mb-3 flex items-center gap-2">
+                <Settings className="h-4 w-4" />
+                Quick Pick Override
+              </h3>
+              
+              <div className="space-y-3">
+                <div>
+                  <label className="text-sm font-medium text-orange-300">Set pick for player:</label>
+                  <Select value={adminPickingFor || ''} onValueChange={setAdminPickingFor}>
+                    <SelectTrigger className="mt-1">
+                      <SelectValue placeholder="Choose a player who hasn't picked..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {membersWithoutPicks.map(member => (
+                        <SelectItem key={member.user.id} value={member.user.id}>
+                          {member.user.display_name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {adminPickingFor && (
+                  <Alert className="border-orange-600 bg-orange-900/30">
+                    <AlertTriangle className="h-4 w-4 text-orange-400" />
+                    <AlertDescription className="text-orange-300">
+                      Setting pick for <strong className="text-orange-100">
+                        {membersWithoutPicks.find(m => m.user.id === adminPickingFor)?.user.display_name}
+                      </strong>. Select a team below to complete their pick.
+                    </AlertDescription>
+                  </Alert>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+      </CardContent>
       
       {/* Render children if provided */}
       {children}

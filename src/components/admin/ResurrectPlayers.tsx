@@ -46,21 +46,42 @@ export function ResurrectPlayers({ leagueId, onResurrect }: ResurrectPlayersProp
   const resurrectPlayer = async (userId: string) => {
     setResurrectingId(userId)
     
-    const { error } = await supabase
-      .from('league_members')
-      .update({
-        lives_remaining: 2,
-        is_eliminated: false,
-        eliminated_week: null
+    try {
+      // Get current user for the adjustment
+      const currentUser = localStorage.getItem('currentUser')
+      if (!currentUser) {
+        alert('❌ You must be logged in to resurrect players')
+        setResurrectingId(null)
+        return
+      }
+      
+      const userData = JSON.parse(currentUser)
+      
+      // Use the new life adjustment API
+      const response = await fetch('/api/admin/adjust-lives', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          leagueId: leagueId,
+          targetUserId: userId,
+          adjustmentAmount: 2, // Give them 2 lives (from 0 to 2)
+          reason: 'Player resurrection',
+          notes: 'Brought back to life by admin',
+          adjustedBy: userData.id
+        })
       })
-      .eq('user_id', userId)
-      .eq('league_id', leagueId)
-    
-    if (!error) {
-      await loadEliminatedPlayers()
-      onResurrect()
-    } else {
-      alert('❌ Resurrection failed')
+
+      const data = await response.json()
+      if (data.success) {
+        alert('✅ Player resurrected successfully!')
+        await loadEliminatedPlayers()
+        onResurrect()
+      } else {
+        alert(`❌ Resurrection failed: ${data.error}`)
+      }
+    } catch (error) {
+      console.error('Resurrection error:', error)
+      alert('❌ Network error during resurrection')
     }
     
     setResurrectingId(null)

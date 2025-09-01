@@ -11,6 +11,7 @@ import { WeekNavigation } from '@/components/WeekNavigation'
 import { PastWeekResults } from '@/components/PastWeekResults'
 import { CurrentWeekPicker } from '@/components/CurrentWeekPicker'
 import { FutureWeekSchedule } from '@/components/FutureWeekSchedule'
+import { LeagueActivityLog } from '@/components/LeagueActivityLog'
 import Image from 'next/image'
 
 interface Team {
@@ -673,6 +674,12 @@ export default function LeaguePage({
             </div>
           </div>
         </Card>
+
+        {/* League Activity Log */}
+        <LeagueActivityLog 
+          leagueId={league.id}
+          className="mt-4 sm:mt-6"
+        />
 
         {/* Back to Dashboard */}
         <div className="text-center mt-8">
