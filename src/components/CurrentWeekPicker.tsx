@@ -8,7 +8,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { CustomIcon } from '@/components/ui/custom-icon'
 import { WeekCountdown } from '@/components/WeekCountdown'
 import { formatSpreadToNaturalLanguage, getSpreadConfidenceIndicator } from '@/lib/utils/betting-lines'
-import { Star, Clock, AlertTriangle, TrendingUp, TrendingDown, Users, Target } from 'lucide-react'
+import { Star, Clock, AlertTriangle, TrendingUp, TrendingDown, Users, Target, Lock, ChevronRight } from 'lucide-react'
 import Image from 'next/image'
 
 interface Team {
@@ -172,6 +172,23 @@ export function CurrentWeekPicker({
     }
   }
 
+  // Get the selected team info
+  const getSelectedTeamInfo = () => {
+    if (!selectedTeamId) return null
+    
+    for (const game of games) {
+      if (game.home_team_id === selectedTeamId) {
+        return game.home_team
+      }
+      if (game.away_team_id === selectedTeamId) {
+        return game.away_team
+      }
+    }
+    return null
+  }
+
+  const selectedTeam = getSelectedTeamInfo()
+
   // Get active (non-eliminated) members
   const activeMembers = members.filter(member => !member.is_eliminated)
   
@@ -210,7 +227,7 @@ export function CurrentWeekPicker({
   }
 
   return (
-    <div className={`space-y-6 ${selectedTeamId && !currentPick ? 'pb-20 sm:pb-0' : ''}`}>
+    <div className={`space-y-6 ${selectedTeamId && !currentPick ? 'pb-24' : ''}`}>
       {/* Countdown Timer */}
       <WeekCountdown week={week} />
       
@@ -489,31 +506,50 @@ export function CurrentWeekPicker({
             </Alert>
           )}
 
-          {/* Submit Button - Desktop */}
-          {selectedTeamId && !currentPick && (
-            <div className="hidden sm:flex mt-4 justify-center">
-              <Button 
-                onClick={handleSubmit}
-                size="lg"
-                className="sm:min-w-[200px] min-h-[48px]"
-              >
-                Lock In Pick
-              </Button>
-            </div>
-          )}
+          {/* Desktop Submit Button - Removed as we'll use sticky footer for all */}
         </CardContent>
       </Card>
 
-      {/* Sticky Submit Button - Mobile Only */}
-      {selectedTeamId && !currentPick && (
-        <div className="sm:hidden fixed bottom-0 left-0 right-0 p-4 bg-background border-t border-border z-50">
-          <Button 
-            onClick={handleSubmit}
-            size="lg"
-            className="w-full min-h-[48px] bg-primary hover:bg-primary-hover"
-          >
-            Lock In Pick
-          </Button>
+      {/* Sticky Submit Footer - Shows on all screen sizes when team is selected */}
+      {selectedTeamId && !currentPick && selectedTeam && (
+        <div className="fixed bottom-0 left-0 right-0 z-50 animate-in slide-in-from-bottom-5 duration-300">
+          <div className="bg-gradient-to-t from-background via-background to-background/95 backdrop-blur-sm border-t-2 border-primary/50">
+            <div className="max-w-4xl mx-auto px-4 py-3 sm:py-4">
+              <div className="flex items-center justify-between gap-4">
+                {/* Selected Team Info */}
+                <div className="flex items-center gap-3">
+                  <div className="hidden sm:flex items-center justify-center w-12 h-12 rounded-full bg-primary/20 border-2 border-primary">
+                    <Target className="h-6 w-6 text-primary" />
+                  </div>
+                  <div>
+                    <p className="text-xs sm:text-sm text-muted-foreground">Your selection:</p>
+                    <p className="text-base sm:text-lg font-bold text-primary flex items-center gap-1">
+                      {selectedTeam.city} {selectedTeam.name}
+                      <span className="text-xs sm:text-sm font-normal text-muted-foreground">({selectedTeam.key})</span>
+                    </p>
+                  </div>
+                </div>
+                
+                {/* Lock Button */}
+                <Button 
+                  onClick={handleSubmit}
+                  size="lg"
+                  className="min-w-[140px] sm:min-w-[180px] h-12 sm:h-14 bg-primary hover:bg-primary-hover text-primary-foreground font-bold shadow-lg hover:shadow-xl transition-all group"
+                >
+                  <Lock className="h-4 w-4 sm:h-5 sm:w-5 mr-2 group-hover:scale-110 transition-transform" />
+                  <span className="hidden sm:inline">Lock Pick: </span>
+                  <span className="font-bold">{selectedTeam.key}</span>
+                  <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5 ml-1 group-hover:translate-x-1 transition-transform" />
+                </Button>
+              </div>
+              
+              {/* Warning/Info */}
+              <div className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
+                <AlertTriangle className="h-3 w-3" />
+                <span>This action cannot be undone. Make sure you&apos;re confident in your pick!</span>
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </div>
