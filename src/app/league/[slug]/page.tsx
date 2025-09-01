@@ -63,6 +63,7 @@ interface League {
   season_year: number
   max_weeks: number
   lives_per_player: number
+  league_message?: string
 }
 
 interface Member {
@@ -454,16 +455,20 @@ export default function LeaguePage({
               </p>
               <div className="bg-surface/50 rounded-lg p-3 border border-border">
                 <p className="text-xs text-muted-foreground mb-2">📋 LEAGUE INFORMATION:</p>
-                <p className="text-sm">
-                  Welcome fighters! This is your league commissioner speaking. 
-                  Rules: Standard NFL Survivor - pick ONE team each week that you think will WIN. 
-                  If they lose or tie, you&apos;re ELIMINATED! You can only use each team ONCE per season.
-                  <br /><br />
-                  💰 <strong>Payment:</strong> Venmo @YourCommissioner for the ${league.buy_in} buy-in
-                  <br />
-                  📅 <strong>Important:</strong> All picks must be submitted before the first game of each week!
-                  <br />
-                  🏆 <strong>Prize:</strong> Winner takes the full pot (${league.buy_in} × {members.length} fighters)
+                <p className="text-sm whitespace-pre-wrap">
+                  {league.league_message && league.league_message.trim() ? league.league_message : (
+                    <>
+                      Welcome fighters! This is your league commissioner speaking. 
+                      Rules: Standard NFL Survivor - pick ONE team each week that you think will WIN. 
+                      If they lose or tie, you&apos;re ELIMINATED! You can only use each team ONCE per season.
+                      <br /><br />
+                      💰 <strong>Payment:</strong> Venmo @YourCommissioner for the ${league.buy_in} buy-in
+                      <br />
+                      📅 <strong>Important:</strong> All picks must be submitted before the first game of each week!
+                      <br />
+                      🏆 <strong>Prize:</strong> Winner takes the full pot (${league.buy_in} × {members.length} fighters)
+                    </>
+                  )}
                 </p>
               </div>
             </div>
