@@ -35,10 +35,13 @@ interface AdminControlWidgetProps {
   children?: React.ReactNode
 }
 
-// Simple admin check
-function isUserAdmin(user: User): boolean {
-  const adminUsernames = ['admin', 'tgauss', 'pickemking']
-  return adminUsernames.includes(user.username.toLowerCase())
+// Simple admin check (matches API authorization)
+function isUserAdmin(user: User, league: { commissioner_id?: string }): boolean {
+  const superAdminUsernames = ['admin', 'tgauss', 'pickemking']
+  const isSuperAdmin = superAdminUsernames.includes(user.username.toLowerCase())
+  const isCommissioner = league.commissioner_id === user.id
+  
+  return isSuperAdmin || isCommissioner
 }
 
 export function AdminControlWidget({ 
@@ -51,7 +54,7 @@ export function AdminControlWidget({
 }: AdminControlWidgetProps) {
   const [adminPickingFor, setAdminPickingFor] = useState<string | null>(null)
   
-  const isAdmin = isUserAdmin(currentUser)
+  const isAdmin = isUserAdmin(currentUser, league)
   
   if (!isAdmin) {
     return null // Don't render anything for non-admin users

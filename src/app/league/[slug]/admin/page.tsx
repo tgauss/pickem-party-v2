@@ -73,10 +73,13 @@ interface ActivityNotification {
   created_at: string
 }
 
-// Simple admin check
-function isUserAdmin(user: User): boolean {
-  const adminUsernames = ['admin', 'tgauss', 'pickemking']
-  return adminUsernames.includes(user.username.toLowerCase())
+// Simple admin check (matches API authorization)
+function isUserAdmin(user: User, leagueCommissionerId?: string): boolean {
+  const superAdminUsernames = ['admin', 'tgauss', 'pickemking']
+  const isSuperAdmin = superAdminUsernames.includes(user.username.toLowerCase())
+  const isCommissioner = leagueCommissionerId === user.id
+  
+  return isSuperAdmin || isCommissioner
 }
 
 export default function AdminDashboard({ 
@@ -124,6 +127,13 @@ export default function AdminDashboard({
       }
       
       setLeague(leagueData)
+      
+      // Check admin access now that we have league data
+      if (!isUserAdmin(userData, leagueData.commissioner_id)) {
+        alert('Access denied: Only commissioners and super admins can access this dashboard')
+        window.location.href = `/league/${slug}`
+        return
+      }
       
       // Load league members
       const { data: membersData } = await supabase
@@ -190,12 +200,7 @@ export default function AdminDashboard({
     const userData = JSON.parse(currentUser)
     setUser(userData)
     
-    // Check if user is admin before allowing access
-    if (!isUserAdmin(userData)) {
-      alert('Access denied: Admin privileges required')
-      window.location.href = `/league/${resolvedParams.slug}`
-      return
-    }
+    // We'll check admin access after loading league data to verify commissioner status
     
     loadLeagueData(userData.id, resolvedParams.slug)
   }, [loadLeagueData, resolvedParams.slug])
