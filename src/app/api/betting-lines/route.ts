@@ -173,28 +173,51 @@ export async function GET(request: Request) {
 
     // Try to fetch fresh lines from ESPN
     const espnOdds = await fetchESPNOdds(week, seasonYear)
+    console.log(`ESPN odds fetch result:`, espnOdds ? Object.keys(espnOdds).length : 0, 'events')
     
     const freshLines: Record<string, BettingLineData> = {}
     const linesToStore = []
+    let espnMatchCount = 0
 
     for (const game of games) {
       const awayKey = game.away_team.key
       const homeKey = game.home_team.key
       const gameKey = `${awayKey}@${homeKey}`
       
-      // Try to get real odds from ESPN
+      // Try to get real odds from ESPN - match by team IDs if no event ID
       let spread = 0
       let overUnder = 0
       let homeMoneyLine = 0
       let awayMoneyLine = 0
+      let foundESPNMatch = false
       
-      if (espnOdds && game.espn_event_id && espnOdds[game.espn_event_id]) {
-        const odds = espnOdds[game.espn_event_id]
-        spread = odds.spread || 0
-        overUnder = odds.overUnder || 0
-        homeMoneyLine = odds.homeMoneyline || 0
-        awayMoneyLine = odds.awayMoneyline || 0
-      } else {
+      if (espnOdds) {
+        // First try ESPN event ID match
+        if (game.espn_event_id && espnOdds[game.espn_event_id]) {
+          const odds = espnOdds[game.espn_event_id]
+          spread = odds.spread || 0
+          overUnder = odds.overUnder || 0
+          homeMoneyLine = odds.homeMoneyline || 0
+          awayMoneyLine = odds.awayMoneyline || 0
+          foundESPNMatch = true
+        } else {
+          // Try to match by team IDs
+          for (const [eventId, odds] of Object.entries(espnOdds)) {
+            if (odds.homeTeamId === game.home_team_id && odds.awayTeamId === game.away_team_id) {
+              spread = odds.spread || 0
+              overUnder = odds.overUnder || 0
+              homeMoneyLine = odds.homeMoneyline || 0
+              awayMoneyLine = odds.awayMoneyline || 0
+              foundESPNMatch = true
+              espnMatchCount++
+              console.log(`Matched game by team IDs: ${game.away_team.key}@${game.home_team.key} (Event: ${eventId})`)
+              break
+            }
+          }
+        }
+      }
+      
+      if (!foundESPNMatch) {
         // Fallback to mock data if ESPN odds not available
         spread = parseFloat((Math.random() * 14 - 7).toFixed(1)) // -7 to +7
         overUnder = parseFloat((42 + Math.random() * 16).toFixed(1)) // 42-58 points
@@ -225,7 +248,7 @@ export async function GET(request: Request) {
         over_under: overUnder,
         home_moneyline: homeMoneyLine,
         away_moneyline: awayMoneyLine,
-        source: espnOdds && game.espn_event_id && espnOdds[game.espn_event_id] ? 'espn' : 'mock_api',
+        source: foundESPNMatch ? 'espn' : 'mock_api',
         fetched_at: new Date().toISOString()
       })
     }
@@ -246,7 +269,7 @@ export async function GET(request: Request) {
       cached: false,
       stored: !insertError,
       gamesProcessed: games.length,
-      espnOddsFound: espnOdds ? Object.keys(espnOdds).length : 0
+      espnOddsFound: espnMatchCount
     })
 
   } catch (error) {
