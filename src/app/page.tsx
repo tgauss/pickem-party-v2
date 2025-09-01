@@ -32,9 +32,44 @@ function HomePageContent() {
     buy_in: number
     lives_per_player: number
     season_year: number
+    member_count?: number
   } | null>(null)
   const [checkingInvite, setCheckingInvite] = useState(false)
+  const [countdown, setCountdown] = useState<{
+    days: number
+    hours: number
+    minutes: number
+    seconds: number
+    expired: boolean
+  } | null>(null)
   const supabase = createClient()
+
+  // Countdown to join deadline (Sept 3rd, 2pm PST)
+  useEffect(() => {
+    const deadline = new Date('2025-09-03T14:00:00-07:00') // Sept 3rd 2pm PST
+    
+    const updateCountdown = () => {
+      const now = new Date()
+      const timeDiff = deadline.getTime() - now.getTime()
+      
+      if (timeDiff <= 0) {
+        setCountdown({ days: 0, hours: 0, minutes: 0, seconds: 0, expired: true })
+        return
+      }
+
+      const days = Math.floor(timeDiff / (1000 * 60 * 60 * 24))
+      const hours = Math.floor((timeDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
+      const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60))
+      const seconds = Math.floor((timeDiff % (1000 * 60)) / 1000)
+
+      setCountdown({ days, hours, minutes, seconds, expired: false })
+    }
+
+    updateCountdown()
+    const interval = setInterval(updateCountdown, 1000)
+
+    return () => clearInterval(interval)
+  }, [])
 
   // Check if user is already logged in and handle invite
   useEffect(() => {
@@ -43,15 +78,27 @@ function HomePageContent() {
       
       if (inviteCode) {
         setCheckingInvite(true)
-        // Check if invite code is valid
+        // Check if invite code is valid and get league with member count
         const { data: league } = await supabase
           .from('leagues')
-          .select('*')
+          .select(`
+            *,
+            league_members!inner(count)
+          `)
           .eq('invite_code', inviteCode)
           .single()
         
         if (league) {
-          setInvitedLeague(league)
+          // Get member count
+          const { count: memberCount } = await supabase
+            .from('league_members')
+            .select('*', { count: 'exact', head: true })
+            .eq('league_id', league.id)
+          
+          setInvitedLeague({
+            ...league,
+            member_count: memberCount || 0
+          })
           
           if (currentUser) {
             // User is logged in, offer to join league
@@ -317,89 +364,165 @@ function HomePageContent() {
   // Invite Landing Page
   if (inviteCode && invitedLeague) {
     const currentUser = localStorage.getItem('currentUser')
+    const totalPot = (invitedLeague.member_count || 0) * invitedLeague.buy_in
+    const deadlineExpired = countdown?.expired || false
     
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-4">
-        <Card className="w-full max-w-lg retro-border">
-          <div className="text-center p-8">
-            <div className="mb-6">
+      <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-secondary/5 flex items-center justify-center p-4">
+        <Card className="w-full max-w-lg retro-border shadow-2xl bg-gradient-to-b from-surface to-background border-2">
+          <div className="text-center p-6 sm:p-8">
+            {/* Logo with subtle animation */}
+            <div className="mb-6 animate-pulse">
               <Image 
                 src="/logos/Pickem Part App Logo.svg" 
                 alt="Pickem Party Logo"
-                width={120}
-                height={120}
-                className="mx-auto"
+                width={100}
+                height={100}
+                className="mx-auto sm:w-[120px] sm:h-[120px]"
               />
             </div>
             
+            {/* Exciting header */}
             <div className="mb-6">
-              <CustomIcon name="mail" fallback="📧" alt="Invite" size="xl" />
+              <div className="flex justify-center mb-4">
+                <CustomIcon name="mail" fallback="📧" alt="Invite" size="lg" className="animate-bounce" />
+                <CustomIcon name="fire" fallback="🔥" alt="Hot" size="lg" className="animate-pulse ml-2" />
+              </div>
+              <h1 className="text-2xl sm:text-3xl font-bold mb-2 fight-text animate-pulse" style={{color: 'var(--primary)'}}>
+                YOU&apos;VE BEEN INVITED!
+              </h1>
+              <p className="text-sm text-muted-foreground">
+                A friend wants you to join their NFL Survivor Pool
+              </p>
             </div>
             
-            <h1 className="text-2xl font-bold mb-4 fight-text" style={{color: 'var(--primary)'}}>
-              YOU&apos;VE BEEN INVITED!
-            </h1>
-            
-            <div className="bg-primary/20 border border-primary/50 rounded-lg p-4 mb-6">
-              <h2 className="text-lg font-bold text-primary mb-2">{invitedLeague.name}</h2>
-              <div className="text-sm text-muted-foreground space-y-1">
-                <p>💰 Buy-in: ${invitedLeague.buy_in}</p>
-                <p>❤️ Lives per player: {invitedLeague.lives_per_player}</p>
-                <p>🏈 Season: {invitedLeague.season_year}</p>
+            {/* League Info Card */}
+            <div className="bg-gradient-to-r from-primary/20 to-secondary/20 border-2 border-primary/50 rounded-lg p-4 mb-6 shadow-lg">
+              <h2 className="text-lg sm:text-xl font-bold text-primary mb-3 fight-text">{invitedLeague.name}</h2>
+              
+              <div className="grid grid-cols-2 gap-4 text-sm mb-4">
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-green-500">${invitedLeague.buy_in}</div>
+                  <div className="text-xs text-muted-foreground">Buy-in</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-primary">${totalPot}</div>
+                  <div className="text-xs text-muted-foreground">Total Pot</div>
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4 text-xs text-muted-foreground">
+                <div className="flex items-center gap-1">
+                  <CustomIcon name="heart" fallback="❤️" alt="Lives" size="sm" />
+                  {invitedLeague.lives_per_player} {invitedLeague.lives_per_player === 1 ? 'Life' : 'Lives'}
+                </div>
+                <div className="flex items-center gap-1">
+                  <CustomIcon name="users" fallback="👥" alt="Members" size="sm" />
+                  {invitedLeague.member_count || 0} Fighters
+                </div>
               </div>
             </div>
+
+            {/* Countdown Timer */}
+            {countdown && !deadlineExpired && (
+              <div className="bg-destructive/20 border border-destructive/50 rounded-lg p-4 mb-6">
+                <div className="flex items-center justify-center gap-2 mb-2">
+                  <CustomIcon name="hourglass" fallback="⏰" alt="Countdown" size="sm" className="animate-pulse" />
+                  <span className="font-semibold text-destructive text-sm">JOIN DEADLINE</span>
+                </div>
+                <div className="grid grid-cols-4 gap-1 sm:gap-2 mb-2">
+                  <div className="text-center">
+                    <div className="text-lg sm:text-xl font-bold text-destructive font-['Press_Start_2P']">{countdown.days}</div>
+                    <div className="text-xs text-muted-foreground">DAYS</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-lg sm:text-xl font-bold text-destructive font-['Press_Start_2P']">{countdown.hours}</div>
+                    <div className="text-xs text-muted-foreground">HRS</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-lg sm:text-xl font-bold text-destructive font-['Press_Start_2P']">{countdown.minutes}</div>
+                    <div className="text-xs text-muted-foreground">MIN</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-lg sm:text-xl font-bold text-destructive font-['Press_Start_2P']">{countdown.seconds}</div>
+                    <div className="text-xs text-muted-foreground">SEC</div>
+                  </div>
+                </div>
+                <p className="text-xs text-destructive">
+                  Until Thursday Sept 3rd at 2pm PST
+                </p>
+              </div>
+            )}
+
+            {deadlineExpired && (
+              <div className="bg-destructive/30 border border-destructive rounded-lg p-4 mb-6">
+                <h3 className="font-bold text-destructive mb-2">⏰ DEADLINE PASSED</h3>
+                <p className="text-sm text-destructive">
+                  Sorry, the join deadline for this league has expired.
+                </p>
+              </div>
+            )}
             
-            {currentUser ? (
-              <div className="space-y-4">
-                <p className="text-muted-foreground">
-                  Ready to join the battle, fighter?
-                </p>
-                <Button 
-                  onClick={handleJoinLeague}
-                  disabled={loading}
-                  className="w-full fight-text"
-                  style={{
-                    backgroundColor: 'var(--primary)',
-                    color: 'var(--primary-foreground)'
-                  }}
-                >
-                  {loading ? '...' : 'JOIN LEAGUE'}
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => window.location.href = '/dashboard'}
-                  className="w-full"
-                >
-                  Maybe Later
-                </Button>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                <p className="text-muted-foreground">
-                  Join the fight! Create your account to enter this league.
-                </p>
-                <Button 
-                  onClick={() => setShowAuth(true)}
-                  className="w-full fight-text"
-                  style={{
-                    backgroundColor: 'var(--primary)',
-                    color: 'var(--primary-foreground)'
-                  }}
-                >
-                  <CustomIcon name="football" fallback="🏈" alt="Football" size="sm" className="mr-2" />
-                  SIGN UP & JOIN
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    setIsLogin(true)
-                    setShowAuth(true)
-                  }}
-                  className="w-full"
-                >
-                  Already have an account? Login
-                </Button>
-              </div>
+            {!deadlineExpired && (
+              <>
+                {currentUser ? (
+                  <div className="space-y-4">
+                    <p className="text-sm text-muted-foreground">
+                      🏈 Ready to join the battle, fighter?
+                    </p>
+                    <Button 
+                      onClick={handleJoinLeague}
+                      disabled={loading}
+                      className="w-full fight-text text-lg py-6 animate-pulse hover:animate-none transition-all transform hover:scale-105 shadow-lg"
+                      style={{
+                        backgroundColor: 'var(--primary)',
+                        color: 'var(--primary-foreground)',
+                        animation: 'pulse 2s infinite'
+                      }}
+                    >
+                      <CustomIcon name="football" fallback="🏈" alt="Football" size="sm" className="mr-2" />
+                      {loading ? 'JOINING...' : 'JOIN THE FIGHT!'}
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={() => window.location.href = '/dashboard'}
+                      className="w-full"
+                      size="sm"
+                    >
+                      Maybe Later
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    <p className="text-sm text-muted-foreground">
+                      🎯 Create your account to join this epic battle!
+                    </p>
+                    <Button 
+                      onClick={() => setShowAuth(true)}
+                      className="w-full fight-text text-lg py-6 animate-pulse hover:animate-none transition-all transform hover:scale-105 shadow-lg"
+                      style={{
+                        backgroundColor: 'var(--primary)',
+                        color: 'var(--primary-foreground)',
+                        animation: 'pulse 2s infinite'
+                      }}
+                    >
+                      <CustomIcon name="football" fallback="🏈" alt="Football" size="sm" className="mr-2" />
+                      SIGN UP & JOIN
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setIsLogin(true)
+                        setShowAuth(true)
+                      }}
+                      className="w-full"
+                      size="sm"
+                    >
+                      Already have an account? Login
+                    </Button>
+                  </div>
+                )}
+              </>
             )}
           </div>
         </Card>

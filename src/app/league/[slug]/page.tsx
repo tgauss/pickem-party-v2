@@ -441,6 +441,35 @@ export default function LeaguePage({
           </div>
         </div>
 
+        {/* League Message/Announcements - Commissioner Section */}
+        <Card className="mb-4 sm:mb-6 bg-gradient-to-r from-primary/10 to-secondary/10 border-primary/30">
+          <div className="p-4 sm:p-6">
+            <div className="flex items-center gap-2 mb-3">
+              <CustomIcon name="megaphone" fallback="📢" alt="Announcement" size="sm" />
+              <h3 className="font-bold text-primary">League Commissioner</h3>
+            </div>
+            <div className="text-sm space-y-2">
+              <p>
+                <strong>Commissioner:</strong> League Creator (we&apos;ll add dynamic name when DB is updated)
+              </p>
+              <div className="bg-surface/50 rounded-lg p-3 border border-border">
+                <p className="text-xs text-muted-foreground mb-2">📋 LEAGUE INFORMATION:</p>
+                <p className="text-sm">
+                  Welcome fighters! This is your league commissioner speaking. 
+                  Rules: Standard NFL Survivor - pick ONE team each week that you think will WIN. 
+                  If they lose or tie, you&apos;re ELIMINATED! You can only use each team ONCE per season.
+                  <br /><br />
+                  💰 <strong>Payment:</strong> Venmo @YourCommissioner for the ${league.buy_in} buy-in
+                  <br />
+                  📅 <strong>Important:</strong> All picks must be submitted before the first game of each week!
+                  <br />
+                  🏆 <strong>Prize:</strong> Winner takes the full pot (${league.buy_in} × {members.length} fighters)
+                </p>
+              </div>
+            </div>
+          </div>
+        </Card>
+
         {/* Week Navigation */}
         <WeekNavigation
           currentWeek={currentWeek}
