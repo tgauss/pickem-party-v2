@@ -606,6 +606,8 @@ export default function LeaguePage({
                   members={members}
                   picks={picks}
                   onPickSubmit={submitPick}
+                  league={league}
+                  currentUser={user}
                 />
               </>
             )}

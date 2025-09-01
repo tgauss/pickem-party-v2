@@ -8,7 +8,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { CustomIcon } from '@/components/ui/custom-icon'
 import { WeekCountdown } from '@/components/WeekCountdown'
 import { formatSpreadToNaturalLanguage, getSpreadConfidenceIndicator } from '@/lib/utils/betting-lines'
-import { Star, Clock, AlertTriangle, TrendingUp, TrendingDown, Users, Target, Lock, ChevronRight } from 'lucide-react'
+import { Star, Clock, AlertTriangle, TrendingUp, TrendingDown, Users, Target, Lock, ChevronRight, Eye, EyeOff } from 'lucide-react'
 import Image from 'next/image'
 
 interface Team {
@@ -77,6 +77,17 @@ interface CurrentWeekPickerProps {
   members: Member[]
   picks: Pick[]
   onPickSubmit: (teamId: number, gameId: string) => void
+  league?: {
+    id: string
+    name: string
+    commissioner_id?: string
+    picks_revealed_weeks?: number[]
+  }
+  currentUser?: {
+    id: string
+    username: string
+    display_name: string
+  }
 }
 
 export function CurrentWeekPicker({ 
@@ -88,10 +99,48 @@ export function CurrentWeekPicker({
   byeWeekTeams = [],
   members,
   picks,
-  onPickSubmit 
+  onPickSubmit,
+  league,
+  currentUser
 }: CurrentWeekPickerProps) {
   const [selectedTeamId, setSelectedTeamId] = useState<number | null>(currentPick?.team_id || null)
   const [selectedGameId, setSelectedGameId] = useState<string | null>(null)
+  const [revealingPicks, setRevealingPicks] = useState(false)
+
+  const handleRevealPicks = async () => {
+    if (!league || !currentUser || revealingPicks) return
+    
+    setRevealingPicks(true)
+    
+    try {
+      const response = await fetch('/api/admin/reveal-picks', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          leagueId: league.id,
+          week: week,
+          userId: currentUser.id
+        })
+      })
+      
+      const result = await response.json()
+      
+      if (result.success) {
+        // Refresh the page to show updated state
+        window.location.reload()
+      } else {
+        console.error('Failed to reveal picks:', result.error)
+        alert(result.error || 'Failed to reveal picks')
+      }
+    } catch (error) {
+      console.error('Error revealing picks:', error)
+      alert('Failed to reveal picks')
+    } finally {
+      setRevealingPicks(false)
+    }
+  }
 
   const getTeamHelmet = (teamKey: string) => {
     const helmetMap: Record<string, string> = {
@@ -202,11 +251,18 @@ export function CurrentWeekPicker({
     !picks.some(pick => pick.user_id === member.user.id)
   )
   
-  // Check if all active members have submitted picks
-  const allPicksSubmitted = membersWithoutPicks.length === 0
   
-  // Determine if picks should be private (not all submitted yet)
-  const picksArePrivate = !allPicksSubmitted
+  // Check if picks have been manually revealed for this week
+  const picksManuallyRevealed = league?.picks_revealed_weeks?.includes(week) || false
+  
+  // Determine if picks should be private (not revealed by commissioner yet)
+  const picksArePrivate = !picksManuallyRevealed
+  
+  // Check if current user is authorized to reveal picks (commissioner or super admin)
+  const canRevealPicks = currentUser && league && (
+    league.commissioner_id === currentUser.id || 
+    ['admin', 'tgauss', 'pickemking'].includes(currentUser.username.toLowerCase())
+  )
 
   const availableGames = games.filter(game => {
     const homeAvailable = !usedTeamIds.includes(game.home_team_id)
@@ -301,20 +357,41 @@ export function CurrentWeekPicker({
             </div>
           </div>
 
-          {!allPicksSubmitted && (
-            <Alert className="mt-4">
-              <Clock className="h-4 w-4" />
-              <AlertDescription>
-                Waiting for {membersWithoutPicks.length} more pick(s). All picks will be revealed once everyone has submitted.
+          {/* Commissioner Controls */}
+          {canRevealPicks && picksArePrivate && (
+            <Alert className="mt-4 border-blue-600 bg-blue-900/20">
+              <Eye className="h-4 w-4 text-blue-400" />
+              <AlertDescription className="text-blue-300 flex items-center justify-between">
+                <div>
+                  <strong>Commissioner Control:</strong> You can reveal picks now to allow new members to join up to game time.
+                </div>
+                <Button
+                  onClick={handleRevealPicks}
+                  disabled={revealingPicks}
+                  size="sm"
+                  className="ml-4 bg-blue-600 hover:bg-blue-700"
+                >
+                  {revealingPicks ? 'Revealing...' : `Reveal Week ${week} Picks`}
+                </Button>
               </AlertDescription>
             </Alert>
           )}
 
-          {allPicksSubmitted && (
-            <Alert className="mt-4 bg-primary/10 border-primary/50">
-              <CustomIcon name="checkmark" fallback="✅" alt="Complete" size="sm" className="inline" />
-              <AlertDescription className="text-primary">
-                All picks are in! You can now see everyone&apos;s selections below.
+          {/* Status for Non-Commissioners */}
+          {!canRevealPicks && picksArePrivate && (
+            <Alert className="mt-4">
+              <EyeOff className="h-4 w-4" />
+              <AlertDescription>
+                Picks are hidden until the commissioner reveals them. {membersWithoutPicks.length > 0 && `Waiting for ${membersWithoutPicks.length} more pick(s).`}
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {picksManuallyRevealed && (
+            <Alert className="mt-4 border-green-600 bg-green-900/20">
+              <Eye className="h-4 w-4 text-green-400" />
+              <AlertDescription className="text-green-300">
+                <strong>Picks Revealed!</strong> The commissioner has revealed all picks for Week {week}. New members can still join!
               </AlertDescription>
             </Alert>
           )}
