@@ -19,9 +19,7 @@ import {
   History, 
   Users, 
   ArrowLeft,
-  AlertTriangle,
-  CheckCircle,
-  XCircle
+  AlertTriangle
 } from 'lucide-react'
 import { CustomIcon } from '@/components/ui/custom-icon'
 import { ResurrectPlayers } from '@/components/admin/ResurrectPlayers'
@@ -69,7 +67,7 @@ interface ActivityNotification {
   notification_type: string
   title: string
   message: string
-  metadata?: any
+  metadata?: Record<string, unknown>
   created_at: string
 }
 
@@ -91,7 +89,7 @@ export default function AdminDashboard({
   const [user, setUser] = useState<User | null>(null)
   const [league, setLeague] = useState<League | null>(null)
   const [members, setMembers] = useState<Member[]>([])
-  const [loading, setLoading] = useState(false)
+  const [, setLoading] = useState(false)
   const [initialized, setInitialized] = useState(false)
   
   // Lives adjustment state
@@ -108,7 +106,7 @@ export default function AdminDashboard({
 
   const supabase = createClient()
 
-  const loadLeagueData = useCallback(async (userId: string, slug: string) => {
+  const loadLeagueData = useCallback(async (currentUser: User, slug: string) => {
     try {
       setLoading(true)
       
@@ -129,7 +127,7 @@ export default function AdminDashboard({
       setLeague(leagueData)
       
       // Check admin access now that we have league data
-      if (!isUserAdmin(userData, leagueData.commissioner_id)) {
+      if (!isUserAdmin(currentUser, leagueData.commissioner_id)) {
         alert('Access denied: Only commissioners and super admins can access this dashboard')
         window.location.href = `/league/${slug}`
         return
@@ -202,7 +200,7 @@ export default function AdminDashboard({
     
     // We'll check admin access after loading league data to verify commissioner status
     
-    loadLeagueData(userData.id, resolvedParams.slug)
+    loadLeagueData(userData, resolvedParams.slug)
   }, [loadLeagueData, resolvedParams.slug])
 
   useEffect(() => {
@@ -243,7 +241,7 @@ export default function AdminDashboard({
         setAdjustmentNotes('')
         
         // Reload data
-        await loadLeagueData(user.id, resolvedParams.slug)
+        await loadLeagueData(user, resolvedParams.slug)
         await loadActivityData()
       } else {
         alert(`❌ ${data.error}`)
@@ -256,7 +254,7 @@ export default function AdminDashboard({
   }
 
   const handleResurrectComplete = () => {
-    loadLeagueData(user!.id, resolvedParams.slug)
+    loadLeagueData(user!, resolvedParams.slug)
     loadActivityData()
   }
 

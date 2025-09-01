@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Shield, Users, Crown, AlertTriangle, CheckCircle, ArrowLeft } from 'lucide-react'
+import { Shield, Users, Crown, CheckCircle, ArrowLeft } from 'lucide-react'
 
 interface User {
   id: string

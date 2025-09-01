@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import Image from 'next/image'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -252,10 +253,12 @@ export default function AdminDashboard() {
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-8">
           <div className="mb-4">
-            <img 
+            <Image 
               src="/logos/Pickem Part App Logo.svg" 
               alt="Pick'em Party Logo"
-              className="w-16 h-16 mx-auto"
+              width={64}
+              height={64}
+              className="mx-auto"
             />
           </div>
           <h1 className="text-3xl font-bold mb-2 fight-text" style={{color: 'var(--destructive)'}}>

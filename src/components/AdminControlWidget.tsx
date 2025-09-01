@@ -28,6 +28,7 @@ interface AdminControlWidgetProps {
     name: string
     slug: string
     invite_code: string
+    commissioner_id?: string
   }
   members: Member[]
   membersWithoutPicks: Member[]
@@ -49,7 +50,6 @@ export function AdminControlWidget({
   league,
   members, 
   membersWithoutPicks,
-  onAdminPickSubmit,
   children 
 }: AdminControlWidgetProps) {
   const [adminPickingFor, setAdminPickingFor] = useState<string | null>(null)

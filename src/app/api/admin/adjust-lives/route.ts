@@ -36,7 +36,7 @@ async function createNotification(
   type: string,
   title: string,
   message: string,
-  metadata: any = null
+  metadata: Record<string, unknown> | null = null
 ) {
   await supabase
     .from('league_notifications')
@@ -149,7 +149,7 @@ export async function POST(request: Request) {
     // Create notification
     const adjustmentType = actualAdjustment > 0 ? 'added' : 'removed'
     const livesWord = Math.abs(actualAdjustment) === 1 ? 'life' : 'lives'
-    const userData = memberData.users as any
+    const userData = Array.isArray(memberData.users) ? memberData.users[0] : memberData.users as { username: string; display_name: string }
     const displayName = userData?.display_name || userData?.username || 'Player'
     
     const title = `${displayName} - Lives ${adjustmentType.charAt(0).toUpperCase() + adjustmentType.slice(1)}`

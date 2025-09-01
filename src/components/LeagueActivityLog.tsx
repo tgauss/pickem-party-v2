@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
@@ -12,7 +12,7 @@ interface ActivityNotification {
   notification_type: string
   title: string
   message: string
-  metadata?: any
+  metadata?: Record<string, unknown>
   created_at: string
 }
 
@@ -68,7 +68,7 @@ export function LeagueActivityLog({ leagueId, className = '' }: LeagueActivityLo
   const [activities, setActivities] = useState<ActivityNotification[]>([])
   const [loading, setLoading] = useState(false)
 
-  const loadActivities = async () => {
+  const loadActivities = useCallback(async () => {
     if (!leagueId || loading) return
     
     setLoading(true)
@@ -83,13 +83,13 @@ export function LeagueActivityLog({ leagueId, className = '' }: LeagueActivityLo
       console.error('Failed to load activity log:', error)
     }
     setLoading(false)
-  }
+  }, [leagueId, loading])
 
   useEffect(() => {
     if (isOpen && activities.length === 0) {
       loadActivities()
     }
-  }, [isOpen])
+  }, [isOpen, activities.length, loadActivities])
 
   const formatTimeAgo = (dateString: string) => {
     const date = new Date(dateString)
