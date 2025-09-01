@@ -483,7 +483,7 @@ export default function LeaguePage({
                 <h3 className="font-bold text-primary">League Commissioner</h3>
               </div>
               {/* Show edit button only for commissioner or super admin */}
-              {(user.id === league.commissioner_id || user.username === 'pickemking') && !isEditingMessage && (
+              {(user.id === league.commissioner_id || ['admin', 'tgauss', 'pickemking'].includes(user.username.toLowerCase())) && !isEditingMessage && (
                 <Button
                   size="sm"
                   variant="outline"

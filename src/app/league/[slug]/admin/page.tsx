@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback, use } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -19,7 +18,8 @@ import {
   History, 
   Users, 
   ArrowLeft,
-  AlertTriangle
+  DollarSign,
+  Save
 } from 'lucide-react'
 import { CustomIcon } from '@/components/ui/custom-icon'
 import { ResurrectPlayers } from '@/components/admin/ResurrectPlayers'
@@ -103,6 +103,11 @@ export default function AdminDashboard({
   const [lifeAdjustments, setLifeAdjustments] = useState<LifeAdjustment[]>([])
   const [activityLog, setActivityLog] = useState<ActivityNotification[]>([])
   const [activeTab, setActiveTab] = useState('lives')
+  
+  // League settings state
+  const [leagueMessage, setLeagueMessage] = useState('')
+  const [updatingMessage, setUpdatingMessage] = useState(false)
+  const [updatingPayment, setUpdatingPayment] = useState<string | null>(null)
 
   const supabase = createClient()
 
@@ -125,6 +130,7 @@ export default function AdminDashboard({
       }
       
       setLeague(leagueData)
+      setLeagueMessage(leagueData.league_message || '')
       
       // Check admin access now that we have league data
       if (!isUserAdmin(currentUser, leagueData.commissioner_id)) {
@@ -256,6 +262,78 @@ export default function AdminDashboard({
   const handleResurrectComplete = () => {
     loadLeagueData(user!, resolvedParams.slug)
     loadActivityData()
+  }
+
+  const togglePaymentStatus = async (userId: string, currentStatus: boolean) => {
+    setUpdatingPayment(userId)
+    try {
+      const { error } = await supabase
+        .from('league_members')
+        .update({ is_paid: !currentStatus })
+        .eq('league_id', league!.id)
+        .eq('user_id', userId)
+      
+      if (error) throw error
+      
+      // Reload members to reflect change
+      await loadLeagueData(user!, resolvedParams.slug)
+      
+      // Create notification
+      const member = members.find(m => m.user.id === userId)
+      if (member) {
+        await supabase
+          .from('league_notifications')
+          .insert({
+            league_id: league!.id,
+            user_id: userId,
+            notification_type: 'payment',
+            title: `Payment Status Updated - ${member.user.display_name}`,
+            message: `${member.user.display_name} has been marked as ${!currentStatus ? 'PAID' : 'UNPAID'} by the commissioner.`,
+            metadata: {
+              paid: !currentStatus,
+              updated_by: user!.id
+            },
+            is_public: true
+          })
+      }
+    } catch (error) {
+      console.error('Error updating payment status:', error)
+      alert('Failed to update payment status')
+    }
+    setUpdatingPayment(null)
+  }
+
+  const updateLeagueMessage = async () => {
+    setUpdatingMessage(true)
+    try {
+      const { error } = await supabase
+        .from('leagues')
+        .update({ league_message: leagueMessage })
+        .eq('id', league!.id)
+      
+      if (error) throw error
+      
+      alert('✅ League message updated successfully!')
+      
+      // Create notification
+      await supabase
+        .from('league_notifications')
+        .insert({
+          league_id: league!.id,
+          user_id: user!.id,
+          notification_type: 'league_update',
+          title: 'League Welcome Message Updated',
+          message: 'The commissioner has updated the league welcome message.',
+          metadata: {
+            updated_by: user!.id
+          },
+          is_public: true
+        })
+    } catch (error) {
+      console.error('Error updating league message:', error)
+      alert('❌ Failed to update league message')
+    }
+    setUpdatingMessage(false)
   }
 
   if (!user || !league) return <div className="p-4">Loading admin dashboard...</div>
@@ -440,6 +518,69 @@ export default function AdminDashboard({
           {/* Player Management Tab */}
           <TabsContent value="players">
             <div className="space-y-6">
+              {/* Payment Management */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <DollarSign className="h-5 w-5" />
+                    Payment Management
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="text-sm text-muted-foreground mb-4">
+                      League Buy-in: <span className="font-bold text-green-600">${league.buy_in_amount}</span>
+                    </div>
+                    <div className="space-y-2">
+                      {members.map(member => (
+                        <div key={member.user.id} className="flex items-center justify-between p-3 rounded-lg border">
+                          <div className="flex items-center gap-3">
+                            <div>
+                              <p className="font-medium">{member.user.display_name}</p>
+                              <p className="text-sm text-muted-foreground">@{member.user.username}</p>
+                            </div>
+                            {member.is_paid ? (
+                              <Badge className="bg-green-600">PAID</Badge>
+                            ) : (
+                              <Badge variant="destructive">UNPAID</Badge>
+                            )}
+                          </div>
+                          <Button
+                            size="sm"
+                            variant={member.is_paid ? "outline" : "default"}
+                            onClick={() => togglePaymentStatus(member.user.id, member.is_paid)}
+                            disabled={updatingPayment === member.user.id}
+                          >
+                            {updatingPayment === member.user.id ? (
+                              "Updating..."
+                            ) : member.is_paid ? (
+                              "Mark Unpaid"
+                            ) : (
+                              "Mark Paid"
+                            )}
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="pt-4 border-t">
+                      <div className="flex justify-between text-sm">
+                        <span>Total Paid:</span>
+                        <span className="font-bold text-green-600">
+                          {members.filter(m => m.is_paid).length} / {members.length} players
+                        </span>
+                      </div>
+                      <div className="flex justify-between text-sm mt-2">
+                        <span>Total Collected:</span>
+                        <span className="font-bold text-green-600">
+                          ${members.filter(m => m.is_paid).length * league.buy_in_amount}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Resurrect Players */}
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
@@ -605,12 +746,34 @@ export default function AdminDashboard({
                     </div>
                   </div>
                   
-                  <Alert>
-                    <AlertTriangle className="h-4 w-4" />
-                    <AlertDescription>
-                      Additional league settings will be available in future updates.
-                    </AlertDescription>
-                  </Alert>
+                  {/* League Welcome Message */}
+                  <div className="space-y-2">
+                    <Label htmlFor="league-message">League Welcome Message</Label>
+                    <Textarea
+                      id="league-message"
+                      value={leagueMessage}
+                      onChange={(e) => setLeagueMessage(e.target.value)}
+                      className="min-h-[150px]"
+                      placeholder="Enter a welcome message for league members..."
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      This message will be displayed to all league members on the league page.
+                    </p>
+                    <Button
+                      onClick={updateLeagueMessage}
+                      disabled={updatingMessage}
+                      className="w-full sm:w-auto"
+                    >
+                      {updatingMessage ? (
+                        <>Updating...</>
+                      ) : (
+                        <>
+                          <Save className="h-4 w-4 mr-2" />
+                          Save Welcome Message
+                        </>
+                      )}
+                    </Button>
+                  </div>
                 </div>
               </CardContent>
             </Card>
