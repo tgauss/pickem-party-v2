@@ -430,7 +430,8 @@ export default function LeaguePage({
               variant="outline"
               size="sm"
               onClick={() => {
-                const inviteUrl = `${window.location.origin}/?invite=${league.invite_code}`
+                const inviterName = encodeURIComponent(user.display_name || user.username)
+                const inviteUrl = `${window.location.origin}/?invite=${league.invite_code}&inviter=${inviterName}`
                 navigator.clipboard.writeText(inviteUrl)
                 alert('📋 Invite link copied to clipboard!')
               }}

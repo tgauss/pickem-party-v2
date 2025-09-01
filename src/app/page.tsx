@@ -15,6 +15,7 @@ import Image from 'next/image'
 function HomePageContent() {
   const searchParams = useSearchParams()
   const inviteCode = searchParams.get('invite')
+  const inviterName = searchParams.get('inviter')
   const [showAuth, setShowAuth] = useState(false)
   const [showTutorial, setShowTutorial] = useState(false)
   const [newUserName, setNewUserName] = useState('')
@@ -389,10 +390,13 @@ function HomePageContent() {
                 <CustomIcon name="fire" fallback="🔥" alt="Hot" size="lg" className="animate-pulse ml-2" />
               </div>
               <h1 className="text-2xl sm:text-3xl font-bold mb-2 fight-text animate-pulse" style={{color: 'var(--primary)'}}>
-                YOU&apos;VE BEEN INVITED!
+                {inviterName ? `${decodeURIComponent(inviterName)} INVITES YOU!` : 'YOU&apos;VE BEEN INVITED!'}
               </h1>
               <p className="text-sm text-muted-foreground">
-                A friend wants you to join their NFL Survivor Pool
+                {inviterName 
+                  ? `${decodeURIComponent(inviterName)} is inviting you to an epic battle for the NFL Season. Can you survive and win up to $${totalPot}?`
+                  : 'A friend wants you to join their NFL Survivor Pool'
+                }
               </p>
             </div>
             
