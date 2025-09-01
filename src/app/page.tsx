@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -11,7 +12,9 @@ import { CustomIcon } from '@/components/ui/custom-icon'
 import { TutorialWizard } from '@/components/TutorialWizard'
 import Image from 'next/image'
 
-export default function HomePage() {
+function HomePageContent() {
+  const searchParams = useSearchParams()
+  const inviteCode = searchParams.get('invite')
   const [showAuth, setShowAuth] = useState(false)
   const [showTutorial, setShowTutorial] = useState(false)
   const [newUserName, setNewUserName] = useState('')
@@ -21,15 +24,62 @@ export default function HomePage() {
   const [pin, setPin] = useState('')
   const [isLogin, setIsLogin] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [invitedLeague, setInvitedLeague] = useState<{
+    id: string
+    name: string
+    slug: string
+    invite_code: string
+    buy_in: number
+    lives_per_player: number
+    season_year: number
+  } | null>(null)
+  const [checkingInvite, setCheckingInvite] = useState(false)
   const supabase = createClient()
 
-  // Check if user is already logged in
+  // Check if user is already logged in and handle invite
   useEffect(() => {
-    const currentUser = localStorage.getItem('currentUser')
-    if (currentUser) {
-      window.location.href = '/dashboard'
+    const checkAuthAndInvite = async () => {
+      const currentUser = localStorage.getItem('currentUser')
+      
+      if (inviteCode) {
+        setCheckingInvite(true)
+        // Check if invite code is valid
+        const { data: league } = await supabase
+          .from('leagues')
+          .select('*')
+          .eq('invite_code', inviteCode)
+          .single()
+        
+        if (league) {
+          setInvitedLeague(league)
+          
+          if (currentUser) {
+            // User is logged in, offer to join league
+            const user = JSON.parse(currentUser)
+            
+            // Check if already a member
+            const { data: existingMember } = await supabase
+              .from('league_members')
+              .select('*')
+              .eq('league_id', league.id)
+              .eq('user_id', user.id)
+              .single()
+            
+            if (existingMember) {
+              // Already a member, redirect to league
+              window.location.href = `/league/${league.slug}`
+            }
+          }
+        }
+        setCheckingInvite(false)
+      } else if (currentUser) {
+        // No invite, just redirect logged-in users
+        window.location.href = '/dashboard'
+      }
     }
-  }, [])
+    
+    checkAuthAndInvite()
+  }, [inviteCode, supabase])
 
   const handleAuth = async () => {
     setLoading(true)
@@ -64,6 +114,20 @@ export default function HomePage() {
         
       if (data) {
         localStorage.setItem('currentUser', JSON.stringify(data))
+        
+        // Auto-join invited league if applicable
+        if (invitedLeague) {
+          await supabase
+            .from('league_members')
+            .insert({
+              league_id: invitedLeague.id,
+              user_id: data.id,
+              lives_remaining: invitedLeague.lives_per_player || 1,
+              is_eliminated: false,
+              is_paid: false
+            })
+        }
+        
         // Show tutorial for new users
         setNewUserName(data.display_name)
         setShowTutorial(true)
@@ -83,7 +147,39 @@ export default function HomePage() {
       const user = JSON.parse(currentUser)
       localStorage.setItem('tutorialSeen', JSON.stringify({ userId: user.id, seen: true }))
     }
-    window.location.href = '/dashboard'
+    // Redirect to invited league or dashboard
+    if (invitedLeague) {
+      window.location.href = `/league/${invitedLeague.slug}`
+    } else {
+      window.location.href = '/dashboard'
+    }
+  }
+
+  const handleJoinLeague = async () => {
+    if (!invitedLeague) return
+    
+    setLoading(true)
+    const currentUser = localStorage.getItem('currentUser')
+    if (currentUser) {
+      const user = JSON.parse(currentUser)
+      
+      const { error } = await supabase
+        .from('league_members')
+        .insert({
+          league_id: invitedLeague.id,
+          user_id: user.id,
+          lives_remaining: invitedLeague.lives_per_player || 1,
+          is_eliminated: false,
+          is_paid: false
+        })
+      
+      if (!error) {
+        window.location.href = `/league/${invitedLeague.slug}`
+      } else {
+        alert('Failed to join league: ' + error.message)
+      }
+    }
+    setLoading(false)
   }
 
   if (showAuth) {
@@ -214,6 +310,111 @@ export default function HomePage() {
             </Button>
           </div>
         </Card>
+      </div>
+    )
+  }
+
+  // Invite Landing Page
+  if (inviteCode && invitedLeague) {
+    const currentUser = localStorage.getItem('currentUser')
+    
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <Card className="w-full max-w-lg retro-border">
+          <div className="text-center p-8">
+            <div className="mb-6">
+              <Image 
+                src="/logos/Pickem Part App Logo.svg" 
+                alt="Pickem Party Logo"
+                width={120}
+                height={120}
+                className="mx-auto"
+              />
+            </div>
+            
+            <div className="mb-6">
+              <CustomIcon name="mail" fallback="📧" alt="Invite" size="xl" />
+            </div>
+            
+            <h1 className="text-2xl font-bold mb-4 fight-text" style={{color: 'var(--primary)'}}>
+              YOU&apos;VE BEEN INVITED!
+            </h1>
+            
+            <div className="bg-primary/20 border border-primary/50 rounded-lg p-4 mb-6">
+              <h2 className="text-lg font-bold text-primary mb-2">{invitedLeague.name}</h2>
+              <div className="text-sm text-muted-foreground space-y-1">
+                <p>💰 Buy-in: ${invitedLeague.buy_in}</p>
+                <p>❤️ Lives per player: {invitedLeague.lives_per_player}</p>
+                <p>🏈 Season: {invitedLeague.season_year}</p>
+              </div>
+            </div>
+            
+            {currentUser ? (
+              <div className="space-y-4">
+                <p className="text-muted-foreground">
+                  Ready to join the battle, fighter?
+                </p>
+                <Button 
+                  onClick={handleJoinLeague}
+                  disabled={loading}
+                  className="w-full fight-text"
+                  style={{
+                    backgroundColor: 'var(--primary)',
+                    color: 'var(--primary-foreground)'
+                  }}
+                >
+                  {loading ? '...' : 'JOIN LEAGUE'}
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => window.location.href = '/dashboard'}
+                  className="w-full"
+                >
+                  Maybe Later
+                </Button>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <p className="text-muted-foreground">
+                  Join the fight! Create your account to enter this league.
+                </p>
+                <Button 
+                  onClick={() => setShowAuth(true)}
+                  className="w-full fight-text"
+                  style={{
+                    backgroundColor: 'var(--primary)',
+                    color: 'var(--primary-foreground)'
+                  }}
+                >
+                  <CustomIcon name="football" fallback="🏈" alt="Football" size="sm" className="mr-2" />
+                  SIGN UP & JOIN
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setIsLogin(true)
+                    setShowAuth(true)
+                  }}
+                  className="w-full"
+                >
+                  Already have an account? Login
+                </Button>
+              </div>
+            )}
+          </div>
+        </Card>
+      </div>
+    )
+  }
+
+  // Loading state for invite check
+  if (checkingInvite) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <div className="text-center">
+          <CustomIcon name="hourglass" fallback="⏰" alt="Loading" size="xl" />
+          <p className="text-muted-foreground mt-4">Checking invite...</p>
+        </div>
       </div>
     )
   }
@@ -506,5 +707,20 @@ export default function HomePage() {
         playerName={newUserName}
       />
     </div>
+  )
+}
+
+export default function HomePage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <CustomIcon name="hourglass" fallback="⏰" alt="Loading" size="xl" />
+          <p className="text-muted-foreground mt-4">Loading...</p>
+        </div>
+      </div>
+    }>
+      <HomePageContent />
+    </Suspense>
   )
 }

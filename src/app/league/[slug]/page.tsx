@@ -421,9 +421,24 @@ export default function LeaguePage({
           <p className="text-sm sm:text-base text-muted-foreground">
             {members.filter(m => !m.is_eliminated).length} FIGHTERS REMAIN
           </p>
-          <p className="text-xs sm:text-sm text-muted-foreground mt-1">
-            Invite Code: <strong>{league.invite_code}</strong>
-          </p>
+          <div className="flex flex-col items-center gap-2 mt-2">
+            <p className="text-xs sm:text-sm text-muted-foreground">
+              Invite Code: <strong>{league.invite_code}</strong>
+            </p>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                const inviteUrl = `${window.location.origin}/?invite=${league.invite_code}`
+                navigator.clipboard.writeText(inviteUrl)
+                alert('📋 Invite link copied to clipboard!')
+              }}
+              className="flex items-center gap-2"
+            >
+              <CustomIcon name="copy" fallback="📋" alt="Copy" size="sm" />
+              Copy Invite Link
+            </Button>
+          </div>
         </div>
 
         {/* Week Navigation */}
