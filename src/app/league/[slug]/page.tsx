@@ -64,6 +64,7 @@ interface League {
   max_weeks: number
   lives_per_player: number
   league_message?: string
+  commissioner_id?: string
 }
 
 interface Member {
@@ -101,6 +102,11 @@ export default function LeaguePage({
   const [gameLines, setGameLines] = useState<Record<string, GameLine>>({})
   const [loading, setLoading] = useState(false)
   const [initialized, setInitialized] = useState(false)
+  
+  // Commissioner message editing state
+  const [isEditingMessage, setIsEditingMessage] = useState(false)
+  const [draftMessage, setDraftMessage] = useState('')
+  const [savingMessage, setSavingMessage] = useState(false)
   
   // Week navigation state
   const [currentWeek, setCurrentWeek] = useState(1)
@@ -386,6 +392,30 @@ export default function LeaguePage({
     setLoading(false)
   }
 
+  const saveLeagueMessage = async () => {
+    if (!league) return
+    
+    setSavingMessage(true)
+    try {
+      const { error } = await supabase
+        .from('leagues')
+        .update({ league_message: draftMessage })
+        .eq('id', league.id)
+      
+      if (error) {
+        alert('Failed to save message: ' + error.message)
+      } else {
+        setLeague({ ...league, league_message: draftMessage })
+        setIsEditingMessage(false)
+        alert('League message updated successfully!')
+      }
+    } catch (error) {
+      console.error('Error saving message:', error)
+      alert('Failed to save message')
+    }
+    setSavingMessage(false)
+  }
+
   if (!user || !league) return <div className="p-4">Loading arena...</div>
 
   // Determine what type of week view to show
@@ -446,31 +476,81 @@ export default function LeaguePage({
         {/* League Message/Announcements - Commissioner Section */}
         <Card className="mb-4 sm:mb-6 bg-gradient-to-r from-primary/10 to-secondary/10 border-primary/30">
           <div className="p-4 sm:p-6">
-            <div className="flex items-center gap-2 mb-3">
-              <CustomIcon name="megaphone" fallback="📢" alt="Announcement" size="sm" />
-              <h3 className="font-bold text-primary">League Commissioner</h3>
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <CustomIcon name="megaphone" fallback="📢" alt="Announcement" size="sm" />
+                <h3 className="font-bold text-primary">League Commissioner</h3>
+              </div>
+              {/* Show edit button only for commissioner or super admin */}
+              {(user.id === league.commissioner_id || user.username === 'pickemking') && !isEditingMessage && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    setIsEditingMessage(true)
+                    setDraftMessage(league.league_message || '')
+                  }}
+                  className="flex items-center gap-1"
+                >
+                  <CustomIcon name="edit" fallback="✏️" alt="Edit" size="sm" />
+                  Edit
+                </Button>
+              )}
             </div>
             <div className="text-sm space-y-2">
               <p>
-                <strong>Commissioner:</strong> League Creator (we&apos;ll add dynamic name when DB is updated)
+                <strong>Commissioner:</strong> League Creator
               </p>
               <div className="bg-surface/50 rounded-lg p-3 border border-border">
                 <p className="text-xs text-muted-foreground mb-2">📋 LEAGUE INFORMATION:</p>
-                <p className="text-sm whitespace-pre-wrap">
-                  {league.league_message && league.league_message.trim() ? league.league_message : (
-                    <>
-                      Welcome fighters! This is your league commissioner speaking. 
-                      Rules: Standard NFL Survivor - pick ONE team each week that you think will WIN. 
-                      If they lose or tie, you&apos;re ELIMINATED! You can only use each team ONCE per season.
-                      <br /><br />
-                      💰 <strong>Payment:</strong> Venmo @YourCommissioner for the ${league.buy_in} buy-in
-                      <br />
-                      📅 <strong>Important:</strong> All picks must be submitted before the first game of each week!
-                      <br />
-                      🏆 <strong>Prize:</strong> Winner takes the full pot (${league.buy_in} × {members.length} fighters)
-                    </>
-                  )}
-                </p>
+                {isEditingMessage ? (
+                  <div className="space-y-3">
+                    <textarea
+                      value={draftMessage}
+                      onChange={(e) => setDraftMessage(e.target.value)}
+                      className="w-full min-h-[150px] p-2 bg-background border border-border rounded-lg text-sm text-primary resize-y"
+                      placeholder="Enter league information, rules, payment details, etc..."
+                    />
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        onClick={saveLeagueMessage}
+                        disabled={savingMessage}
+                        className="flex-1"
+                      >
+                        {savingMessage ? 'Saving...' : 'Save Message'}
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => {
+                          setIsEditingMessage(false)
+                          setDraftMessage('')
+                        }}
+                        disabled={savingMessage}
+                        className="flex-1"
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-sm whitespace-pre-wrap">
+                    {league.league_message && league.league_message.trim() ? league.league_message : (
+                      <>
+                        Welcome fighters! This is your league commissioner speaking. 
+                        Rules: Standard NFL Survivor - pick ONE team each week that you think will WIN. 
+                        If they lose or tie, you&apos;re ELIMINATED! You can only use each team ONCE per season.
+                        <br /><br />
+                        💰 <strong>Payment:</strong> Venmo @YourCommissioner for the ${league.buy_in} buy-in
+                        <br />
+                        📅 <strong>Important:</strong> All picks must be submitted before the first game of each week!
+                        <br />
+                        🏆 <strong>Prize:</strong> Winner takes the full pot (${league.buy_in} × {members.length} fighters)
+                      </>
+                    )}
+                  </p>
+                )}
               </div>
             </div>
           </div>
