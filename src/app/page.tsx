@@ -22,6 +22,7 @@ function HomePageContent() {
   const [username, setUsername] = useState('')
   const [displayName, setDisplayName] = useState('')
   const [email, setEmail] = useState('')
+  const [phoneNumber, setPhoneNumber] = useState('')
   const [pin, setPin] = useState('')
   const [isLogin, setIsLogin] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -30,8 +31,7 @@ function HomePageContent() {
     name: string
     slug: string
     invite_code: string
-    buy_in: number
-    lives_per_player: number
+    buy_in_amount: number
     season_year: number
     member_count?: number
   } | null>(null)
@@ -79,22 +79,20 @@ function HomePageContent() {
       
       if (inviteCode) {
         setCheckingInvite(true)
-        // Check if invite code is valid and get league with member count
+        // Check if invite code is valid and get league
         const { data: league } = await supabase
           .from('leagues')
-          .select(`
-            *,
-            league_members!inner(count)
-          `)
+          .select('*')
           .eq('invite_code', inviteCode)
           .single()
         
         if (league) {
-          // Get member count
+          // Get member count separately
           const { count: memberCount } = await supabase
             .from('league_members')
             .select('*', { count: 'exact', head: true })
             .eq('league_id', league.id)
+          
           
           setInvitedLeague({
             ...league,
@@ -155,6 +153,7 @@ function HomePageContent() {
           username: username.toLowerCase(),
           display_name: displayName,
           email: email.toLowerCase(),
+          phone_number: phoneNumber.trim() || null,
           pin_hash: pin ? pin : null // Store PIN directly for MVP simplicity
         })
         .select()
@@ -170,7 +169,7 @@ function HomePageContent() {
             .insert({
               league_id: invitedLeague.id,
               user_id: data.id,
-              lives_remaining: invitedLeague.lives_per_player || 1,
+              lives_remaining: 2, // Default lives per player
               is_eliminated: false,
               is_paid: false
             })
@@ -216,7 +215,7 @@ function HomePageContent() {
         .insert({
           league_id: invitedLeague.id,
           user_id: user.id,
-          lives_remaining: invitedLeague.lives_per_player || 1,
+          lives_remaining: 2, // Default lives per player
           is_eliminated: false,
           is_paid: false
         })
@@ -255,6 +254,7 @@ function HomePageContent() {
                 <p className="mb-2">🏈 <strong>Quick Setup:</strong></p>
                 <p>• <strong>Username:</strong> How you login (like &quot;jaren&quot; or &quot;hayden&quot;)</p>
                 <p>• <strong>Display Name:</strong> What others see in the league</p>
+                <p>• <strong>Email & Phone:</strong> For important league updates</p>
                 <p>• <strong>PIN:</strong> Your 4-digit password to login</p>
               </div>
             )}
@@ -271,6 +271,10 @@ function HomePageContent() {
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 className="bg-surface border-border min-h-[44px] text-base"
+                autoComplete="username"
+                autoCapitalize="none"
+                autoCorrect="off"
+                spellCheck="false"
               />
               {!isLogin && (
                 <p className="text-xs text-muted-foreground mt-1">
@@ -289,6 +293,8 @@ function HomePageContent() {
                     value={displayName}
                     onChange={(e) => setDisplayName(e.target.value)}
                     className="bg-surface border-border min-h-[44px] text-base"
+                    autoComplete="name"
+                    autoCapitalize="words"
                   />
                   <p className="text-xs text-muted-foreground mt-1">
                     This appears in leagues and standings
@@ -303,7 +309,27 @@ function HomePageContent() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="bg-surface border-border min-h-[44px] text-base"
+                    autoComplete="email"
+                    autoCapitalize="none"
+                    autoCorrect="off"
+                    spellCheck="false"
                   />
+                </div>
+                <div>
+                  <Label htmlFor="phoneNumber">Phone Number (Optional)</Label>
+                  <Input
+                    id="phoneNumber"
+                    type="tel"
+                    placeholder="(555) 123-4567"
+                    value={phoneNumber}
+                    onChange={(e) => setPhoneNumber(e.target.value)}
+                    className="bg-surface border-border min-h-[44px] text-base"
+                    autoComplete="tel"
+                    inputMode="tel"
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    For league admin communication and important updates
+                  </p>
                 </div>
               </>
             )}
@@ -319,6 +345,10 @@ function HomePageContent() {
                 value={pin}
                 onChange={(e) => setPin(e.target.value.slice(0, 4))}
                 className="bg-surface border-border min-h-[44px] text-base"
+                autoComplete="current-password"
+                inputMode="numeric"
+                pattern="[0-9]{4}"
+                maxLength={4}
                 required={!isLogin}
               />
               <p className="text-xs text-muted-foreground mt-1">
@@ -365,7 +395,7 @@ function HomePageContent() {
   // Invite Landing Page
   if (inviteCode && invitedLeague) {
     const currentUser = localStorage.getItem('currentUser')
-    const totalPot = (invitedLeague.member_count || 0) * invitedLeague.buy_in
+    const totalPot = (invitedLeague.member_count || 0) * (invitedLeague.buy_in_amount || 0)
     const deadlineExpired = countdown?.expired || false
     
     return (
@@ -406,7 +436,7 @@ function HomePageContent() {
               
               <div className="grid grid-cols-2 gap-4 text-sm mb-4">
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-green-500">${invitedLeague.buy_in}</div>
+                  <div className="text-2xl font-bold text-green-500">${invitedLeague.buy_in_amount || 0}</div>
                   <div className="text-xs text-muted-foreground">Buy-in</div>
                 </div>
                 <div className="text-center">
@@ -418,7 +448,7 @@ function HomePageContent() {
               <div className="grid grid-cols-2 gap-4 text-xs text-muted-foreground">
                 <div className="flex items-center gap-1">
                   <CustomIcon name="heart" fallback="❤️" alt="Lives" size="sm" />
-                  {invitedLeague.lives_per_player} {invitedLeague.lives_per_player === 1 ? 'Life' : 'Lives'}
+                  2 Lives
                 </div>
                 <div className="flex items-center gap-1">
                   <CustomIcon name="users" fallback="👥" alt="Members" size="sm" />
