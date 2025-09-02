@@ -1,409 +1,317 @@
-# Claude Development Guidelines
+# Claude Development Guidelines & Memory Document
 # Pickem Party v2
 
 **Last Updated**: September 1, 2025
 **Version**: 2.0.0
+**Purpose**: This document serves as persistent memory for Claude Code across sessions
 
-## Project Context
+## 🎯 Project Overview
 
-You are working on **Pickem Party v2**, a complete rebuild of an NFL Survivor Pool platform. This is a mobile-first web application built with Next.js 15.5.2, Supabase, and Tailwind CSS with shadcn/ui components.
+**Pickem Party v2** is a complete rebuild of an NFL Survivor Pool platform. Users pick one NFL team per week to win. If their team loses, they're eliminated. Last player standing wins the pot.
 
-## Recent Changes (September 2025)
-- Added phone number field to user registration
-- Implemented commissioner-controlled pick revelation
-- Enhanced mobile form optimization
-- Fixed invite page calculations (buy_in → buy_in_amount)
-- Added comprehensive admin dashboard features
+### Key URLs
+- **Production**: https://www.pickemparty.app
+- **Invite Example**: https://www.pickemparty.app/?invite=GRID2025&inviter=taylor%20g
+- **GitHub**: https://github.com/tgauss/pickem-party-v2
+- **Supabase Project ID**: cggoycedsybrajvdqjjk
 
-## Critical Rules (NEVER VIOLATE THESE)
+## 🚀 Recent Work (September 2025 Session)
 
-### 1. Authentication
-- **ONLY use Supabase Auth** - never create custom session management
-- **NO custom cookies** - let Supabase handle all auth state
-- **NO middleware auth checks** - use Supabase RLS and server components
-- Always use `createClient()` from `@/lib/supabase/client` for client-side
-- Always use `createServerClient()` from `@/lib/supabase/server` for server-side
+### Features Implemented
+1. **Phone Number Collection** 
+   - Added `phone_number` field to users table
+   - Optional field in registration form
+   - Mobile-optimized with proper input types
+   - Enables league admin off-platform communication
 
-### 2. Data Access
-- **Database**: Supabase PostgreSQL ONLY (no local adapters, no mock data)
-- **RLS (Row Level Security)**: All tables must have proper RLS policies
-- **Server Components**: Prefer server components for initial data fetching
-- **Client Components**: Only when interactivity is required
+2. **Commissioner-Controlled Pick Revelation**
+   - Replaced automatic reveal when all picks submitted
+   - Added `picks_revealed_weeks` integer[] to leagues table
+   - Created `/api/admin/reveal-picks` endpoint
+   - Allows new members to join up to game time
 
-### 3. Mobile-First Design
-- **Always design for mobile first** (320px minimum width)
-- **Touch targets minimum 44px**
-- **Use shadcn/ui components** exclusively for UI elements
-- **Pickem Party color palette** (see brand guidelines below)
+3. **Fixed Invite System**
+   - Corrected database field: `buy_in` → `buy_in_amount`
+   - Fixed total pot calculations
+   - Now shows: $15 buy-in, $165 pot (11 members)
 
-### 4. TypeScript
-- **Strict TypeScript** - no `any` types
-- **Zod schemas** for all form validation and API validation
-- **Database types** generated from Supabase CLI
+4. **Mobile Optimizations**
+   - All inputs have 44px minimum touch targets
+   - Smart keyboard types (tel, email, numeric)
+   - Proper autoComplete and autoCapitalize per field
+   - No spell check on technical fields
 
-## Brand Guidelines
+5. **Admin Dashboard Enhancements**
+   - Payment tracking (mark paid/unpaid)
+   - Life adjustments with audit trail
+   - Commissioner assignment system
+   - League messaging for rules/announcements
 
-### Colors (CSS Custom Properties)
-```css
-:root {
-  /* Primary */
-  --primary: #B0CA47;
-  --primary-hover: #C3D775;
-  --primary-active: #95AB3C;
-  
-  /* Secondary */
-  --secondary: #C38B5A;
-  --secondary-hover: #D2A883;
-  --secondary-active: #A5764C;
-  
-  /* Neutrals */
-  --background-1: #0B0E0C;
-  --background-2: #121512;
-  --surface: #171A17;
-  --border: #2B2A28;
-  
-  /* Text */
-  --text-primary: #E6E8EA;
-  --text-secondary: #B7BDC3;
-  --text-muted: #8B949E;
-  --on-primary: #0B0E0C;
-  --on-secondary: #0B0E0C;
-  
-  /* States */
-  --success: #B0CA47;
-  --warning: #C38B5A;
-  --danger: #E05656;
-  --info: #A2A590;
-  --focus-ring: rgba(176, 202, 71, 0.55);
-  --selected-bg: rgba(176, 202, 71, 0.12);
-}
-```
+## 📊 Current State
 
-### Typography
-- **Headings**: Goldman Bold (Google Font)
-- **Body**: System font stack
-- **Sizing**: H1 32px, H2 24px, H3 20px, Body 16px, Small 14px
-
-### Spacing
-- Use Tailwind spacing scale: 4, 8, 12, 16, 24, 32
-- Border radius: 12px for buttons/cards, 20px for large cards
-
-## Code Structure
-
-### Directory Structure
-```
-src/
-├── app/                    # Next.js App Router
-│   ├── (auth)/            # Auth-related routes
-│   ├── league/[slug]/     # League-specific routes
-│   └── admin/             # Admin routes
-├── components/
-│   ├── ui/                # shadcn/ui components
-│   ├── forms/             # Form components
-│   ├── layout/            # Layout components
-│   └── features/          # Feature-specific components
-├── lib/
-│   ├── supabase/          # Supabase clients
-│   ├── validations/       # Zod schemas
-│   ├── utils/             # Utility functions
-│   └── hooks/             # Custom React hooks
-├── types/                 # TypeScript type definitions
-└── styles/                # Global CSS
-```
-
-### Component Patterns
-
-#### Server Components (Default)
-```typescript
-// app/league/[slug]/page.tsx
-import { createServerClient } from '@/lib/supabase/server'
-
-export default async function LeaguePage({
-  params
-}: {
-  params: { slug: string }
-}) {
-  const supabase = createServerClient()
-  const { data: league } = await supabase
-    .from('leagues')
-    .select('*')
-    .eq('slug', params.slug)
-    .single()
-
-  return <LeagueView league={league} />
-}
-```
-
-#### Client Components
-```typescript
-'use client'
-
-import { createClient } from '@/lib/supabase/client'
-import { useUser } from '@/lib/hooks/useUser'
-
-export default function PickForm() {
-  const supabase = createClient()
-  const { user } = useUser()
-  
-  // Component logic
-}
-```
-
-#### Form Components with Zod
-```typescript
-'use client'
-
-import { z } from 'zod'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-
-const schema = z.object({
-  teamId: z.string().min(1, 'Please select a team')
-})
-
-export function PickForm() {
-  const form = useForm<z.infer<typeof schema>>({
-    resolver: zodResolver(schema)
-  })
-  
-  // Form logic
-}
-```
-
-## Database Patterns
-
-### RLS Policies
-Every table must have RLS enabled and appropriate policies:
+### Database Schema Key Points
 ```sql
--- Enable RLS
-ALTER TABLE leagues ENABLE ROW LEVEL SECURITY;
-
--- Policy for league members
-CREATE POLICY "League members can view league"
-ON leagues FOR SELECT
-USING (
-  id IN (
-    SELECT league_id 
-    FROM league_members 
-    WHERE user_id = auth.uid()
-  )
-);
+-- Important tables and fields
+users: id, username, display_name, email, phone_number, pin_hash
+leagues: id, name, slug, invite_code, buy_in_amount, commissioner_id, picks_revealed_weeks[]
+league_members: league_id, user_id, lives_remaining (default: 2), is_paid, is_eliminated
+picks: user_id, league_id, game_id, team_id, week, is_correct
+games: season_year, week, home_team_id, away_team_id, home_score, away_score
 ```
 
-### Query Patterns
-```typescript
-// Good: Server Component with RLS
-const { data: leagues } = await supabase
-  .from('leagues')
-  .select(`
-    *,
-    league_members!inner(user_id)
-  `)
+### Authentication Status
+- **Current**: Simplified username + 4-digit PIN using localStorage
+- **TODO**: Migrate to proper Supabase Auth with JWT tokens
+- **Risk**: Sessions don't persist across devices
 
-// Good: Client Component with real-time
-const { data: picks } = useQuery({
-  queryKey: ['picks', weekId],
-  queryFn: async () => {
-    const { data } = await supabase
-      .from('picks')
-      .select('*')
-      .eq('week_id', weekId)
-    return data
-  }
-})
+### Tech Stack
+- **Frontend**: Next.js 15.5.2 with App Router
+- **Database**: Supabase (PostgreSQL with RLS)
+- **Styling**: Tailwind CSS + shadcn/ui
+- **Deployment**: Vercel
+- **APIs**: ESPN (odds), SportsData.io (scores)
+
+## ⚠️ Critical Information
+
+### Super Admin Users (Hardcoded)
+```typescript
+const superAdminUsernames = ['admin', 'tgauss', 'pickemking']
 ```
 
-## Mobile Form Optimization (NEW)
+### Environment Variables Required
+```env
+NEXT_PUBLIC_SUPABASE_URL=https://cggoycedsybrajvdqjjk.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=[your_key]
+SPORTSDATA_API_KEY=[your_key]
+```
 
-### Input Field Best Practices
+### Known Issues to Remember
+1. **Node.js 18 deprecation warnings** - Need to upgrade to v20+
+2. **Build manifest errors** in development (ENOENT errors)
+3. **Bundle size** - League page is 218KB (target: <150KB)
+4. **No tests** - 0% coverage currently
+5. **localStorage auth** - Not secure, needs migration
+
+## 🛠 Development Patterns
+
+### Mobile Form Optimization
 ```typescript
-// Always include these attributes for mobile optimization
+// Always use these patterns for mobile inputs
 <Input
   type="tel"
-  inputMode="tel"        // Triggers correct keyboard
-  autoComplete="tel"     // Enables autofill
-  autoCapitalize="none"  // Prevents unwanted caps
-  autoCorrect="off"      // Disables autocorrect
-  spellCheck="false"     // No spell checking
-  className="min-h-[44px]" // Touch target size
+  inputMode="tel"        // Correct keyboard
+  autoComplete="tel"     // Autofill support
+  autoCapitalize="none"  // Control capitalization
+  autoCorrect="off"      // No autocorrect
+  spellCheck="false"     // No spell check
+  className="min-h-[44px]" // Touch target
 />
 ```
 
-### Field-Specific Settings
-- **Username**: `autoCapitalize="none"`, `autoCorrect="off"`
-- **Display Name**: `autoCapitalize="words"`
-- **Email**: `autoCapitalize="none"`, `type="email"`
-- **Phone**: `type="tel"`, `inputMode="tel"`
-- **PIN**: `inputMode="numeric"`, `pattern="[0-9]{4}"`
-
-## Commissioner Features (NEW)
-
-### Manual Pick Revelation
+### Commissioner Authorization
 ```typescript
-// Check if user can reveal picks
+// Pattern for checking commissioner permissions
 const canRevealPicks = currentUser && league && (
   league.commissioner_id === currentUser.id || 
   ['admin', 'tgauss', 'pickemking'].includes(currentUser.username.toLowerCase())
 )
-
-// Check if picks are revealed
-const picksRevealed = league?.picks_revealed_weeks?.includes(week)
 ```
 
-### Database Fields Update
-- `leagues.buy_in_amount` (not `buy_in`)
-- `leagues.picks_revealed_weeks` (integer array)
-- `users.phone_number` (optional text field)
-
-## Common Patterns
-
-### Error Handling
+### Database Client Creation
 ```typescript
-import { toast } from 'sonner'
+// Client-side
+import { createClient } from '@/lib/supabase/client'
+const supabase = createClient()
 
-try {
-  const { error } = await supabase.from('picks').insert(pick)
-  if (error) throw error
-  toast.success('Pick submitted successfully!')
-} catch (error) {
-  toast.error('Failed to submit pick')
-  console.error('Pick submission error:', error)
-}
+// Server-side
+import { createServerClient } from '@/lib/supabase/server'
+const supabase = createServerClient()
 ```
 
-### Loading States
-```typescript
-'use client'
+## 🎮 Core Features Status
 
-import { Skeleton } from '@/components/ui/skeleton'
+### Working Features ✅
+- User registration with phone numbers
+- League creation and management
+- Weekly pick submission
+- Manual pick revelation by commissioners
+- Payment tracking
+- Life adjustments
+- Betting line integration (ESPN)
+- Mobile-optimized interface
+- Invite system with proper calculations
 
-export function LeagueStandings({ leagueId }: { leagueId: string }) {
-  const { data: standings, isLoading } = useStandings(leagueId)
-  
-  if (isLoading) {
-    return <Skeleton className="h-48 w-full" />
-  }
-  
-  return <StandingsTable standings={standings} />
-}
-```
+### Partially Working ⚠️
+- Score syncing (manual trigger needed)
+- Elimination logic (needs testing)
+- Activity feed (basic implementation)
 
-### Responsive Design
-```typescript
-// Always mobile-first, use Tailwind responsive prefixes
-<div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-  {/* Cards */}
-</div>
+### Not Implemented ❌
+- Email notifications
+- Push notifications
+- Advanced statistics
+- Social features (chat, comments)
+- Playoff brackets
+- Automated testing
 
-// Touch targets
-<Button className="min-h-[44px] min-w-[44px]">
-  Submit Pick
-</Button>
-```
+## 📝 Common Tasks & Commands
 
-## Security Checklist
-
-Before implementing any auth-related feature:
-- [ ] Are you using Supabase Auth (not custom sessions)?
-- [ ] Do all database queries use RLS?
-- [ ] Are sensitive operations server-side only?
-- [ ] Is user input validated with Zod?
-- [ ] Are error messages user-friendly (not exposing internals)?
-
-## Testing Guidelines
-
-### Unit Tests (Vitest)
-```typescript
-import { render, screen } from '@testing-library/react'
-import { PickForm } from '@/components/forms/PickForm'
-
-test('renders pick form with teams', () => {
-  render(<PickForm teams={mockTeams} />)
-  expect(screen.getByText('Select your pick')).toBeInTheDocument()
-})
-```
-
-### E2E Tests (Playwright)
-```typescript
-import { test, expect } from '@playwright/test'
-
-test('user can submit a pick', async ({ page }) => {
-  await page.goto('/league/test-league')
-  await page.click('[data-testid="team-select-KC"]')
-  await page.click('[data-testid="submit-pick"]')
-  await expect(page.locator('.success-message')).toBeVisible()
-})
-```
-
-## Performance Guidelines
-
-### Code Splitting
-```typescript
-// Dynamic imports for large components
-const AdminPanel = dynamic(() => import('@/components/AdminPanel'), {
-  loading: () => <Skeleton className="h-96" />
-})
-```
-
-### Image Optimization
-```typescript
-import Image from 'next/image'
-
-<Image
-  src="/team-logos/KC.svg"
-  alt="Kansas City Chiefs"
-  width={40}
-  height={40}
-  className="rounded-full"
-/>
-```
-
-### Bundle Analysis
+### Development
 ```bash
-# Analyze bundle size regularly
-npm run build
-npm run analyze
+npm run dev          # Start dev server (port 3000)
+npm run build        # Build for production
+npm run lint         # Run ESLint
+npm run typecheck    # TypeScript checking
 ```
 
-## Deployment Checklist
+### Database Migrations
+```sql
+-- Add new field example
+ALTER TABLE users ADD COLUMN new_field TEXT;
 
-Before pushing to production:
-- [ ] All TypeScript errors resolved
-- [ ] All tests passing
-- [ ] Bundle size under 300KB initial load
-- [ ] Lighthouse score > 90 on mobile
-- [ ] No console errors
-- [ ] Environment variables set in Vercel
-- [ ] Database migrations run
-- [ ] RLS policies tested
-
-## Debugging
-
-### Common Issues
-1. **Auth not working**: Check if using `createServerClient` vs `createClient` correctly
-2. **RLS denying queries**: Verify policies and user context
-3. **Hydration errors**: Check server/client state mismatch
-4. **Mobile layout issues**: Test on actual device, not just browser DevTools
-
-### Logging
-```typescript
-// Structured logging for debugging
-import { logger } from '@/lib/logger'
-
-logger.info('Pick submitted', {
-  userId: user.id,
-  teamId: pick.teamId,
-  week: currentWeek
-})
+-- Add picks revealed tracking
+ALTER TABLE leagues ADD COLUMN picks_revealed_weeks integer[] DEFAULT '{}'::integer[];
 ```
 
-## When to Ask for Help
+### Testing Invite System
+1. Visit: http://localhost:3000/?invite=GRID2025&inviter=taylor%20g
+2. Should show: $15 buy-in, $165 pot, 11 members
 
-Ask me for clarification if:
-- Authentication flow seems complex
-- Database query involves multiple tables
-- Mobile UX pattern is unclear
-- Performance optimization is needed
-- Error boundaries need implementation
+## 🔄 Workflow Reminders
 
-Remember: This rebuild exists because we had authentication and session management issues. When in doubt, keep it simple and let Supabase handle the complexity.
+### When Adding New Features
+1. Check KNOWN_ISSUES.md for related problems
+2. Update database schema if needed
+3. Ensure mobile optimization (44px targets, proper keyboards)
+4. Test on actual mobile device
+5. Update CHANGELOG.md
+6. Commit with descriptive message
+
+### Before Deployment
+1. Run `npm run build` - ensure no TypeScript errors
+2. Check bundle size hasn't increased significantly
+3. Test critical user flows
+4. Update version in package.json
+5. Document in CHANGELOG.md
+
+## 💡 Future Session Context
+
+### Priority Tasks
+1. **Upgrade to Node.js 20+** - Critical for Supabase compatibility
+2. **Implement proper auth** - Replace localStorage with Supabase Auth
+3. **Add email notifications** - Pick reminders, elimination alerts
+4. **Write tests** - Currently 0% coverage
+5. **Optimize bundle** - Reduce from 218KB to <150KB
+
+### Code Cleanup Opportunities
+- Remove unused `game_odds` table
+- Refactor duplicate Supabase client creation
+- Extract common error handling patterns
+- Lazy load admin components
+- Remove TutorialWizard if unused (~15KB)
+
+### Performance Targets
+- Lighthouse Mobile: 90+ (currently ~85)
+- Bundle size: <150KB (currently 218KB)
+- First Contentful Paint: <1.5s
+- Time to Interactive: <3s
+
+## 🐛 Quick Debug Reference
+
+### Common Errors & Fixes
+1. **"buy_in undefined"** → Use `buy_in_amount` field
+2. **"Cannot find user"** → Check localStorage has currentUser
+3. **"Picks not showing"** → Check if week is in picks_revealed_weeks
+4. **Build errors** → Run `npm run typecheck` for details
+5. **Dev server crashes** → Kill port 3000 and restart
+
+### Database Quick Queries
+```sql
+-- Check league status
+SELECT * FROM leagues WHERE invite_code = 'GRID2025';
+
+-- Count members
+SELECT COUNT(*) FROM league_members WHERE league_id = '[id]';
+
+-- Check user picks
+SELECT * FROM picks WHERE user_id = '[id]' AND week = 1;
+```
+
+## 📚 Documentation Files
+
+### For Development Reference
+- **README.md** - Project overview and setup
+- **CHANGELOG.md** - Version history
+- **KNOWN_ISSUES.md** - Bugs and improvements needed
+- **UNUSED_CODE.md** - Code cleanup opportunities
+- **CLAUDE.md** - This file (Claude's memory)
+
+### Key Insights from Code Audit
+- **~43KB bundle savings** available from unused code
+- **5 unused database tables** could be removed
+- **Duplicate code patterns** need refactoring
+- **No test coverage** is biggest technical debt
+
+## 🎯 Success Metrics
+
+### Current Performance
+- Page Load: 2.5s on 3G
+- Lighthouse Mobile: ~85
+- Bundle Size: 127KB shared + 91KB route
+- Database Size: ~5MB
+- Active Users: 11 (test league)
+
+### Target Performance
+- Page Load: <2s on 3G
+- Lighthouse Mobile: 90+
+- Bundle Size: <150KB total
+- Error Rate: <1%
+- Test Coverage: >80%
+
+## 🔒 Security Notes
+
+### Current Implementation
+- RLS enabled on all tables
+- Hardcoded super admin list
+- Commissioner-only admin actions
+- Input validation with Zod
+- Parameterized SQL queries
+
+### Security Risks
+- localStorage auth (not secure)
+- PIN stored in plain text (MVP only)
+- No rate limiting on API routes
+- No CSRF protection
+
+## 📞 Contact & Support
+
+- **Creator**: @tgauss
+- **GitHub**: https://github.com/tgauss/pickem-party-v2
+- **Production**: https://www.pickemparty.app
+
+---
+
+## 🧠 Memory Summary for Next Session
+
+**You are working on Pickem Party v2**, an NFL Survivor Pool app. Recent work includes:
+1. Added phone number field to users
+2. Implemented manual pick revelation for commissioners
+3. Fixed invite page calculations (use `buy_in_amount` not `buy_in`)
+4. Optimized all forms for mobile
+
+**Key things to remember**:
+- Using Next.js 15.5.2 with Supabase
+- Auth is currently localStorage (needs fixing)
+- Node.js needs upgrade from v18 to v20+
+- Super admins: ['admin', 'tgauss', 'pickemking']
+- Default lives: 2 per player
+- Bundle size target: <150KB (currently 218KB)
+- No tests written yet (0% coverage)
+
+**When you return**, check:
+1. KNOWN_ISSUES.md for current problems
+2. UNUSED_CODE.md for cleanup opportunities
+3. CHANGELOG.md for recent changes
+4. This file (CLAUDE.md) for all context
+
+The codebase is well-documented and ready for continued development. All recent features are working in production at https://www.pickemparty.app.
