@@ -1,9 +1,19 @@
 # Claude Development Guidelines
 # Pickem Party v2
 
+**Last Updated**: September 1, 2025
+**Version**: 2.0.0
+
 ## Project Context
 
-You are working on **Pickem Party v2**, a complete rebuild of an NFL Survivor Pool platform. This is a mobile-first web application built with Next.js 14, Supabase, and Tailwind CSS with shadcn/ui components.
+You are working on **Pickem Party v2**, a complete rebuild of an NFL Survivor Pool platform. This is a mobile-first web application built with Next.js 15.5.2, Supabase, and Tailwind CSS with shadcn/ui components.
+
+## Recent Changes (September 2025)
+- Added phone number field to user registration
+- Implemented commissioner-controlled pick revelation
+- Enhanced mobile form optimization
+- Fixed invite page calculations (buy_in → buy_in_amount)
+- Added comprehensive admin dashboard features
 
 ## Critical Rules (NEVER VIOLATE THESE)
 
@@ -202,6 +212,48 @@ const { data: picks } = useQuery({
   }
 })
 ```
+
+## Mobile Form Optimization (NEW)
+
+### Input Field Best Practices
+```typescript
+// Always include these attributes for mobile optimization
+<Input
+  type="tel"
+  inputMode="tel"        // Triggers correct keyboard
+  autoComplete="tel"     // Enables autofill
+  autoCapitalize="none"  // Prevents unwanted caps
+  autoCorrect="off"      // Disables autocorrect
+  spellCheck="false"     // No spell checking
+  className="min-h-[44px]" // Touch target size
+/>
+```
+
+### Field-Specific Settings
+- **Username**: `autoCapitalize="none"`, `autoCorrect="off"`
+- **Display Name**: `autoCapitalize="words"`
+- **Email**: `autoCapitalize="none"`, `type="email"`
+- **Phone**: `type="tel"`, `inputMode="tel"`
+- **PIN**: `inputMode="numeric"`, `pattern="[0-9]{4}"`
+
+## Commissioner Features (NEW)
+
+### Manual Pick Revelation
+```typescript
+// Check if user can reveal picks
+const canRevealPicks = currentUser && league && (
+  league.commissioner_id === currentUser.id || 
+  ['admin', 'tgauss', 'pickemking'].includes(currentUser.username.toLowerCase())
+)
+
+// Check if picks are revealed
+const picksRevealed = league?.picks_revealed_weeks?.includes(week)
+```
+
+### Database Fields Update
+- `leagues.buy_in_amount` (not `buy_in`)
+- `leagues.picks_revealed_weeks` (integer array)
+- `users.phone_number` (optional text field)
 
 ## Common Patterns
 
