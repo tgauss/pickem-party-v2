@@ -219,6 +219,34 @@ export default function AdminDashboard({
     }
   }, [league])
 
+  const loadPicksData = useCallback(async (week: number) => {
+    if (!league) return
+    try {
+      // Load picks for the selected week
+      const { data: picksData } = await supabase
+        .from('picks')
+        .select(`
+          *,
+          teams(*),
+          users(*)
+        `)
+        .eq('league_id', league.id)
+        .eq('week', week)
+      
+      setPicks(picksData || [])
+      
+      // Load all teams
+      const { data: teamsData } = await supabase
+        .from('teams')
+        .select('*')
+        .order('city')
+      
+      setTeams(teamsData || [])
+    } catch (error) {
+      console.error('Error loading picks data:', error)
+    }
+  }, [league, supabase])
+
   useEffect(() => {
     const currentUser = localStorage.getItem('currentUser')
     if (!currentUser) {
@@ -289,34 +317,6 @@ export default function AdminDashboard({
     loadLeagueData(user!, resolvedParams.slug)
     loadActivityData()
   }
-
-  const loadPicksData = useCallback(async (week: number) => {
-    if (!league) return
-    try {
-      // Load picks for the selected week
-      const { data: picksData } = await supabase
-        .from('picks')
-        .select(`
-          *,
-          teams(*),
-          users(*)
-        `)
-        .eq('league_id', league.id)
-        .eq('week', week)
-      
-      setPicks(picksData || [])
-      
-      // Load all teams
-      const { data: teamsData } = await supabase
-        .from('teams')
-        .select('*')
-        .order('city')
-      
-      setTeams(teamsData || [])
-    } catch (error) {
-      console.error('Error loading picks data:', error)
-    }
-  }, [league, supabase])
 
   const togglePaymentStatus = async (userId: string, currentStatus: boolean) => {
     setUpdatingPayment(userId)
