@@ -31,8 +31,16 @@ export async function backupPickToSheets(data: PickBackupData): Promise<void> {
   }
 }
 
+// Team interface for backup helper
+interface Team {
+  team_id: number
+  city: string
+  name: string
+  key: string
+}
+
 // Helper to get team details for backup
-export function getTeamDetailsForBackup(teamId: number, teams: any[]): { name: string; key: string } {
+export function getTeamDetailsForBackup(teamId: number, teams: Team[]): { name: string; key: string } {
   const team = teams.find(t => t.team_id === teamId)
   if (team) {
     return {
