@@ -45,9 +45,9 @@ function HomePageContent() {
   } | null>(null)
   const supabase = createClient()
 
-  // Countdown to join deadline (Sept 3rd, 2pm PST)
+  // Countdown to join deadline (Sept 6th, 12pm PST)
   useEffect(() => {
-    const deadline = new Date('2025-09-03T14:00:00-07:00') // Sept 3rd 2pm PST
+    const deadline = new Date('2025-09-06T12:00:00-08:00') // Sept 6th 12pm PST
     
     const updateCountdown = () => {
       const now = new Date()
@@ -402,8 +402,8 @@ function HomePageContent() {
       <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-secondary/5 flex items-center justify-center p-4">
         <Card className="w-full max-w-lg retro-border shadow-2xl bg-gradient-to-b from-surface to-background border-2">
           <div className="text-center p-6 sm:p-8">
-            {/* Logo with subtle animation */}
-            <div className="mb-6 animate-pulse">
+            {/* Logo without animation */}
+            <div className="mb-6">
               <Image 
                 src="/logos/Pickem Part App Logo.svg" 
                 alt="Pickem Party Logo"
@@ -416,10 +416,10 @@ function HomePageContent() {
             {/* Exciting header */}
             <div className="mb-6">
               <div className="flex justify-center mb-4">
-                <CustomIcon name="mail" fallback="📧" alt="Invite" size="lg" className="animate-bounce" />
-                <CustomIcon name="fire" fallback="🔥" alt="Hot" size="lg" className="animate-pulse ml-2" />
+                <CustomIcon name="mail" fallback="📧" alt="Invite" size="lg" />
+                <CustomIcon name="fire" fallback="🔥" alt="Hot" size="lg" className="ml-2" />
               </div>
-              <h1 className="text-2xl sm:text-3xl font-bold mb-2 fight-text animate-pulse" style={{color: 'var(--primary)'}}>
+              <h1 className="text-2xl sm:text-3xl font-bold mb-2 fight-text" style={{color: 'var(--primary)'}}>
                 {inviterName ? `${decodeURIComponent(inviterName)} INVITES YOU!` : 'YOU&apos;VE BEEN INVITED!'}
               </h1>
               <p className="text-sm text-muted-foreground">
@@ -457,11 +457,11 @@ function HomePageContent() {
               </div>
             </div>
 
-            {/* Countdown Timer */}
+            {/* Countdown Timer - Only show if deadline hasn't passed */}
             {countdown && !deadlineExpired && (
               <div className="bg-destructive/20 border border-destructive/50 rounded-lg p-4 mb-6">
                 <div className="flex items-center justify-center gap-2 mb-2">
-                  <CustomIcon name="hourglass" fallback="⏰" alt="Countdown" size="sm" className="animate-pulse" />
+                  <CustomIcon name="hourglass" fallback="⏰" alt="Countdown" size="sm" />
                   <span className="font-semibold text-destructive text-sm">JOIN DEADLINE</span>
                 </div>
                 <div className="grid grid-cols-4 gap-1 sm:gap-2 mb-2">
@@ -483,16 +483,7 @@ function HomePageContent() {
                   </div>
                 </div>
                 <p className="text-xs text-destructive">
-                  Until Thursday Sept 3rd at 2pm PST
-                </p>
-              </div>
-            )}
-
-            {deadlineExpired && (
-              <div className="bg-destructive/30 border border-destructive rounded-lg p-4 mb-6">
-                <h3 className="font-bold text-destructive mb-2">⏰ DEADLINE PASSED</h3>
-                <p className="text-sm text-destructive">
-                  Sorry, the join deadline for this league has expired.
+                  Until Saturday Sept 6th at 12pm PST
                 </p>
               </div>
             )}
