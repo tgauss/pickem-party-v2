@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge'
 import { CustomIcon } from '@/components/ui/custom-icon'
 import { AdminControlWidget } from '@/components/AdminControlWidget'
 import { WeekNavigation } from '@/components/WeekNavigation'
+import { backupPickToSheets, getTeamDetailsForBackup } from '@/lib/utils/backup'
 import { PastWeekResults } from '@/components/PastWeekResults'
 import { CurrentWeekPicker } from '@/components/CurrentWeekPicker'
 import { FutureWeekSchedule } from '@/components/FutureWeekSchedule'
@@ -309,6 +310,21 @@ export default function LeaguePage({
               }
             })
           
+          // Backup pick to Google Sheets
+          const teamDetails = getTeamDetailsForBackup(teamId, games.flatMap(g => [g.home_team, g.away_team]))
+          backupPickToSheets({
+            user_id: user.id,
+            username: user.username,
+            display_name: user.display_name,
+            league_id: league.id,
+            league_name: league.name,
+            week: selectedWeek,
+            team_id: teamId,
+            team_name: teamDetails.name,
+            team_key: teamDetails.key,
+            is_update: true
+          })
+          
           alert('PICK UPDATED! ⚔️')
           await loadWeekData(selectedWeek, league.id, user.id)
         }
@@ -342,6 +358,21 @@ export default function LeaguePage({
                 submitted_at: new Date().toISOString()
               }
             })
+          
+          // Backup pick to Google Sheets
+          const teamDetails = getTeamDetailsForBackup(teamId, games.flatMap(g => [g.home_team, g.away_team]))
+          backupPickToSheets({
+            user_id: user.id,
+            username: user.username,
+            display_name: user.display_name,
+            league_id: league.id,
+            league_name: league.name,
+            week: selectedWeek,
+            team_id: teamId,
+            team_name: teamDetails.name,
+            team_key: teamDetails.key,
+            is_update: false
+          })
           
           alert('PICK SUBMITTED! ⚔️')
           await loadWeekData(selectedWeek, league.id, user.id)
