@@ -153,7 +153,7 @@ function HomePageContent() {
           username: username.toLowerCase(),
           display_name: displayName,
           email: email.toLowerCase(),
-          phone_number: phoneNumber.trim() || null,
+          phone_number: phoneNumber.trim(),
           pin_hash: pin ? pin : null // Store PIN directly for MVP simplicity
         })
         .select()
@@ -316,7 +316,7 @@ function HomePageContent() {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="phoneNumber">Phone Number (Optional)</Label>
+                  <Label htmlFor="phoneNumber">Phone Number (Required)</Label>
                   <Input
                     id="phoneNumber"
                     type="tel"
@@ -326,9 +326,10 @@ function HomePageContent() {
                     className="bg-surface border-border min-h-[44px] text-base"
                     autoComplete="tel"
                     inputMode="tel"
+                    required
                   />
                   <p className="text-xs text-muted-foreground mt-1">
-                    For league admin communication and important updates
+                    Required for league admin communication and important updates
                   </p>
                 </div>
               </>
@@ -361,7 +362,7 @@ function HomePageContent() {
 
             <Button 
               onClick={handleAuth}
-              disabled={loading || !username || !pin || (!isLogin && (!displayName || !email))}
+              disabled={loading || !username || !pin || (!isLogin && (!displayName || !email || !phoneNumber))}
               className="w-full fight-text"
               style={{
                 backgroundColor: 'var(--primary)',

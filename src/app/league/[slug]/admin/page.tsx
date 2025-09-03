@@ -108,6 +108,11 @@ export default function AdminDashboard({
   const [leagueMessage, setLeagueMessage] = useState('')
   const [updatingMessage, setUpdatingMessage] = useState(false)
   const [updatingPayment, setUpdatingPayment] = useState<string | null>(null)
+  
+  // Picks overview state
+  const [picks, setPicks] = useState<any[]>([])
+  const [teams, setTeams] = useState<any[]>([])
+  const [selectedWeek, setSelectedWeek] = useState(1)
 
   const supabase = createClient()
 
@@ -212,8 +217,9 @@ export default function AdminDashboard({
   useEffect(() => {
     if (initialized && league) {
       loadActivityData()
+      loadPicksData(selectedWeek)
     }
-  }, [initialized, league, loadActivityData])
+  }, [initialized, league, loadActivityData, loadPicksData, selectedWeek])
 
   const adjustLives = async (amount: number) => {
     if (!user || !league || !selectedMember || !adjustmentReason.trim()) {
@@ -263,6 +269,34 @@ export default function AdminDashboard({
     loadLeagueData(user!, resolvedParams.slug)
     loadActivityData()
   }
+
+  const loadPicksData = useCallback(async (week: number) => {
+    if (!league) return
+    try {
+      // Load picks for the selected week
+      const { data: picksData } = await supabase
+        .from('picks')
+        .select(`
+          *,
+          teams(*),
+          users(*)
+        `)
+        .eq('league_id', league.id)
+        .eq('week', week)
+      
+      setPicks(picksData || [])
+      
+      // Load all teams
+      const { data: teamsData } = await supabase
+        .from('teams')
+        .select('*')
+        .order('city')
+      
+      setTeams(teamsData || [])
+    } catch (error) {
+      console.error('Error loading picks data:', error)
+    }
+  }, [league, supabase])
 
   const togglePaymentStatus = async (userId: string, currentStatus: boolean) => {
     setUpdatingPayment(userId)
@@ -363,9 +397,10 @@ export default function AdminDashboard({
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="lives">Lives Management</TabsTrigger>
             <TabsTrigger value="players">Player Management</TabsTrigger>
+            <TabsTrigger value="picks">Picks Overview</TabsTrigger>
             <TabsTrigger value="activity">Activity Log</TabsTrigger>
             <TabsTrigger value="league">League Settings</TabsTrigger>
           </TabsList>
@@ -714,6 +749,106 @@ export default function AdminDashboard({
                       ))}
                     </div>
                   )}
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          {/* Picks Overview Tab */}
+          <TabsContent value="picks">
+            <div className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center justify-between">
+                    Weekly Picks Overview
+                    <Select value={selectedWeek.toString()} onValueChange={(value) => setSelectedWeek(parseInt(value))}>
+                      <SelectTrigger className="w-32">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {Array.from({ length: 18 }, (_, i) => i + 1).map(week => (
+                          <SelectItem key={week} value={week.toString()}>
+                            Week {week}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {/* Picks Summary */}
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                      <div className="text-center p-4 bg-surface rounded-lg">
+                        <div className="text-2xl font-bold text-green-600">{picks.length}</div>
+                        <div className="text-sm text-muted-foreground">Total Picks</div>
+                      </div>
+                      <div className="text-center p-4 bg-surface rounded-lg">
+                        <div className="text-2xl font-bold text-blue-600">
+                          {picks.filter(p => p.teams).length}
+                        </div>
+                        <div className="text-sm text-muted-foreground">Valid Picks</div>
+                      </div>
+                      <div className="text-center p-4 bg-surface rounded-lg">
+                        <div className="text-2xl font-bold text-orange-600">
+                          {members.filter(m => !m.is_eliminated).length - picks.length}
+                        </div>
+                        <div className="text-sm text-muted-foreground">Missing Picks</div>
+                      </div>
+                    </div>
+
+                    {/* Picks by Team */}
+                    <div className="space-y-4">
+                      <h3 className="text-lg font-semibold">Picks by Team</h3>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {teams
+                          .filter(team => picks.some(pick => pick.team_id === team.team_id))
+                          .map(team => {
+                            const teamPicks = picks.filter(pick => pick.team_id === team.team_id)
+                            return (
+                              <Card key={team.team_id} className="border-primary/20">
+                                <CardHeader className="pb-2">
+                                  <CardTitle className="text-sm flex items-center justify-between">
+                                    <span>{team.city} {team.name}</span>
+                                    <Badge variant="secondary">
+                                      {teamPicks.length} pick{teamPicks.length !== 1 ? 's' : ''}
+                                    </Badge>
+                                  </CardTitle>
+                                </CardHeader>
+                                <CardContent className="pt-0">
+                                  <div className="space-y-1">
+                                    {teamPicks.map(pick => (
+                                      <div key={pick.id} className="text-sm flex items-center justify-between py-1">
+                                        <span className="font-medium">
+                                          {pick.users?.display_name || 'Unknown User'}
+                                        </span>
+                                        <div className="flex items-center gap-2">
+                                          {pick.is_correct === true && (
+                                            <Badge variant="default" className="text-xs bg-green-600">✓</Badge>
+                                          )}
+                                          {pick.is_correct === false && (
+                                            <Badge variant="destructive" className="text-xs">✗</Badge>
+                                          )}
+                                          {pick.is_correct === null && (
+                                            <Badge variant="outline" className="text-xs">-</Badge>
+                                          )}
+                                        </div>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </CardContent>
+                              </Card>
+                            )
+                          })}
+                      </div>
+                      
+                      {picks.length === 0 && (
+                        <div className="text-center py-8 text-muted-foreground">
+                          No picks found for Week {selectedWeek}
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
             </div>

@@ -294,6 +294,21 @@ export default function LeaguePage({
           console.error('Update pick error:', error)
           alert('Failed to update pick: ' + error.message)
         } else {
+          // Add activity log for pick update (without revealing the pick)
+          await supabase
+            .from('league_notifications')
+            .insert({
+              league_id: league.id,
+              user_id: user.id,
+              notification_type: 'pick_updated',
+              title: `${user.display_name} Updated Their Pick`,
+              message: `${user.display_name} changed their Week ${selectedWeek} pick.`,
+              metadata: {
+                week: selectedWeek,
+                updated_at: new Date().toISOString()
+              }
+            })
+          
           alert('PICK UPDATED! ⚔️')
           await loadWeekData(selectedWeek, league.id, user.id)
         }
@@ -313,6 +328,21 @@ export default function LeaguePage({
           console.error('Create pick error:', error)
           alert('Failed to submit pick: ' + error.message)
         } else {
+          // Add activity log for new pick submission (without revealing the pick)
+          await supabase
+            .from('league_notifications')
+            .insert({
+              league_id: league.id,
+              user_id: user.id,
+              notification_type: 'pick_submitted',
+              title: `${user.display_name} Submitted Their Pick`,
+              message: `${user.display_name} locked in their Week ${selectedWeek} pick.`,
+              metadata: {
+                week: selectedWeek,
+                submitted_at: new Date().toISOString()
+              }
+            })
+          
           alert('PICK SUBMITTED! ⚔️')
           await loadWeekData(selectedWeek, league.id, user.id)
         }
