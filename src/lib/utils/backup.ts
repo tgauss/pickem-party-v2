@@ -1,4 +1,4 @@
-// Utility functions for backing up picks to Google Sheets
+// Simple webhook backup for Make.com
 export interface PickBackupData {
   user_id: string
   username: string
@@ -14,31 +14,17 @@ export interface PickBackupData {
 
 export async function backupPickToSheets(data: PickBackupData): Promise<void> {
   try {
-    // Create backup entry
-    const backupData = {
-      timestamp: new Date().toISOString(),
-      backup_id: `${data.user_id}_${data.league_id}_${data.week}_${Date.now()}`,
-      ...data,
-      action: data.is_update ? 'UPDATE' : 'NEW',
-      season: new Date().getFullYear()
-    }
-
-    // Send to backup API (fire and forget - don't await)
-    fetch('/api/backup/sheets', {
+    // Send to Make.com webhook (fire and forget - don't await)
+    fetch('/api/webhook/picks', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(backupData)
+      body: JSON.stringify(data)
     }).catch(error => {
       console.error('[Backup Error]', error)
       // Silently fail - never block a pick submission
     })
-
-    // Also log to console in development
-    if (process.env.NODE_ENV === 'development') {
-      console.log('[PICK BACKUP]', backupData)
-    }
   } catch (error) {
     // Never throw - backups should never block picks
     console.error('[Backup Error]', error)
