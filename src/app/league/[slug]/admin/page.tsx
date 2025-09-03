@@ -71,6 +71,26 @@ interface ActivityNotification {
   created_at: string
 }
 
+interface Pick {
+  id: string
+  user_id: string
+  league_id: string
+  game_id: string
+  team_id: number
+  week: number
+  is_correct?: boolean | null
+  teams?: Team
+  users?: User
+}
+
+interface Team {
+  team_id: number
+  key: string
+  city: string
+  name: string
+  full_name: string
+}
+
 // Simple admin check (matches API authorization)
 function isUserAdmin(user: User, leagueCommissionerId?: string): boolean {
   const superAdminUsernames = ['admin', 'tgauss', 'pickemking']
@@ -110,8 +130,8 @@ export default function AdminDashboard({
   const [updatingPayment, setUpdatingPayment] = useState<string | null>(null)
   
   // Picks overview state
-  const [picks, setPicks] = useState<any[]>([])
-  const [teams, setTeams] = useState<any[]>([])
+  const [picks, setPicks] = useState<Pick[]>([])
+  const [teams, setTeams] = useState<Team[]>([])
   const [selectedWeek, setSelectedWeek] = useState(1)
 
   const supabase = createClient()
