@@ -67,6 +67,7 @@ interface League {
   lives_per_player: number
   league_message?: string
   commissioner_id?: string
+  picks_revealed_weeks?: number[]
 }
 
 interface Member {

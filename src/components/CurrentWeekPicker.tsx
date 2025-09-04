@@ -17,6 +17,7 @@ interface Team {
   city: string
   name: string
   full_name: string
+  logo_url?: string
 }
 
 interface Game {
@@ -399,14 +400,88 @@ export function CurrentWeekPicker({
       </Card>
 
       {currentPick && (
-        <Alert className="bg-primary/10 border-primary">
-          <Star className="h-4 w-4" />
-          <AlertDescription>
-            You&apos;ve already picked <strong>{currentPick.team?.name}</strong> for Week {week}
-          </AlertDescription>
-        </Alert>
+        <Card className="bg-primary/5 border-primary">
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-primary">
+              <Star className="h-5 w-5" />
+              Your Week {week} Pick
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center gap-3">
+              {currentPick.team?.logo_url && (
+                <Image 
+                  src={currentPick.team.logo_url} 
+                  alt={`${currentPick.team.name} logo`}
+                  width={48}
+                  height={48}
+                  className="rounded-lg"
+                />
+              )}
+              <div>
+                <div className="font-semibold text-lg">
+                  {currentPick.team?.city} {currentPick.team?.name}
+                </div>
+                <div className="text-sm text-muted-foreground">
+                  {currentPick.team?.key} • Submitted for Week {week}
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       )}
 
+      {/* All Picks Section - Shows when revealed */}
+      {!picksArePrivate && picks.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Eye className="h-5 w-5" />
+              All Week {week} Picks (Revealed)
+            </CardTitle>
+            <p className="text-sm text-muted-foreground">
+              Commissioner has revealed all picks. New members can still join up to game time.
+            </p>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+              {picks.map((pick) => {
+                const member = members.find(m => m.user.id === pick.user_id)
+                const isCurrentUser = pick.user_id === currentUser?.id
+                return (
+                  <div 
+                    key={pick.id}
+                    className={`p-3 rounded-lg border ${
+                      isCurrentUser ? 'border-primary bg-primary/5' : 'border-border'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2 mb-2">
+                      {pick.team?.logo_url && (
+                        <Image 
+                          src={pick.team.logo_url} 
+                          alt={`${pick.team.name} logo`}
+                          width={24}
+                          height={24}
+                          className="rounded"
+                        />
+                      )}
+                      <Badge variant="secondary" className="text-xs">
+                        {pick.team?.key}
+                      </Badge>
+                    </div>
+                    <div className="text-sm font-medium">
+                      {member?.user.display_name || pick.user?.display_name || 'Unknown'}
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      {pick.team?.city} {pick.team?.name}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       <Card>
         <CardHeader>
