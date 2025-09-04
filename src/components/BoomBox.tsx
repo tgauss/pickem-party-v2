@@ -33,14 +33,41 @@ interface PlayerState {
 }
 
 export default function BoomBox() {
+  // Load initial state from localStorage
+  const getInitialState = () => {
+    if (typeof window === 'undefined') return { 
+      isMuted: false, 
+      volume: 0.7, 
+      isShuffled: false, 
+      currentTrackIndex: 0 
+    }
+    const savedState = localStorage.getItem('boombox-state')
+    if (savedState) {
+      try {
+        const state: PlayerState = JSON.parse(savedState)
+        return {
+          isMuted: state.isMuted || false,
+          volume: state.volume || 0.7,
+          isShuffled: state.isShuffled || false,
+          currentTrackIndex: state.currentTrackIndex || 0
+        }
+      } catch {
+        return { isMuted: false, volume: 0.7, isShuffled: false, currentTrackIndex: 0 }
+      }
+    }
+    return { isMuted: false, volume: 0.7, isShuffled: false, currentTrackIndex: 0 }
+  }
+
+  const initialState = getInitialState()
+  
   const [tracks, setTracks] = useState<Track[]>([])
-  const [currentTrackIndex, setCurrentTrackIndex] = useState(0)
+  const [currentTrackIndex, setCurrentTrackIndex] = useState(initialState.currentTrackIndex)
   const [isPlaying, setIsPlaying] = useState(false)
   const [duration, setDuration] = useState(0)
   const [currentTime, setCurrentTime] = useState(0)
-  const [volume, setVolume] = useState(0.7)
-  const [isMuted, setIsMuted] = useState(false)
-  const [isShuffled, setIsShuffled] = useState(false)
+  const [volume, setVolume] = useState(initialState.volume)
+  const [isMuted, setIsMuted] = useState(initialState.isMuted)
+  const [isShuffled, setIsShuffled] = useState(initialState.isShuffled)
   const [isExpanded, setIsExpanded] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [hasAutoplayStarted, setHasAutoplayStarted] = useState(false)
@@ -117,6 +144,7 @@ export default function BoomBox() {
                 }
               } else if (isMuted) {
                 // User has muted, don't auto-start but mark as interacted
+                console.log('🔇 Music muted - autoplay skipped')
                 setHasUserInteracted(true)
                 setShowAutoplayPrompt(false)
               }
@@ -146,22 +174,8 @@ export default function BoomBox() {
     loadTracks()
   }, [hasAutoplayStarted, hasUserInteracted, isPlaying, isMuted])
 
-  // Load saved state from localStorage
-  useEffect(() => {
-    const savedState = localStorage.getItem('boombox-state')
-    if (savedState) {
-      try {
-        const state: PlayerState = JSON.parse(savedState)
-        setCurrentTrackIndex(state.currentTrackIndex || 0)
-        setVolume(state.volume || 0.7)
-        setIsMuted(state.isMuted || false)
-        setIsShuffled(state.isShuffled || false)
-        // Don't restore position and playing state for better UX
-      } catch (err) {
-        console.warn('Failed to load saved state:', err)
-      }
-    }
-  }, [])
+  // Note: Saved state is now loaded on component initialization to ensure
+  // mute state is respected before autoplay logic runs
 
   // Save state to localStorage
   const saveState = useCallback(() => {
