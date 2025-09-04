@@ -43,6 +43,7 @@ export default function BoomBox() {
   const [isShuffled, setIsShuffled] = useState(false)
   const [isExpanded, setIsExpanded] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
+  const [hasAutoplayStarted, setHasAutoplayStarted] = useState(false)
   
   const audioRef = useRef<HTMLAudioElement>(null)
   const timelineRef = useRef<HTMLInputElement>(null)
@@ -94,6 +95,24 @@ export default function BoomBox() {
           }
           
           setTracks(trackList)
+          
+          // Autoplay first track after loading
+          if (trackList.length > 0 && !hasAutoplayStarted) {
+            setHasAutoplayStarted(true)
+            // Small delay to ensure audio element is ready
+            setTimeout(async () => {
+              try {
+                const audio = audioRef.current
+                if (audio) {
+                  await audio.play()
+                  setIsPlaying(true)
+                }
+              } catch {
+                // Autoplay failed (browser policy), that's ok
+                console.log('Autoplay prevented by browser policy')
+              }
+            }, 500)
+          }
         }
       } catch (error) {
         console.error('Failed to load tracks:', error)
@@ -103,7 +122,7 @@ export default function BoomBox() {
     }
     
     loadTracks()
-  }, [])
+  }, [hasAutoplayStarted])
 
   // Load saved state from localStorage
   useEffect(() => {
@@ -278,7 +297,7 @@ export default function BoomBox() {
       />
       
       <div className={`bg-gradient-to-b from-gray-700 to-gray-900 border-4 border-gray-600 rounded-lg shadow-2xl transition-all duration-300 ${
-        isExpanded ? 'w-80 h-96' : 'w-64 h-20'
+        isExpanded ? 'w-80 h-96' : 'w-72 h-20'
       }`}>
         {/* Mini Player */}
         <div className="p-3">
@@ -310,6 +329,19 @@ export default function BoomBox() {
             
             {/* Mini Controls */}
             <div className="flex items-center gap-1">
+              {/* Quick Mute Button - Most prominent */}
+              <button
+                onClick={() => setIsMuted(!isMuted)}
+                className={`w-8 h-8 border-2 rounded flex items-center justify-center transition-all ${
+                  isMuted 
+                    ? 'bg-red-600 hover:bg-red-500 border-red-500 text-white' 
+                    : 'bg-green-600 hover:bg-green-500 border-green-500 text-white'
+                }`}
+                title={isMuted ? 'Unmute' : 'Mute'}
+              >
+                {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+              </button>
+              
               <button
                 onClick={handlePrevious}
                 className="w-6 h-6 bg-gray-600 hover:bg-gray-500 border border-gray-500 rounded flex items-center justify-center text-green-400"
@@ -338,11 +370,13 @@ export default function BoomBox() {
                 <SkipForward className="w-3 h-3" />
               </button>
               
+              {/* Collapse/Expand - Easy access */}
               <button
                 onClick={() => setIsExpanded(!isExpanded)}
-                className="w-6 h-6 bg-gray-600 hover:bg-gray-500 border border-gray-500 rounded flex items-center justify-center text-green-400 ml-1"
+                className="w-8 h-8 bg-gray-600 hover:bg-gray-500 border-2 border-gray-500 rounded flex items-center justify-center text-yellow-400 ml-1"
+                title={isExpanded ? 'Minimize Player' : 'Expand Playlist'}
               >
-                {isExpanded ? <ChevronDown className="w-3 h-3" /> : <ChevronUp className="w-3 h-3" />}
+                {isExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
               </button>
             </div>
           </div>
