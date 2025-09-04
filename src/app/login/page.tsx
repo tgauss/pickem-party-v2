@@ -2,18 +2,16 @@
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Alert, AlertDescription } from '@/components/ui/alert'
-import { LogIn, UserPlus, ArrowLeft } from 'lucide-react'
-import Link from 'next/link'
+import Image from 'next/image'
 
 export default function LoginPage() {
-  const [username, setUsername] = useState('')
+  const [usernameOrEmail, setUsernameOrEmail] = useState('')
+  const [pin, setPin] = useState('')
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
   const supabase = createClient()
 
   // Check if user is already logged in
@@ -24,125 +22,163 @@ export default function LoginPage() {
     }
   }, [])
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const handleLogin = async () => {
     setLoading(true)
-    setError('')
     
-    if (!username.trim()) {
-      setError('Please enter your username')
+    if (!usernameOrEmail.trim() || !pin || pin.length !== 4) {
+      alert('Please enter your username/email and 4-digit PIN')
       setLoading(false)
       return
     }
     
-    // Simple login - just check if user exists
+    // Check if input is email or username
+    const isEmail = usernameOrEmail.includes('@')
+    const searchField = isEmail ? 'email' : 'username'
+    const searchValue = usernameOrEmail.toLowerCase().trim()
+    
+    // Simple login - check if user exists and PIN matches
     const { data: user } = await supabase
       .from('users')
       .select('*')
-      .eq('username', username.toLowerCase().trim())
+      .eq(searchField, searchValue)
+      .eq('pin_hash', pin)
       .single()
       
     if (user) {
       // Store user in localStorage for MVP (no secure sessions needed)
       localStorage.setItem('currentUser', JSON.stringify(user))
-      window.location.href = '/dashboard'
+      
+      // Check for invite parameter and redirect accordingly
+      const urlParams = new URLSearchParams(window.location.search)
+      const inviteCode = urlParams.get('invite')
+      
+      if (inviteCode) {
+        // If coming from an invite, redirect back to invite page
+        window.location.href = `/?invite=${inviteCode}`
+      } else {
+        window.location.href = '/dashboard'
+      }
     } else {
-      setError('Username not found! Make sure you entered it correctly, or sign up if you&apos;re new.')
+      alert('Invalid username/email or PIN. Please try again.')
     }
     
     setLoading(false)
   }
 
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && usernameOrEmail && pin.length === 4) {
+      handleLogin()
+    }
+  }
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center p-4">
-      {/* Background pattern */}
-      <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))] pointer-events-none"></div>
-      
-      <div className="w-full max-w-md relative z-10">
-        {/* Back to Home Link */}
-        <div className="mb-6">
-          <Link href="/" className="inline-flex items-center gap-2 text-white/70 hover:text-white transition-colors">
-            <ArrowLeft className="h-4 w-4" />
-            Back to Home
-          </Link>
-        </div>
-
-        <Card className="bg-white/5 backdrop-blur-xl border-white/10">
-          <CardHeader className="text-center pb-6">
-            <div className="flex items-center justify-center gap-3 mb-4">
-              <div className="p-2 bg-primary/20 rounded-lg">
-                <LogIn className="h-6 w-6 text-primary" />
-              </div>
-              <CardTitle className="text-2xl text-white">
-                Welcome Back!
-              </CardTitle>
+    <div 
+      className="min-h-screen flex items-center justify-center p-4"
+      style={{
+        backgroundImage: `
+          linear-gradient(135deg, #667eea 0%, #764ba2 100%),
+          radial-gradient(circle at top left, #f093fb, transparent 50%),
+          radial-gradient(circle at bottom right, #f5576c, transparent 50%)
+        `,
+        backgroundBlendMode: 'normal, screen, screen'
+      }}
+    >
+      <div className="w-full max-w-md">
+        <Card className="bg-background border-border shadow-2xl">
+          <div className="text-center p-8">
+            <div className="mb-4">
+              <Image
+                src="/logos/Pickem Part App Logo.svg" 
+                alt="Pickem Party Logo"
+                width={128}
+                height={128}
+                className="mx-auto"
+              />
             </div>
-            <p className="text-white/70">
-              Sign in to your Pickem Party account
+            <h1 className="text-3xl font-bold mb-2 fight-text" style={{color: 'var(--primary)'}}>
+              PICK&apos;EM PARTY
+            </h1>
+            <p className="text-muted-foreground">
+              ENTER THE ARENA
             </p>
-          </CardHeader>
-          
-          <CardContent>
-            {error && (
-              <Alert className="mb-4 bg-red-900/20 border-red-500/20 text-red-300">
-                <AlertDescription>{error}</AlertDescription>
-              </Alert>
-            )}
+          </div>
 
-            <form onSubmit={handleLogin} className="space-y-4">
-              <div>
-                <Label htmlFor="username" className="text-white/90 font-medium">
-                  Username
-                </Label>
-                <Input
-                  id="username"
-                  type="text"
-                  placeholder="Enter your username"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  className="mt-1.5 bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-primary/50 min-h-[44px]"
-                  autoComplete="username"
-                  autoCapitalize="none"
-                  autoCorrect="off"
-                  spellCheck="false"
-                  disabled={loading}
-                  required
-                />
-              </div>
-
-              <Button 
-                type="submit"
-                className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-medium py-3 min-h-[44px]"
-                disabled={loading}
-              >
-                {loading ? 'Signing In...' : 'Sign In'}
-              </Button>
-            </form>
-
-            <div className="mt-6 pt-6 border-t border-white/10">
-              <div className="text-center">
-                <p className="text-white/70 mb-3">
-                  Don&apos;t have an account yet?
-                </p>
-                <Link href="/">
-                  <Button 
-                    variant="outline" 
-                    className="w-full bg-transparent border-white/20 text-white hover:bg-white/10 min-h-[44px]"
-                  >
-                    <UserPlus className="w-4 h-4 mr-2" />
-                    Create New Account
-                  </Button>
-                </Link>
-              </div>
+          <div className="space-y-4 px-8 pb-8">
+            <div>
+              <Label htmlFor="usernameOrEmail">
+                Username or Email
+              </Label>
+              <Input
+                id="usernameOrEmail"
+                placeholder="Enter username or email"
+                value={usernameOrEmail}
+                onChange={(e) => setUsernameOrEmail(e.target.value)}
+                onKeyPress={handleKeyPress}
+                className="bg-surface border-border min-h-[44px] text-base"
+                autoComplete="username"
+                autoCapitalize="none"
+                autoCorrect="off"
+                spellCheck="false"
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                You can use either your username or email
+              </p>
             </div>
-          </CardContent>
-        </Card>
 
-        <div className="text-center mt-6">
-          <p className="text-white/50 text-sm">
-            Simple username-based login • No passwords needed
-          </p>
-        </div>
+            <div>
+              <Label htmlFor="pin">
+                4-Digit PIN
+              </Label>
+              <Input
+                id="pin"
+                type="number"
+                placeholder="1234"
+                value={pin}
+                onChange={(e) => setPin(e.target.value.slice(0, 4))}
+                onKeyPress={handleKeyPress}
+                className="bg-surface border-border min-h-[44px] text-base"
+                autoComplete="current-password"
+                inputMode="numeric"
+                pattern="[0-9]{4}"
+                maxLength={4}
+                required
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                Enter your PIN to login
+              </p>
+            </div>
+
+            <Button 
+              onClick={handleLogin}
+              disabled={loading || !usernameOrEmail || pin.length !== 4}
+              className="w-full fight-text"
+              style={{
+                backgroundColor: 'var(--primary)',
+                color: 'var(--primary-foreground)'
+              }}
+            >
+              {loading ? '...' : 'FIGHT!'}
+            </Button>
+
+            <div className="text-center space-y-2">
+              <Button
+                variant="outline"
+                onClick={() => window.location.href = '/'}
+                className="w-full"
+              >
+                New Fighter? Sign Up
+              </Button>
+              
+              <Button
+                variant="ghost"
+                onClick={() => window.location.href = '/'}
+                className="w-full text-muted-foreground"
+              >
+                ← Back to Home
+              </Button>
+            </div>
+          </div>
+        </Card>
       </div>
     </div>
   )
