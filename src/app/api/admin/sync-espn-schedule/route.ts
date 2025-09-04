@@ -20,22 +20,7 @@ interface ESPNCompetitor {
   team: ESPNTeam
 }
 
-interface ESPNCompetition {
-  id: string
-  date: string
-  competitors: ESPNCompetitor[]
-  status: {
-    type: {
-      completed: boolean
-    }
-  }
-}
 
-interface ESPNEvent {
-  id: string
-  date: string
-  competitions: ESPNCompetition[]
-}
 
 export async function POST(request: Request) {
   try {
@@ -72,7 +57,12 @@ export async function POST(request: Request) {
     
     let updatedCount = 0
     let insertedCount = 0
-    const processedGames: any[] = []
+    const processedGames: {
+      away: string
+      home: string
+      time: string
+      espnId: string
+    }[] = []
     
     if (data.events && Array.isArray(data.events)) {
       for (const event of data.events) {

@@ -32,8 +32,7 @@ const week14Games2024 = [
   { away: 'CIN', home: 'DAL', time: '2024-12-10T01:15:00Z' }, // 8:15 PM ET Mon
 ]
 
-// Map current week (14 in 2024 season) to Week 1 in our app
-const CURRENT_NFL_WEEK = 14
+// Map current week to Week 1 in our app
 const APP_WEEK = 1
 
 export async function POST() {
@@ -62,8 +61,8 @@ export async function POST() {
 
     // Update each game with correct 2024 time
     for (const game of games) {
-      const homeKey = game.home_team?.key
-      const awayKey = game.away_team?.key
+      const homeKey = (game.home_team as unknown as { key: string })?.key
+      const awayKey = (game.away_team as unknown as { key: string })?.key
       
       // Find matching game in our week 14 schedule
       const matchingGame = week14Games2024.find(g => 
