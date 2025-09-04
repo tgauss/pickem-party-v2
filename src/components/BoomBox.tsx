@@ -105,7 +105,7 @@ export default function BoomBox() {
             
             // Set up interaction listeners for automatic music start
             const startMusicOnInteraction = async () => {
-              if (!hasUserInteracted && audioRef.current && !isPlaying) {
+              if (!hasUserInteracted && audioRef.current && !isPlaying && !isMuted) {
                 setHasUserInteracted(true)
                 setShowAutoplayPrompt(false)
                 try {
@@ -115,6 +115,10 @@ export default function BoomBox() {
                 } catch {
                   // Silent fail, user can still manually start
                 }
+              } else if (isMuted) {
+                // User has muted, don't auto-start but mark as interacted
+                setHasUserInteracted(true)
+                setShowAutoplayPrompt(false)
               }
             }
             
@@ -140,7 +144,7 @@ export default function BoomBox() {
     }
     
     loadTracks()
-  }, [hasAutoplayStarted, hasUserInteracted, isPlaying])
+  }, [hasAutoplayStarted, hasUserInteracted, isPlaying, isMuted])
 
   // Load saved state from localStorage
   useEffect(() => {
@@ -284,7 +288,7 @@ export default function BoomBox() {
 
   if (isLoading && tracks.length === 0) {
     return (
-      <div className="fixed bottom-4 right-4 z-50">
+      <div className="fixed top-4 right-4 sm:bottom-4 sm:top-auto z-40">
         <div className="bg-gray-800 border-2 border-gray-600 rounded-lg p-4">
           <div className="flex items-center gap-2 text-green-400 text-sm font-mono">
             <div className="animate-spin w-4 h-4 border-2 border-green-400 border-t-transparent rounded-full"></div>
@@ -297,7 +301,7 @@ export default function BoomBox() {
 
   if (tracks.length === 0) {
     return (
-      <div className="fixed bottom-4 right-4 z-50">
+      <div className="fixed top-4 right-4 sm:bottom-4 sm:top-auto z-40">
         <div className="bg-gray-800 border-2 border-gray-600 rounded-lg p-4">
           <div className="flex items-center gap-2 text-yellow-400 text-sm font-mono">
             <Music className="w-4 h-4" />
@@ -309,7 +313,7 @@ export default function BoomBox() {
   }
 
   return (
-    <div className="fixed bottom-4 right-4 z-50">
+    <div className="fixed top-4 right-4 sm:bottom-4 sm:top-auto z-40">
       {/* Audio Element */}
       <audio
         ref={audioRef}
@@ -339,13 +343,13 @@ export default function BoomBox() {
       )}
       
       <div className={`bg-gradient-to-b from-gray-700 to-gray-900 border-4 border-gray-600 rounded-lg shadow-2xl transition-all duration-300 ${
-        isExpanded ? 'w-80 h-96' : 'w-72 h-20'
+        isExpanded ? 'w-80 h-96' : 'w-60 h-16 sm:w-72 sm:h-20'
       }`}>
         {/* Mini Player */}
-        <div className="p-3">
+        <div className="p-2 sm:p-3">
           <div className="flex items-center gap-2">
             {/* Cover Art / Icon */}
-            <div className="w-12 h-12 bg-gray-600 border border-gray-500 rounded flex-shrink-0 overflow-hidden">
+            <div className="w-8 h-8 sm:w-12 sm:h-12 bg-gray-600 border border-gray-500 rounded flex-shrink-0 overflow-hidden">
               {currentTrack?.cover ? (
                 <img 
                   src={currentTrack.cover} 
@@ -374,26 +378,26 @@ export default function BoomBox() {
               {/* Quick Mute Button - Most prominent */}
               <button
                 onClick={() => setIsMuted(!isMuted)}
-                className={`w-8 h-8 border-2 rounded flex items-center justify-center transition-all ${
+                className={`w-6 h-6 sm:w-8 sm:h-8 border-2 rounded flex items-center justify-center transition-all ${
                   isMuted 
                     ? 'bg-red-600 hover:bg-red-500 border-red-500 text-white' 
                     : 'bg-green-600 hover:bg-green-500 border-green-500 text-white'
                 }`}
                 title={isMuted ? 'Unmute' : 'Mute'}
               >
-                {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+                {isMuted ? <VolumeX className="w-3 h-3 sm:w-4 sm:h-4" /> : <Volume2 className="w-3 h-3 sm:w-4 sm:h-4" />}
               </button>
               
               <button
                 onClick={handlePrevious}
-                className="w-6 h-6 bg-gray-600 hover:bg-gray-500 border border-gray-500 rounded flex items-center justify-center text-green-400"
+                className="w-5 h-5 sm:w-6 sm:h-6 bg-gray-600 hover:bg-gray-500 border border-gray-500 rounded flex items-center justify-center text-green-400"
               >
                 <SkipBack className="w-3 h-3" />
               </button>
               
               <button
                 onClick={handlePlay}
-                className="w-8 h-8 bg-green-600 hover:bg-green-500 border border-green-500 rounded flex items-center justify-center text-white"
+                className="w-6 h-6 sm:w-8 sm:h-8 bg-green-600 hover:bg-green-500 border border-green-500 rounded flex items-center justify-center text-white"
                 disabled={isLoading}
               >
                 {isLoading ? (
@@ -407,7 +411,7 @@ export default function BoomBox() {
               
               <button
                 onClick={handleNext}
-                className="w-6 h-6 bg-gray-600 hover:bg-gray-500 border border-gray-500 rounded flex items-center justify-center text-green-400"
+                className="w-5 h-5 sm:w-6 sm:h-6 bg-gray-600 hover:bg-gray-500 border border-gray-500 rounded flex items-center justify-center text-green-400"
               >
                 <SkipForward className="w-3 h-3" />
               </button>
