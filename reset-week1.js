@@ -3,27 +3,40 @@ const resetWeek1Picks = async () => {
   try {
     console.log('Resetting week 1 picks to hidden...')
     
-    const response = await fetch('https://www.pickemparty.app/api/admin/hide-picks', {
+    const response = await fetch('https://www.pickemparty.app/api/admin/simulate', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        leagueId: 'bd4aebfd-8e2a-4c13-8dd8-bcbb4bcb26bb', // GRID2025 league ID
-        week: 1,
-        userId: '6f34ce55-d627-4ada-a8da-c3e7c5bc62c6' // Super admin user
+        action: 'hide-week-1'
       })
     })
     
-    const result = await response.json()
+    console.log('Response status:', response.status)
+    console.log('Response headers:', Object.fromEntries(response.headers))
     
-    if (result.success) {
-      console.log('✅', result.message)
-      console.log('League:', result.data.league_name)
-      console.log('Current revealed weeks:', result.data.revealed_weeks)
-      console.log('Week 1 picks are now hidden - new members can join!')
-    } else {
-      console.log('❌ Failed:', result.error)
+    const responseText = await response.text()
+    console.log('Response body:', responseText)
+    
+    if (!responseText) {
+      console.log('❌ Empty response from server')
+      return
+    }
+    
+    try {
+      const result = JSON.parse(responseText)
+      
+      if (result.success) {
+        console.log('✅', result.message)
+        console.log('League:', result.data.league_name)
+        console.log('Previous revealed weeks:', result.data.previous_revealed_weeks)
+        console.log('Updated revealed weeks:', result.data.updated_revealed_weeks)
+      } else {
+        console.log('❌ Failed:', result.error)
+      }
+    } catch (jsonError) {
+      console.log('❌ Failed to parse JSON response:', jsonError.message)
     }
     
   } catch (error) {

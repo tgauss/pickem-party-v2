@@ -46,6 +46,8 @@ export async function POST(request: Request) {
       return processWeek(leagueId, week)
     } else if (action === 'simulate-weeks') {
       return simulateMultipleWeeks(leagueId, week) // week = target week
+    } else if (action === 'hide-week-1') {
+      return hideWeek1Picks()
     }
     
     return NextResponse.json({ success: false, error: 'Invalid action' })
@@ -274,4 +276,64 @@ async function simulateMultipleWeeks(leagueId: string, targetWeek: number) {
     totalProcessed: totalProcessed,
     message: `Simulated ${targetWeek} weeks with ${totalGenerated} picks generated and ${totalProcessed} picks processed`
   })
+}
+
+async function hideWeek1Picks() {
+  try {
+    // Get GRID2025 league
+    const { data: league, error: leagueError } = await supabase
+      .from('leagues')
+      .select('id, name, picks_revealed_weeks')
+      .eq('invite_code', 'GRID2025')
+      .single()
+
+    if (leagueError || !league) {
+      return NextResponse.json({
+        success: false,
+        error: 'GRID2025 league not found'
+      })
+    }
+
+    const currentRevealedWeeks = league.picks_revealed_weeks || []
+    
+    if (!currentRevealedWeeks.includes(1)) {
+      return NextResponse.json({
+        success: false,
+        error: 'Week 1 picks are already hidden'
+      })
+    }
+
+    // Remove week 1 from revealed weeks
+    const updatedRevealedWeeks = currentRevealedWeeks.filter((w: number) => w !== 1)
+
+    // Update the league
+    const { error: updateError } = await supabase
+      .from('leagues')
+      .update({ picks_revealed_weeks: updatedRevealedWeeks })
+      .eq('id', league.id)
+
+    if (updateError) {
+      return NextResponse.json({
+        success: false,
+        error: 'Failed to hide week 1 picks: ' + updateError.message
+      })
+    }
+
+    return NextResponse.json({
+      success: true,
+      message: 'Week 1 picks have been hidden! New members can now join.',
+      data: {
+        league_name: league.name,
+        previous_revealed_weeks: currentRevealedWeeks,
+        updated_revealed_weeks: updatedRevealedWeeks
+      }
+    })
+
+  } catch (error) {
+    console.error('Hide week 1 picks error:', error)
+    return NextResponse.json({
+      success: false,
+      error: 'Internal server error hiding week 1 picks'
+    })
+  }
 }
