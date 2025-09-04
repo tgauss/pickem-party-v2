@@ -14,8 +14,8 @@ export async function POST() {
       return NextResponse.json({ success: false, error: 'API key not configured' })
     }
 
-    // Fetch 2024 NFL schedule from SportsData.io
-    const response = await fetch(`https://api.sportsdata.io/v3/nfl/scores/json/SchedulesBasic/2024?key=${apiKey}`)
+    // Fetch 2025 NFL schedule from SportsData.io
+    const response = await fetch(`https://api.sportsdata.io/v3/nfl/scores/json/SchedulesBasic/2025?key=${apiKey}`)
     
     if (!response.ok) {
       return NextResponse.json({ success: false, error: 'SportsData API error' })
