@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Shield, Users, Crown, CheckCircle, ArrowLeft } from 'lucide-react'
+import { Shield, Users, Crown, CheckCircle, ArrowLeft, RotateCcw } from 'lucide-react'
 
 interface User {
   id: string
@@ -40,6 +40,12 @@ export default function SuperAdminDashboard() {
   const [selectedLeague, setSelectedLeague] = useState<string>('')
   const [selectedUser, setSelectedUser] = useState<string>('')
   const [assigning, setAssigning] = useState(false)
+  
+  // Pick reset state
+  const [resetLeague, setResetLeague] = useState<string>('')
+  const [resetUser, setResetUser] = useState<string>('')
+  const [resetWeek, setResetWeek] = useState<string>('')
+  const [resetting, setResetting] = useState(false)
 
   const supabase = createClient()
 
@@ -142,6 +148,56 @@ export default function SuperAdminDashboard() {
     setAssigning(false)
   }
 
+  const resetUserPick = async () => {
+    if (!resetLeague || !resetUser || !resetWeek || !currentUser) {
+      alert('Please select league, user, and week')
+      return
+    }
+
+    const confirmReset = window.confirm(
+      `⚠️ RESET PICK CONFIRMATION\n\n` +
+      `League: ${leagues.find(l => l.id === resetLeague)?.name}\n` +
+      `User: ${users.find(u => u.id === resetUser)?.display_name}\n` +
+      `Week: ${resetWeek}\n\n` +
+      `This will DELETE their current pick and allow them to pick again.\n` +
+      `Are you sure you want to proceed?`
+    )
+
+    if (!confirmReset) return
+
+    setResetting(true)
+    try {
+      const response = await fetch('/api/admin/reset-pick', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: resetUser,
+          leagueId: resetLeague,
+          week: parseInt(resetWeek),
+          adminUsername: currentUser.username
+        })
+      })
+
+      const data = await response.json()
+      if (data.success) {
+        alert(`✅ ${data.message}\n\nThe user can now make a new pick for Week ${resetWeek}.`)
+        setResetLeague('')
+        setResetUser('')
+        setResetWeek('')
+      } else {
+        if (data.gameStarted) {
+          alert(`❌ Cannot Reset Pick\n\n${data.error}\n\nPicks can only be reset before games start.`)
+        } else {
+          alert(`❌ Reset Failed\n\n${data.error}`)
+        }
+      }
+    } catch (error) {
+      console.error('Error resetting pick:', error)
+      alert('❌ Network error resetting pick')
+    }
+    setResetting(false)
+  }
+
   useEffect(() => {
     if (checkSuperAdminAccess()) {
       // User is authorized, currentUser will be set
@@ -196,6 +252,102 @@ export default function SuperAdminDashboard() {
             Only super admins ({['admin', 'tgauss', 'pickemking'].join(', ')}) can access this dashboard.
           </AlertDescription>
         </Alert>
+
+        {/* Pick Reset Tool */}
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <RotateCcw className="h-5 w-5" />
+              Reset User Pick
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Alert className="mb-4 border-orange-600 bg-orange-900/20">
+              <Shield className="h-4 w-4 text-orange-400" />
+              <AlertDescription className="text-orange-300">
+                <strong>Caution:</strong> This will DELETE a user&apos;s pick for the specified week, allowing them to pick again. 
+                Only use this for accidental wrong picks. Cannot reset picks after games have started.
+              </AlertDescription>
+            </Alert>
+
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+              <div>
+                <label className="text-sm font-medium mb-2 block">League</label>
+                <Select value={resetLeague} onValueChange={setResetLeague}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Choose league..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {leagues.map(league => (
+                      <SelectItem key={league.id} value={league.id}>
+                        {league.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <label className="text-sm font-medium mb-2 block">User</label>
+                <Select value={resetUser} onValueChange={setResetUser}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Choose user..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {users.map(user => (
+                      <SelectItem key={user.id} value={user.id}>
+                        <div>
+                          <div className="font-medium">{user.display_name}</div>
+                          <div className="text-xs text-muted-foreground">@{user.username}</div>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <label className="text-sm font-medium mb-2 block">Week</label>
+                <Select value={resetWeek} onValueChange={setResetWeek}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Week..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Array.from({ length: 18 }, (_, i) => i + 1).map(week => (
+                      <SelectItem key={week} value={week.toString()}>
+                        Week {week}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="flex items-end">
+                <Button 
+                  onClick={resetUserPick}
+                  disabled={!resetLeague || !resetUser || !resetWeek || resetting}
+                  variant="destructive"
+                  className="w-full"
+                >
+                  {resetting ? 'Resetting...' : 'Reset Pick'}
+                </Button>
+              </div>
+            </div>
+
+            {resetLeague && resetUser && resetWeek && (
+              <Alert className="bg-red-50 border-red-200">
+                <RotateCcw className="h-4 w-4 text-red-500" />
+                <AlertDescription className="text-red-800">
+                  You are about to reset <strong>
+                    {users.find(u => u.id === resetUser)?.display_name}
+                  </strong>&apos;s Week {resetWeek} pick in <strong>
+                    {leagues.find(l => l.id === resetLeague)?.name}
+                  </strong>
+                </AlertDescription>
+              </Alert>
+            )}
+          </CardContent>
+        </Card>
 
         {/* Commissioner Assignment */}
         <Card className="mb-6">
