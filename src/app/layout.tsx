@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Goldman, Press_Start_2P } from "next/font/google";
+import BoomBox from "@/components/BoomBox";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -100,6 +101,7 @@ export default function RootLayout({
               </a>
             </div>
           </footer>
+          <BoomBox />
         </div>
       </body>
     </html>
