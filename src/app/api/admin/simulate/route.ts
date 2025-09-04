@@ -39,6 +39,7 @@ interface PickWithGame {
 export async function POST(request: Request) {
   try {
     const { action, week, leagueId } = await request.json()
+    console.log('Simulate action received:', action)
     
     if (action === 'generate-picks') {
       return generatePicks(leagueId, week)

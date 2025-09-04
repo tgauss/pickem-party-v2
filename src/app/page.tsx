@@ -180,7 +180,18 @@ function HomePageContent() {
         setShowTutorial(true)
         setShowAuth(false)
       } else {
-        alert('Sign up failed: ' + (error?.message || 'Unknown error'))
+        // Check if it's a duplicate email error
+        if (error?.message?.includes('duplicate key value violates unique constraint') && 
+            error?.message?.includes('users_email_key')) {
+          if (confirm('This email already has an account! Click OK to go to the login page, or Cancel to try again.')) {
+            window.location.href = '/login'
+          }
+        } else if (error?.message?.includes('duplicate key value violates unique constraint') && 
+                   error?.message?.includes('users_username_key')) {
+          alert('This username is already taken. Please choose a different username.')
+        } else {
+          alert('Sign up failed: ' + (error?.message || 'Unknown error'))
+        }
       }
     }
     setLoading(false)
@@ -372,13 +383,36 @@ function HomePageContent() {
               {loading ? '...' : isLogin ? 'FIGHT!' : 'ENTER ARENA!'}
             </Button>
 
-            <Button
-              variant="outline"
-              onClick={() => setIsLogin(!isLogin)}
-              className="w-full"
-            >
-              {isLogin ? 'New Fighter? Sign Up' : 'Returning Fighter? Login'}
-            </Button>
+            {!isLogin && (
+              <div className="space-y-2">
+                <Button
+                  variant="outline"
+                  onClick={() => setIsLogin(true)}
+                  className="w-full"
+                >
+                  Returning Fighter? Quick Login Here
+                </Button>
+                <p className="text-center text-sm text-muted-foreground">
+                  or{' '}
+                  <a 
+                    href="/login" 
+                    className="text-primary hover:underline font-medium"
+                  >
+                    use dedicated login page
+                  </a>
+                </p>
+              </div>
+            )}
+            
+            {isLogin && (
+              <Button
+                variant="outline"
+                onClick={() => setIsLogin(false)}
+                className="w-full"
+              >
+                New Fighter? Sign Up Instead
+              </Button>
+            )}
             
             <Button
               variant="ghost"
