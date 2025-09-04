@@ -409,10 +409,10 @@ export function CurrentWeekPicker({
           </CardHeader>
           <CardContent className="pt-2">
             <div className="flex items-center gap-3">
-              {currentPick.teams?.logo_url && (
+              {currentPick.teams?.key && (
                 <Image 
-                  src={currentPick.teams.logo_url} 
-                  alt={`${currentPick.teams.name} logo`}
+                  src={getTeamHelmet(currentPick.teams.key)} 
+                  alt={`${currentPick.teams.name} helmet`}
                   width={48}
                   height={48}
                   className="rounded-lg"
