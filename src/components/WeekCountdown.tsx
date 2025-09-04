@@ -133,14 +133,17 @@ export function WeekCountdown({ week, seasonYear = 2025, isPreSeason = false }: 
 
   if (deadlinePassed) {
     return (
-      <Card className="bg-destructive/20 border-destructive/50">
+      <Card className="bg-primary/10 border-primary/50">
         <CardContent className="p-4">
           <div className="text-center">
             <div className="flex items-center justify-center gap-2 mb-2">
-              <CustomIcon name="x-wrong" fallback="⚠️" alt="Deadline passed" size="sm" />
-              <span className="font-bold text-destructive">DEADLINE PASSED</span>
+              <CustomIcon name="target" fallback="🎯" alt="Still picking" size="sm" />
+              <span className="font-bold text-primary">STILL PICKING!</span>
             </div>
             <p className="text-sm text-muted-foreground">
+              You can still pick any team whose game hasn&apos;t started yet
+            </p>
+            <p className="text-xs text-muted-foreground mt-1">
               First game started: {formatGameTime(firstGameTime)}
             </p>
           </div>
