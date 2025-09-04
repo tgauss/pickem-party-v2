@@ -263,6 +263,21 @@ export default function LeaguePage({
       return
     }
     
+    // Check if user has already used this team in a previous week
+    const teamAlreadyUsed = userPicks.some(pick => 
+      pick.team_id === teamId && pick.week < selectedWeek
+    )
+    
+    if (teamAlreadyUsed) {
+      // Get team name for better error message
+      const teamName = games.flatMap(g => [g.home_team, g.away_team])
+        .find(t => t.team_id === teamId)
+      const displayName = teamName ? `${teamName.city} ${teamName.name}` : 'this team'
+      
+      alert(`🔒 TEAM ALREADY USED! You picked ${displayName} in a previous week. In Survivor pools, you can only use each team once per season.`)
+      return
+    }
+    
     // Check if deadline has passed
     const game = games.find(g => g.id === gameId)
     if (game) {

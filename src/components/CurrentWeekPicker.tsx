@@ -438,7 +438,7 @@ export function CurrentWeekPicker({
             Week {week} - Make Your Pick
           </CardTitle>
           <p className="text-xs text-muted-foreground">
-            Select from available teams (grayed out = already used) • Betting lines help inform your decision
+            🚫 <strong>Survivor Rule:</strong> Each team can only be used once per season • 🔒 = Already used in previous week • Betting lines help inform your decision
           </p>
         </CardHeader>
         <CardContent className="pt-2">
@@ -493,14 +493,22 @@ export function CurrentWeekPicker({
                       <button
                         onClick={() => awayAvailable && handleTeamSelect(game.away_team_id, game.id)}
                         disabled={!awayAvailable || !!currentPick}
-                        className={`flex-1 p-3 sm:p-4 rounded-lg border transition-all min-h-[100px] sm:min-h-[120px] ${
+                        title={!awayAvailable ? `${game.away_team.city} ${game.away_team.name} was already used in a previous week` : `Select ${game.away_team.city} ${game.away_team.name}`}
+                        className={`flex-1 p-3 sm:p-4 rounded-lg border transition-all min-h-[100px] sm:min-h-[120px] relative ${
                           !awayAvailable 
-                            ? 'opacity-50 cursor-not-allowed bg-muted' 
+                            ? 'opacity-50 cursor-not-allowed bg-muted border-red-300' 
                             : selectedTeamId === game.away_team_id
                             ? 'border-primary bg-primary/10 ring-2 ring-primary'
                             : 'hover:bg-accent cursor-pointer'
                         }`}
                       >
+                        {!awayAvailable && (
+                          <div className="absolute inset-0 bg-red-500/20 rounded-lg flex items-center justify-center">
+                            <div className="bg-red-600 text-white rounded-full p-2">
+                              <Lock className="h-4 w-4" />
+                            </div>
+                          </div>
+                        )}
                         <div className="flex flex-col items-center text-center space-y-2">
                           <Image
                             src={getTeamHelmet(game.away_team.key)}
@@ -529,8 +537,9 @@ export function CurrentWeekPicker({
                               </Badge>
                             )}
                             {!awayAvailable && (
-                              <Badge variant="destructive" className="text-xs px-2 py-1">
-                                Used
+                              <Badge variant="destructive" className="text-xs px-2 py-1 flex items-center gap-1">
+                                <Lock className="h-3 w-3" />
+                                Already Used
                               </Badge>
                             )}
                           </div>
@@ -547,14 +556,22 @@ export function CurrentWeekPicker({
                       <button
                         onClick={() => homeAvailable && handleTeamSelect(game.home_team_id, game.id)}
                         disabled={!homeAvailable || !!currentPick}
-                        className={`flex-1 p-3 sm:p-4 rounded-lg border transition-all min-h-[100px] sm:min-h-[120px] ${
+                        title={!homeAvailable ? `${game.home_team.city} ${game.home_team.name} was already used in a previous week` : `Select ${game.home_team.city} ${game.home_team.name}`}
+                        className={`flex-1 p-3 sm:p-4 rounded-lg border transition-all min-h-[100px] sm:min-h-[120px] relative ${
                           !homeAvailable 
-                            ? 'opacity-50 cursor-not-allowed bg-muted' 
+                            ? 'opacity-50 cursor-not-allowed bg-muted border-red-300' 
                             : selectedTeamId === game.home_team_id
                             ? 'border-primary bg-primary/10 ring-2 ring-primary'
                             : 'hover:bg-accent cursor-pointer'
                         }`}
                       >
+                        {!homeAvailable && (
+                          <div className="absolute inset-0 bg-red-500/20 rounded-lg flex items-center justify-center">
+                            <div className="bg-red-600 text-white rounded-full p-2">
+                              <Lock className="h-4 w-4" />
+                            </div>
+                          </div>
+                        )}
                         <div className="flex flex-col items-center text-center space-y-2">
                           <Image
                             src={getTeamHelmet(game.home_team.key)}
@@ -583,8 +600,9 @@ export function CurrentWeekPicker({
                               </Badge>
                             )}
                             {!homeAvailable && (
-                              <Badge variant="destructive" className="text-xs px-2 py-1">
-                                Used
+                              <Badge variant="destructive" className="text-xs px-2 py-1 flex items-center gap-1">
+                                <Lock className="h-3 w-3" />
+                                Already Used
                               </Badge>
                             )}
                           </div>
