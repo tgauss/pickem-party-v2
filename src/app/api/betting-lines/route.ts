@@ -105,7 +105,7 @@ export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url)
     const week = searchParams.get('week') || '1'
-    const seasonYear = searchParams.get('season') || '2025'
+    const seasonYear = searchParams.get('season') || '2024'
 
     // Get games for the specified week with ESPN event IDs
     const result = await supabase

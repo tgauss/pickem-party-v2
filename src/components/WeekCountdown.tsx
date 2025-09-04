@@ -14,7 +14,7 @@ interface WeekCountdownProps {
 
 // Removed unused interface
 
-export function WeekCountdown({ week, seasonYear = 2025, isPreSeason = false }: WeekCountdownProps) {
+export function WeekCountdown({ week, seasonYear = 2024, isPreSeason = false }: WeekCountdownProps) {
   const [firstGameTime, setFirstGameTime] = useState<Date | null>(null)
   const [countdown, setCountdown] = useState<{
     days: number
