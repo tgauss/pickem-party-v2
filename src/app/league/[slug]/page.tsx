@@ -533,6 +533,15 @@ export default function LeaguePage({
               <CustomIcon name="copy" fallback="📋" alt="Copy" size="sm" />
               Copy Link
             </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => window.location.href = `/league/${resolvedParams.slug}/schedule`}
+              className="flex items-center gap-1 text-xs px-2 py-1"
+            >
+              <CustomIcon name="calendar" fallback="📅" alt="Schedule" size="sm" />
+              View Schedule
+            </Button>
           </div>
         </div>
 

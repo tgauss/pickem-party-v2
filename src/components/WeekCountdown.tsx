@@ -61,14 +61,11 @@ export function WeekCountdown({ week, seasonYear = 2025, isPreSeason = false }: 
     const updateCountdown = () => {
       const now = new Date()
       
-      // Convert to EST/EDT (Eastern Time) since NFL games are typically scheduled in ET
-      const nowET = new Date(now.toLocaleString("en-US", {timeZone: "America/New_York"}))
-      const gameTimeET = new Date(firstGameTime.toLocaleString("en-US", {timeZone: "America/New_York"}))
+      // Calculate deadline (1 hour before first game) - no timezone conversion needed
+      // The game time is already stored as UTC in the database
+      const deadline = new Date(firstGameTime.getTime() - (60 * 60 * 1000))
       
-      // Calculate deadline (1 hour before first game)
-      const deadline = new Date(gameTimeET.getTime() - (60 * 60 * 1000))
-      
-      const timeDiff = deadline.getTime() - nowET.getTime()
+      const timeDiff = deadline.getTime() - now.getTime()
       
       if (timeDiff <= 0) {
         setDeadlinePassed(true)
@@ -92,8 +89,8 @@ export function WeekCountdown({ week, seasonYear = 2025, isPreSeason = false }: 
   }, [firstGameTime])
 
   const formatGameTime = (date: Date) => {
+    // Display in user's local timezone
     return date.toLocaleString('en-US', {
-      timeZone: 'America/New_York',
       weekday: 'short',
       month: 'short',
       day: 'numeric',
