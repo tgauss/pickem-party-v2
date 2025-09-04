@@ -99,19 +99,6 @@ export default function BoomBox() {
           // Autoplay first track after loading
           if (trackList.length > 0 && !hasAutoplayStarted) {
             setHasAutoplayStarted(true)
-            // Small delay to ensure audio element is ready
-            setTimeout(async () => {
-              try {
-                const audio = audioRef.current
-                if (audio) {
-                  await audio.play()
-                  setIsPlaying(true)
-                }
-              } catch {
-                // Autoplay failed (browser policy), that's ok
-                console.log('Autoplay prevented by browser policy')
-              }
-            }, 500)
           }
         }
       } catch (error) {
@@ -172,7 +159,7 @@ export default function BoomBox() {
     setCurrentTime(0)
   }, [tracks.length, isShuffled, currentTrackIndex])
 
-  // Audio event handlers
+  // Audio event handlers with autoplay
   useEffect(() => {
     const audio = audioRef.current
     if (!audio) return
@@ -181,7 +168,20 @@ export default function BoomBox() {
     const handleDurationChange = () => setDuration(audio.duration)
     const handleEnded = () => handleNext()
     const handleLoadStart = () => setIsLoading(true)
-    const handleCanPlay = () => setIsLoading(false)
+    const handleCanPlay = async () => {
+      setIsLoading(false)
+      // Trigger autoplay when track is ready
+      if (hasAutoplayStarted && !isPlaying && tracks.length > 0) {
+        try {
+          await audio.play()
+          setIsPlaying(true)
+          setHasAutoplayStarted(false) // Reset flag after successful autoplay
+        } catch {
+          console.log('Autoplay prevented by browser policy')
+          setHasAutoplayStarted(false) // Reset flag even if autoplay fails
+        }
+      }
+    }
 
     audio.addEventListener('timeupdate', handleTimeUpdate)
     audio.addEventListener('durationchange', handleDurationChange)
@@ -196,7 +196,7 @@ export default function BoomBox() {
       audio.removeEventListener('loadstart', handleLoadStart)
       audio.removeEventListener('canplay', handleCanPlay)
     }
-  }, [handleNext])
+  }, [handleNext, hasAutoplayStarted, isPlaying, tracks.length])
 
   // Update audio volume
   useEffect(() => {

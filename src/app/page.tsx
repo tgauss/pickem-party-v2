@@ -242,8 +242,8 @@ function HomePageContent() {
 
   if (showAuth) {
     return (
-      <div className="flex-1 bg-background flex items-center justify-center p-4">
-        <Card className="w-full max-w-md p-6 retro-border">
+      <div className="flex-1 bg-background flex flex-col justify-start pt-4 pb-32 px-4">
+        <Card className="w-full max-w-md mx-auto p-4 sm:p-6 retro-border">
           <div className="text-center mb-8">
             <div className="mb-6">
               <Image 
@@ -434,32 +434,32 @@ function HomePageContent() {
     const deadlineExpired = countdown?.expired || false
     
     return (
-      <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-secondary/5 flex items-center justify-center p-4">
-        <Card className="w-full max-w-lg retro-border shadow-2xl bg-gradient-to-b from-surface to-background border-2">
-          <div className="text-center p-6 sm:p-8">
-            {/* Logo without animation */}
-            <div className="mb-6">
+      <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-secondary/5 flex flex-col justify-start pt-4 pb-32 px-4">
+        <Card className="w-full max-w-lg mx-auto retro-border shadow-2xl bg-gradient-to-b from-surface to-background border-2">
+          <div className="text-center p-4 sm:p-6">
+            {/* Logo - smaller on mobile */}
+            <div className="mb-4">
               <Image 
                 src="/logos/Pickem Part App Logo.svg" 
                 alt="Pickem Party Logo"
-                width={100}
-                height={100}
-                className="mx-auto sm:w-[120px] sm:h-[120px]"
+                width={80}
+                height={80}
+                className="mx-auto sm:w-[100px] sm:h-[100px]"
               />
             </div>
             
-            {/* Exciting header */}
-            <div className="mb-6">
-              <div className="flex justify-center mb-4">
-                <CustomIcon name="mail" fallback="📧" alt="Invite" size="lg" />
-                <CustomIcon name="fire" fallback="🔥" alt="Hot" size="lg" className="ml-2" />
+            {/* Exciting header - more compact */}
+            <div className="mb-4">
+              <div className="flex justify-center mb-2">
+                <CustomIcon name="mail" fallback="📧" alt="Invite" size="md" />
+                <CustomIcon name="fire" fallback="🔥" alt="Hot" size="md" className="ml-2" />
               </div>
-              <h1 className="text-2xl sm:text-3xl font-bold mb-2 fight-text" style={{color: 'var(--primary)'}}>
+              <h1 className="text-xl sm:text-2xl font-bold mb-2 fight-text" style={{color: 'var(--primary)'}}>
                 {inviterName ? `${decodeURIComponent(inviterName)} INVITES YOU!` : 'YOU&apos;VE BEEN INVITED!'}
               </h1>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-xs sm:text-sm text-muted-foreground">
                 {inviterName 
-                  ? `${decodeURIComponent(inviterName)} is inviting you to an epic battle for the NFL Season. Can you survive and win up to $${totalPot}?`
+                  ? `Join the NFL battle! Win up to $${totalPot}`
                   : 'A friend wants you to join their NFL Survivor Pool'
                 }
               </p>
