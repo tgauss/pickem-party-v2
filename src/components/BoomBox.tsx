@@ -44,6 +44,7 @@ export default function BoomBox() {
   const [isExpanded, setIsExpanded] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [hasAutoplayStarted, setHasAutoplayStarted] = useState(false)
+  const [showAutoplayPrompt, setShowAutoplayPrompt] = useState(false)
   
   const audioRef = useRef<HTMLAudioElement>(null)
   const timelineRef = useRef<HTMLInputElement>(null)
@@ -96,9 +97,10 @@ export default function BoomBox() {
           
           setTracks(trackList)
           
-          // Autoplay first track after loading
+          // Show autoplay prompt after loading
           if (trackList.length > 0 && !hasAutoplayStarted) {
             setHasAutoplayStarted(true)
+            setShowAutoplayPrompt(true)
           }
         }
       } catch (error) {
@@ -168,19 +170,8 @@ export default function BoomBox() {
     const handleDurationChange = () => setDuration(audio.duration)
     const handleEnded = () => handleNext()
     const handleLoadStart = () => setIsLoading(true)
-    const handleCanPlay = async () => {
+    const handleCanPlay = () => {
       setIsLoading(false)
-      // Trigger autoplay when track is ready
-      if (hasAutoplayStarted && !isPlaying && tracks.length > 0) {
-        try {
-          await audio.play()
-          setIsPlaying(true)
-          setHasAutoplayStarted(false) // Reset flag after successful autoplay
-        } catch {
-          console.log('Autoplay prevented by browser policy')
-          setHasAutoplayStarted(false) // Reset flag even if autoplay fails
-        }
-      }
     }
 
     audio.addEventListener('timeupdate', handleTimeUpdate)
@@ -215,6 +206,7 @@ export default function BoomBox() {
       } else {
         await audioRef.current.play()
         setIsPlaying(true)
+        setShowAutoplayPrompt(false) // Hide prompt once user plays
       }
     } catch (err) {
       console.error('Playback failed:', err)
@@ -295,6 +287,27 @@ export default function BoomBox() {
         src={currentTrack?.url}
         preload="metadata"
       />
+      
+      {/* Autoplay Prompt */}
+      {showAutoplayPrompt && (
+        <div className="mb-2 bg-gradient-to-r from-green-600 to-green-700 border-2 border-green-500 rounded-lg p-2 shadow-lg animate-pulse">
+          <div className="flex items-center gap-2">
+            <div className="text-white text-xs font-mono font-bold">🎵 START MUSIC?</div>
+            <button
+              onClick={handlePlay}
+              className="bg-white text-green-600 px-2 py-1 rounded text-xs font-bold hover:bg-green-50 transition-colors"
+            >
+              PLAY ▶
+            </button>
+            <button
+              onClick={() => setShowAutoplayPrompt(false)}
+              className="text-white hover:text-green-200 text-xs ml-1"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+      )}
       
       <div className={`bg-gradient-to-b from-gray-700 to-gray-900 border-4 border-gray-600 rounded-lg shadow-2xl transition-all duration-300 ${
         isExpanded ? 'w-80 h-96' : 'w-72 h-20'
