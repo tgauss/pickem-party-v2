@@ -72,21 +72,11 @@ export default function LoginPage() {
   }
 
   return (
-    <div 
-      className="min-h-screen flex items-center justify-center p-4"
-      style={{
-        backgroundImage: `
-          linear-gradient(135deg, #667eea 0%, #764ba2 100%),
-          radial-gradient(circle at top left, #f093fb, transparent 50%),
-          radial-gradient(circle at bottom right, #f5576c, transparent 50%)
-        `,
-        backgroundBlendMode: 'normal, screen, screen'
-      }}
-    >
+    <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="w-full max-w-md">
-        <Card className="bg-background border-border shadow-2xl">
-          <div className="text-center p-8">
-            <div className="mb-4">
+        <Card className="bg-background border-border retro-border p-6">
+          <div className="text-center mb-8">
+            <div className="mb-6">
               <Image
                 src="/logos/Pickem Part App Logo.svg" 
                 alt="Pickem Party Logo"
@@ -103,7 +93,7 @@ export default function LoginPage() {
             </p>
           </div>
 
-          <div className="space-y-4 px-8 pb-8">
+          <div className="space-y-4">
             <div>
               <Label htmlFor="usernameOrEmail">
                 Username or Email
