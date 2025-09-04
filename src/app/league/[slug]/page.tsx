@@ -498,26 +498,26 @@ export default function LeaguePage({
   return (
     <div className="min-h-screen bg-background p-2 sm:p-4">
       <div className="max-w-6xl mx-auto">
-        {/* Header */}
-        <div className="text-center mb-4 sm:mb-8">
-          <div className="mb-3">
+        {/* Header - Compact */}
+        <div className="text-center mb-3 sm:mb-4">
+          <div className="mb-2">
             <Image 
               src="/logos/Pickem Part App Logo.svg" 
               alt="Pickem Party Logo"
-              width={60}
-              height={60}
-              className="mx-auto sm:w-20 sm:h-20"
+              width={50}
+              height={50}
+              className="mx-auto sm:w-16 sm:h-16"
             />
           </div>
-          <h1 className="text-xl sm:text-2xl font-bold mb-2" style={{color: 'var(--primary)'}}>
+          <h1 className="text-lg sm:text-xl font-bold mb-1" style={{color: 'var(--primary)'}}>
             {league.name.toUpperCase()}
           </h1>
-          <p className="text-sm sm:text-base text-muted-foreground">
+          <p className="text-xs sm:text-sm text-muted-foreground mb-2">
             {members.filter(m => !m.is_eliminated).length} FIGHTERS REMAIN
           </p>
-          <div className="flex flex-col items-center gap-2 mt-2">
-            <p className="text-xs sm:text-sm text-muted-foreground">
-              Invite Code: <strong>{league.invite_code}</strong>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-2">
+            <p className="text-xs text-muted-foreground">
+              Code: <strong>{league.invite_code}</strong>
             </p>
             <Button
               variant="outline"
@@ -528,17 +528,17 @@ export default function LeaguePage({
                 navigator.clipboard.writeText(inviteUrl)
                 alert('📋 Invite link copied to clipboard!')
               }}
-              className="flex items-center gap-2"
+              className="flex items-center gap-1 text-xs px-2 py-1"
             >
               <CustomIcon name="copy" fallback="📋" alt="Copy" size="sm" />
-              Copy Invite Link
+              Copy Link
             </Button>
           </div>
         </div>
 
         {/* League Message/Announcements - Commissioner Section */}
-        <Card className="mb-4 sm:mb-6 bg-gradient-to-r from-primary/10 to-secondary/10 border-primary/30">
-          <div className="p-4 sm:p-6">
+        <Card className="mb-3 sm:mb-4 bg-gradient-to-r from-primary/10 to-secondary/10 border-primary/30">
+          <div className="p-3 sm:p-4">
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
                 <CustomIcon name="megaphone" fallback="📢" alt="Announcement" size="sm" />
@@ -560,18 +560,18 @@ export default function LeaguePage({
                 </Button>
               )}
             </div>
-            <div className="text-sm space-y-2">
-              <p>
+            <div className="text-sm space-y-1">
+              <p className="text-xs">
                 <strong>Commissioner:</strong> League Creator
               </p>
-              <div className="bg-surface/50 rounded-lg p-3 border border-border">
-                <p className="text-xs text-muted-foreground mb-2">📋 LEAGUE INFORMATION:</p>
+              <div className="bg-surface/50 rounded-lg p-2 border border-border">
+                <p className="text-xs text-muted-foreground mb-1">📋 LEAGUE INFORMATION:</p>
                 {isEditingMessage ? (
-                  <div className="space-y-3">
+                  <div className="space-y-2">
                     <textarea
                       value={draftMessage}
                       onChange={(e) => setDraftMessage(e.target.value)}
-                      className="w-full min-h-[150px] p-2 bg-background border border-border rounded-lg text-sm text-primary resize-y"
+                      className="w-full min-h-[100px] p-2 bg-background border border-border rounded-lg text-xs text-primary resize-y"
                       placeholder="Enter league information, rules, payment details, etc..."
                     />
                     <div className="flex gap-2">
@@ -598,7 +598,7 @@ export default function LeaguePage({
                     </div>
                   </div>
                 ) : (
-                  <p className="text-sm whitespace-pre-wrap">
+                  <p className="text-xs whitespace-pre-wrap">
                     {league.league_message && league.league_message.trim() ? league.league_message : (
                       <>
                         Welcome fighters! This is your league commissioner speaking. 
@@ -686,10 +686,10 @@ export default function LeaguePage({
         )}
 
         {/* League Standings */}
-        <Card className="mt-4 sm:mt-6">
-          <div className="p-3 sm:p-6">
-            <h2 className="text-lg sm:text-xl font-bold mb-3 sm:mb-4">League Standings</h2>
-            <div className="space-y-2">
+        <Card className="mt-3 sm:mt-4">
+          <div className="p-3 sm:p-4">
+            <h2 className="text-base sm:text-lg font-bold mb-2 sm:mb-3">League Standings</h2>
+            <div className="space-y-1">
               {members
                 .sort((a, b) => {
                   if (a.is_eliminated && !b.is_eliminated) return 1
@@ -699,14 +699,14 @@ export default function LeaguePage({
                 .map((member, index) => (
                   <div 
                     key={member.user.id}
-                    className={`flex items-center justify-between p-2 sm:p-3 rounded-lg ${
+                    className={`flex items-center justify-between p-2 rounded-lg ${
                       member.is_eliminated ? 'bg-muted opacity-50' : 'bg-background'
                     } border`}
                   >
-                    <div className="flex items-center gap-2 sm:gap-3">
-                      <span className="font-mono text-xs sm:text-sm">#{index + 1}</span>
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono text-xs">#{index + 1}</span>
                       <div className="flex flex-col">
-                        <span className="font-medium text-sm sm:text-base">{member.user.username}</span>
+                        <span className="font-medium text-sm">{member.user.username}</span>
                         <span className="text-xs text-muted-foreground">{member.user.display_name}</span>
                       </div>
                       {member.is_eliminated && (
@@ -715,8 +715,8 @@ export default function LeaguePage({
                         </Badge>
                       )}
                     </div>
-                    <div className="flex items-center gap-1 sm:gap-2">
-                      <div className="flex items-center gap-0.5 sm:gap-1">
+                    <div className="flex items-center gap-1">
+                      <div className="flex items-center gap-0.5">
                         {Array.from({ length: Math.max(0, member.lives_remaining) }).map((_, index) => (
                           <CustomIcon 
                             key={index}
@@ -742,13 +742,14 @@ export default function LeaguePage({
         {/* League Activity Log */}
         <LeagueActivityLog 
           leagueId={league.id}
-          className="mt-4 sm:mt-6"
+          className="mt-3 sm:mt-4"
         />
 
         {/* Back to Dashboard */}
-        <div className="text-center mt-8">
+        <div className="text-center mt-4 mb-20">
           <Button 
             variant="outline" 
+            size="sm"
             onClick={() => window.location.href = '/dashboard'}
           >
             Back to Dashboard

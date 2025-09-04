@@ -401,13 +401,13 @@ export function CurrentWeekPicker({
 
       {currentPick && (
         <Card className="bg-primary/5 border-primary">
-          <CardHeader className="pb-3">
-            <CardTitle className="flex items-center gap-2 text-primary">
-              <Star className="h-5 w-5" />
+          <CardHeader className="pb-2">
+            <CardTitle className="flex items-center gap-2 text-primary text-base">
+              <Star className="h-4 w-4" />
               Your Week {week} Pick
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pt-2">
             <div className="flex items-center gap-3">
               {currentPick.teams?.logo_url && (
                 <Image 
@@ -433,16 +433,16 @@ export function CurrentWeekPicker({
 
 
       <Card>
-        <CardHeader>
-          <CardTitle>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-base">
             Week {week} - Make Your Pick
           </CardTitle>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-xs text-muted-foreground">
             Select from available teams (grayed out = already used) • Betting lines help inform your decision
           </p>
         </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 gap-3 sm:gap-4">
+        <CardContent className="pt-2">
+          <div className="grid grid-cols-1 gap-2 sm:gap-3">
             {availableGames.map(game => {
               const homeAvailable = !usedTeamIds.includes(game.home_team_id)
               const awayAvailable = !usedTeamIds.includes(game.away_team_id)

@@ -45,7 +45,7 @@ export function WeekNavigation({
   const weekType = getWeekType(selectedWeek)
 
   return (
-    <div className="bg-surface rounded-lg border border-border mb-4 sm:mb-6">
+    <div className="bg-surface rounded-lg border border-border mb-3 sm:mb-4">
       {/* Mobile Layout */}
       <div className="sm:hidden">
         <div className="flex items-center justify-between p-3">
