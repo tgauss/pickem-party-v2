@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Shield, Users, Crown, CheckCircle, ArrowLeft, RotateCcw } from 'lucide-react'
+import { Shield, Users, Crown, CheckCircle, ArrowLeft, RotateCcw, Trash2, AlertTriangle } from 'lucide-react'
 
 interface User {
   id: string
@@ -46,6 +46,10 @@ export default function SuperAdminDashboard() {
   const [resetUser, setResetUser] = useState<string>('')
   const [resetWeek, setResetWeek] = useState<string>('')
   const [resetting, setResetting] = useState(false)
+  
+  // User deletion state
+  const [deleteUser, setDeleteUser] = useState<string>('')
+  const [deleting, setDeleting] = useState(false)
 
   const supabase = createClient()
 
@@ -198,6 +202,78 @@ export default function SuperAdminDashboard() {
     setResetting(false)
   }
 
+  const deleteUserAccount = async () => {
+    if (!deleteUser || !currentUser) {
+      alert('Please select a user to delete')
+      return
+    }
+
+    const userToDelete = users.find(u => u.id === deleteUser)
+    if (!userToDelete) {
+      alert('User not found')
+      return
+    }
+
+    // Super strong confirmation for user deletion
+    const confirmDelete1 = window.confirm(
+      `⚠️⚠️⚠️ PERMANENT USER DELETION WARNING ⚠️⚠️⚠️\n\n` +
+      `This will PERMANENTLY DELETE:\n` +
+      `• User: ${userToDelete.display_name} (@${userToDelete.username})\n` +
+      `• ALL their picks across all leagues\n` +
+      `• ALL their league memberships\n` +
+      `• ALL their notifications\n` +
+      `• Their entire account and login access\n\n` +
+      `🚨 THIS CANNOT BE UNDONE! 🚨\n\n` +
+      `Are you absolutely sure you want to proceed?`
+    )
+
+    if (!confirmDelete1) return
+
+    // Second confirmation
+    const confirmDelete2 = window.confirm(
+      `🛑 FINAL CONFIRMATION REQUIRED 🛑\n\n` +
+      `Type "DELETE" in the next popup to confirm you want to permanently delete ${userToDelete.display_name}'s entire account.\n\n` +
+      `This is your last chance to cancel!`
+    )
+
+    if (!confirmDelete2) return
+
+    // Third confirmation with typing
+    const typeConfirmation = window.prompt(
+      `Type "DELETE" (all caps) to confirm permanent deletion of ${userToDelete.display_name}'s account:`
+    )
+
+    if (typeConfirmation !== 'DELETE') {
+      alert('❌ Deletion cancelled - confirmation text did not match')
+      return
+    }
+
+    setDeleting(true)
+    try {
+      const response = await fetch('/api/admin/delete-user', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: deleteUser,
+          adminUsername: currentUser.username
+        })
+      })
+
+      const data = await response.json()
+      if (data.success) {
+        alert(`✅ SUCCESS: User Permanently Deleted\n\n${data.message}\n\nDeletion Summary:\n• Picks deleted: ${data.deletionSummary.picksDeleted}\n• League memberships removed: ${data.deletionSummary.leagueMembershipsDeleted}\n• Commissioner leagues updated: ${data.deletionSummary.commissionerLeaguesUpdated}`)
+        setDeleteUser('')
+        await loadData() // Refresh data
+      } else {
+        alert(`❌ Deletion Failed\n\n${data.error}`)
+      }
+    } catch (error) {
+      console.error('Error deleting user:', error)
+      alert('❌ Network error deleting user')
+    }
+    setDeleting(false)
+  }
+
   useEffect(() => {
     if (checkSuperAdminAccess()) {
       // User is authorized, currentUser will be set
@@ -343,6 +419,73 @@ export default function SuperAdminDashboard() {
                   </strong>&apos;s Week {resetWeek} pick in <strong>
                     {leagues.find(l => l.id === resetLeague)?.name}
                   </strong>
+                </AlertDescription>
+              </Alert>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* User Deletion Tool */}
+        <Card className="mb-6 border-red-500 bg-red-950/20">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-red-400">
+              <Trash2 className="h-5 w-5" />
+              Delete User Account
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Alert className="mb-4 border-red-600 bg-red-900/50">
+              <AlertTriangle className="h-4 w-4 text-red-400" />
+              <AlertDescription className="text-red-300">
+                <strong>🚨 DANGER ZONE 🚨</strong> This will PERMANENTLY DELETE the user&apos;s entire account, 
+                ALL picks, ALL league memberships, and ALL associated data. This action is IRREVERSIBLE.
+                Only use this for spam accounts or users who specifically request complete deletion.
+              </AlertDescription>
+            </Alert>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              <div>
+                <label className="text-sm font-medium mb-2 block text-red-300">Select User to Delete</label>
+                <Select value={deleteUser} onValueChange={setDeleteUser}>
+                  <SelectTrigger className="border-red-500">
+                    <SelectValue placeholder="Choose user to delete..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {users.map(user => (
+                      <SelectItem key={user.id} value={user.id}>
+                        <div>
+                          <div className="font-medium">{user.display_name}</div>
+                          <div className="text-xs text-muted-foreground">@{user.username}</div>
+                          {user.email && (
+                            <div className="text-xs text-muted-foreground">{user.email}</div>
+                          )}
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="flex items-end">
+                <Button 
+                  onClick={deleteUserAccount}
+                  disabled={!deleteUser || deleting}
+                  variant="destructive"
+                  className="w-full bg-red-600 hover:bg-red-700"
+                >
+                  {deleting ? 'Deleting...' : '🗑️ DELETE USER'}
+                </Button>
+              </div>
+            </div>
+
+            {deleteUser && (
+              <Alert className="bg-red-50 border-red-200">
+                <Trash2 className="h-4 w-4 text-red-500" />
+                <AlertDescription className="text-red-800">
+                  ⚠️ You are about to PERMANENTLY DELETE <strong>
+                    {users.find(u => u.id === deleteUser)?.display_name}
+                  </strong>&apos;s entire account and ALL associated data. 
+                  This will trigger multiple confirmation dialogs.
                 </AlertDescription>
               </Alert>
             )}
