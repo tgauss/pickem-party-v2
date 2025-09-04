@@ -45,7 +45,7 @@ interface Pick {
   id: string
   user_id: string
   team_id: number
-  team?: Team
+  teams?: Team
   user?: {
     id: string
     username: string
@@ -63,7 +63,7 @@ interface CurrentWeekPickerProps {
   games: Game[]
   teams?: Team[]
   usedTeamIds: number[]
-  currentPick?: { team_id: number, team?: Team }
+  currentPick?: { team_id: number, teams?: Team }
   gameLines?: Record<string, { 
     gameId?: string
     spread: number
@@ -341,9 +341,9 @@ export function CurrentWeekPicker({
                       }`} title={member.user.display_name}>{member.user.username}</span>
                     </div>
                     
-                    {hasPick && !picksArePrivate && memberPick?.team && (
+                    {hasPick && !picksArePrivate && memberPick?.teams && (
                       <Badge variant="secondary" className="text-xs px-2 py-0.5">
-                        {memberPick.team.key}
+                        {memberPick.teams.key}
                       </Badge>
                     )}
                     
@@ -409,10 +409,10 @@ export function CurrentWeekPicker({
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-3">
-              {currentPick.team?.logo_url && (
+              {currentPick.teams?.logo_url && (
                 <Image 
-                  src={currentPick.team.logo_url} 
-                  alt={`${currentPick.team.name} logo`}
+                  src={currentPick.teams.logo_url} 
+                  alt={`${currentPick.teams.name} logo`}
                   width={48}
                   height={48}
                   className="rounded-lg"
@@ -420,10 +420,10 @@ export function CurrentWeekPicker({
               )}
               <div>
                 <div className="font-semibold text-lg">
-                  {currentPick.team?.city} {currentPick.team?.name}
+                  {currentPick.teams?.city} {currentPick.teams?.name}
                 </div>
                 <div className="text-sm text-muted-foreground">
-                  {currentPick.team?.key} • Submitted for Week {week}
+                  {currentPick.teams?.key} • Submitted for Week {week}
                 </div>
               </div>
             </div>
@@ -456,24 +456,24 @@ export function CurrentWeekPicker({
                     }`}
                   >
                     <div className="flex items-center gap-2 mb-2">
-                      {pick.team?.logo_url && (
+                      {pick.teams?.logo_url && (
                         <Image 
-                          src={pick.team.logo_url} 
-                          alt={`${pick.team.name} logo`}
-                          width={24}
-                          height={24}
+                          src={pick.teams.logo_url} 
+                          alt={`${pick.teams.name} logo`}
+                          width={32}
+                          height={32}
                           className="rounded"
                         />
                       )}
                       <Badge variant="secondary" className="text-xs">
-                        {pick.team?.key}
+                        {pick.teams?.key}
                       </Badge>
                     </div>
                     <div className="text-sm font-medium">
                       {member?.user.display_name || pick.user?.display_name || 'Unknown'}
                     </div>
                     <div className="text-xs text-muted-foreground">
-                      {pick.team?.city} {pick.team?.name}
+                      {pick.teams?.city} {pick.teams?.name}
                     </div>
                   </div>
                 )
