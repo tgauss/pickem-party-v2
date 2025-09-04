@@ -45,6 +45,7 @@ export default function BoomBox() {
   const [isLoading, setIsLoading] = useState(true)
   const [hasAutoplayStarted, setHasAutoplayStarted] = useState(false)
   const [showAutoplayPrompt, setShowAutoplayPrompt] = useState(false)
+  const [hasUserInteracted, setHasUserInteracted] = useState(false)
   
   const audioRef = useRef<HTMLAudioElement>(null)
   const timelineRef = useRef<HTMLInputElement>(null)
@@ -101,6 +102,34 @@ export default function BoomBox() {
           if (trackList.length > 0 && !hasAutoplayStarted) {
             setHasAutoplayStarted(true)
             setShowAutoplayPrompt(true)
+            
+            // Set up interaction listeners for automatic music start
+            const startMusicOnInteraction = async () => {
+              if (!hasUserInteracted && audioRef.current && !isPlaying) {
+                setHasUserInteracted(true)
+                setShowAutoplayPrompt(false)
+                try {
+                  await audioRef.current.play()
+                  setIsPlaying(true)
+                  console.log('🎵 Music started automatically!')
+                } catch {
+                  // Silent fail, user can still manually start
+                }
+              }
+            }
+            
+            // Listen for any user interaction
+            const events = ['click', 'scroll', 'keydown', 'touchstart']
+            events.forEach(event => {
+              document.addEventListener(event, startMusicOnInteraction, { once: true, passive: true })
+            })
+            
+            // Cleanup function
+            return () => {
+              events.forEach(event => {
+                document.removeEventListener(event, startMusicOnInteraction)
+              })
+            }
           }
         }
       } catch (error) {
@@ -111,7 +140,7 @@ export default function BoomBox() {
     }
     
     loadTracks()
-  }, [hasAutoplayStarted])
+  }, [hasAutoplayStarted, hasUserInteracted, isPlaying])
 
   // Load saved state from localStorage
   useEffect(() => {
