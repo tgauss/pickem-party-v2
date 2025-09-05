@@ -195,7 +195,7 @@ async function updatePickResults(gameId: string, homeTeamId: number, awayTeamId:
       }
     }
 
-    console.log(`Updated pick results for game ${gameId} - Winner: ${winningTeamId}`)
+    console.log(`✅ Updated pick results for game ${gameId} - Winner: ${winningTeamId}`)
 
     // TODO: Update user elimination status based on incorrect picks
     // This would require more complex logic to check if users have remaining lives
