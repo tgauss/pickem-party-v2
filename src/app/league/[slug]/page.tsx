@@ -13,6 +13,7 @@ import { PastWeekResults } from '@/components/PastWeekResults'
 import { CurrentWeekPicker } from '@/components/CurrentWeekPicker'
 import { FutureWeekSchedule } from '@/components/FutureWeekSchedule'
 import { LeagueActivityLog } from '@/components/LeagueActivityLog'
+import LiveScores from '@/components/LiveScores'
 import Image from 'next/image'
 
 interface Team {
@@ -695,6 +696,9 @@ export default function LeaguePage({
                   league={league}
                   currentUser={user}
                 />
+                
+                {/* Live Scores Component */}
+                <LiveScores week={selectedWeek} className="mt-3 sm:mt-4" />
               </>
             )}
 
