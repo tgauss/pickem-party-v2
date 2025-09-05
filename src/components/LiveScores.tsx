@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -34,6 +34,36 @@ interface LiveScoresProps {
   className?: string
 }
 
+interface RawGameData {
+  id: string
+  week: number
+  season_year: number
+  game_time: string
+  home_team: {
+    key: string
+    name: string
+    location: string
+  } | {
+    key: string
+    name: string
+    location: string
+  }[]
+  away_team: {
+    key: string
+    name: string
+    location: string
+  } | {
+    key: string
+    name: string
+    location: string
+  }[]
+  home_score: number | null
+  away_score: number | null
+  is_final: boolean
+  game_status?: string
+  last_updated?: string
+}
+
 export default function LiveScores({ week, className = '' }: LiveScoresProps) {
   const [games, setGames] = useState<Game[]>([])
   const [loading, setLoading] = useState(true)
@@ -42,7 +72,7 @@ export default function LiveScores({ week, className = '' }: LiveScoresProps) {
 
   const supabase = createClient()
 
-  const fetchGames = async () => {
+  const fetchGames = useCallback(async () => {
     try {
       const { data, error } = await supabase
         .from('games')
@@ -68,7 +98,14 @@ export default function LiveScores({ week, className = '' }: LiveScoresProps) {
         return
       }
 
-      setGames(data || [])
+      // Transform the data to match our interface
+      const transformedGames = (data || []).map((game: RawGameData): Game => ({
+        ...game,
+        home_team: Array.isArray(game.home_team) ? game.home_team[0] : game.home_team,
+        away_team: Array.isArray(game.away_team) ? game.away_team[0] : game.away_team
+      }))
+      
+      setGames(transformedGames)
       setLastRefresh(new Date())
     } catch (error) {
       console.error('Error fetching games:', error)
@@ -76,7 +113,7 @@ export default function LiveScores({ week, className = '' }: LiveScoresProps) {
       setLoading(false)
       setRefreshing(false)
     }
-  }
+  }, [week, supabase])
 
   const refreshScores = async () => {
     setRefreshing(true)
@@ -115,7 +152,7 @@ export default function LiveScores({ week, className = '' }: LiveScoresProps) {
     return () => {
       subscription.unsubscribe()
     }
-  }, [week])
+  }, [week, fetchGames, supabase])
 
   const getGameStatus = (game: Game) => {
     if (game.is_final) return 'FINAL'

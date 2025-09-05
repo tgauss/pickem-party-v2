@@ -20,69 +20,9 @@ interface ESPNCompetitor {
   score: string
 }
 
-interface ESPNStatus {
-  clock: number
-  displayClock: string
-  period: number
-  type: {
-    id: string
-    name: string
-    state: string
-    completed: boolean
-    description: string
-    detail: string
-    shortDetail: string
-  }
-}
+// ESPNStatus interface removed as it's only used internally
 
-interface ESPNEvent {
-  id: string
-  date: string
-  status: ESPNStatus
-  competitions: Array<{
-    id: string
-    competitors: ESPNCompetitor[]
-    status: ESPNStatus
-  }>
-}
-
-interface ESPNScoringPlay {
-  id: string
-  type: {
-    id: string
-    text: string
-  }
-  text: string
-  awayScore: number
-  homeScore: number
-  period: {
-    number: number
-    displayValue: string
-  }
-  clock: {
-    displayValue: string
-  }
-  team: {
-    id: string
-    abbreviation: string
-  }
-}
-
-interface ESPNSummary {
-  boxscore: {
-    teams: Array<{
-      team: {
-        id: string
-        abbreviation: string
-      }
-      statistics: Array<{
-        name: string
-        displayValue: string
-      }>
-    }>
-  }
-  scoringPlays?: ESPNScoringPlay[]
-}
+// Removed unused interfaces for cleaner build
 
 export async function POST(request: Request) {
   try {
@@ -146,7 +86,6 @@ export async function POST(request: Request) {
       const status = event.status || competition.status
       const isLive = status.type.state === 'in' || status.type.name.includes('STATUS_IN_PROGRESS') || status.type.name.includes('HALFTIME')
       const isCompleted = status.type.completed || status.type.state === 'post'
-      const isScheduled = status.type.state === 'pre'
 
       // Only sync if game is live, completed, or force sync
       if (!isLive && !isCompleted && !forceSync) {
@@ -231,19 +170,32 @@ async function updatePickResults(gameId: string, homeTeamId: number, awayTeamId:
   try {
     const winningTeamId = homeScore > awayScore ? homeTeamId : awayTeamId
     
-    // Update all picks for this game
-    const { error: updateError } = await supabase
+    // Get all picks for this game
+    const { data: gamePicks, error: fetchError } = await supabase
       .from('picks')
-      .update({
-        is_correct: supabase.raw(`team_id = ${winningTeamId}`)
-      })
+      .select('id, team_id')
       .eq('game_id', gameId)
 
-    if (updateError) {
-      console.error(`Failed to update pick results for game ${gameId}:`, updateError)
-    } else {
-      console.log(`Updated pick results for game ${gameId} - Winner: ${winningTeamId}`)
+    if (fetchError) {
+      console.error(`Failed to fetch picks for game ${gameId}:`, fetchError)
+      return
     }
+
+    // Update each pick's correctness
+    for (const pick of gamePicks || []) {
+      const { error: updateError } = await supabase
+        .from('picks')
+        .update({
+          is_correct: pick.team_id === winningTeamId
+        })
+        .eq('id', pick.id)
+
+      if (updateError) {
+        console.error(`Failed to update pick ${pick.id}:`, updateError)
+      }
+    }
+
+    console.log(`Updated pick results for game ${gameId} - Winner: ${winningTeamId}`)
 
     // TODO: Update user elimination status based on incorrect picks
     // This would require more complex logic to check if users have remaining lives
