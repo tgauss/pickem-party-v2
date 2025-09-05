@@ -106,7 +106,7 @@ export async function POST(request: Request) {
         .select('id, home_score, away_score, is_final')
         .eq('home_team_id', homeTeamId)
         .eq('away_team_id', awayTeamId)
-        .eq('season_year', 2025)
+        .eq('season_year', 2024)
         .single()
 
       if (!existingGame) {

@@ -90,13 +90,15 @@ export default function LiveScores({ week, className = '' }: LiveScoresProps) {
           away_team:teams!games_away_team_id_fkey(key, name, location)
         `)
         .eq('week', week)
-        .eq('season_year', 2025)
+        .eq('season_year', 2024)
         .order('game_time')
 
       if (error) {
         console.error('Error fetching games:', error)
         return
       }
+
+      console.log(`LiveScores: Found ${data?.length || 0} games for week ${week}, season 2024`)
 
       // Transform the data to match our interface
       const transformedGames = (data || []).map((game: RawGameData): Game => ({
