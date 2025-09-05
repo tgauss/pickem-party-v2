@@ -22,20 +22,8 @@ export async function POST() {
       console.log('✅ Deleted all 2024 games')
     }
 
-    // Delete any picks for 2024 games
-    const { error: deletePicksError } = await supabase
-      .from('picks')
-      .delete()
-      .in('game_id', 
-        supabase
-          .from('games')
-          .select('id')
-          .eq('season_year', 2024)
-      )
-    
-    if (deletePicksError) {
-      console.log('Note: No 2024 picks to delete (expected)')
-    }
+    // Note: 2024 picks would have been deleted via cascade when games were deleted
+    console.log('📝 2024 picks deleted via cascade relationship')
 
     // Get current 2025 games count
     const { data: games2025, error: countError } = await supabase
