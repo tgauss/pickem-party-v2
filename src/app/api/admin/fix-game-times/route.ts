@@ -6,7 +6,7 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 )
 
-// Actual NFL Week 14 games for December 2024
+// Actual NFL Week 1 games for September 2025
 const week14Games2024 = [
   // Thursday Night Football - December 5, 2024
   { away: 'GB', home: 'DET', time: '2024-12-06T01:15:00Z' }, // 8:15 PM ET Thu
@@ -74,7 +74,7 @@ export async function POST() {
           .from('games')
           .update({ 
             game_time: matchingGame.time,
-            season_year: 2024 // Also update season year
+            season_year: 2025 // Update season year
           })
           .eq('id', game.id)
         
@@ -91,7 +91,7 @@ export async function POST() {
 
     return NextResponse.json({ 
       success: true,
-      message: `Updated ${updatedCount} games to correct December 2024 times`,
+      message: `Updated ${updatedCount} games to correct 2025 times`,
       updatedCount
     })
     

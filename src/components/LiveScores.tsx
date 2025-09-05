@@ -90,7 +90,7 @@ export default function LiveScores({ week, className = '' }: LiveScoresProps) {
           away_team:teams!games_away_team_id_fkey(key, name, location)
         `)
         .eq('week', week)
-        .eq('season_year', 2024)
+        .eq('season_year', 2025)
         .order('game_time')
 
       if (error) {
@@ -98,7 +98,7 @@ export default function LiveScores({ week, className = '' }: LiveScoresProps) {
         return
       }
 
-      console.log(`LiveScores: Found ${data?.length || 0} games for week ${week}, season 2024`)
+      console.log(`LiveScores: Found ${data?.length || 0} games for week ${week}, season 2025`)
 
       // Transform the data to match our interface
       const transformedGames = (data || []).map((game: RawGameData): Game => ({
