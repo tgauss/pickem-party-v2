@@ -27,6 +27,10 @@ interface Game {
   game_time: string
   home_team_id: number
   away_team_id: number
+  home_score?: number | null
+  away_score?: number | null
+  is_final?: boolean
+  game_status?: string | null
 }
 
 interface Member {
@@ -448,13 +452,27 @@ export function CurrentWeekPicker({
               const awayAvailable = !usedTeamIds.includes(game.away_team_id)
               const homeSpread = getSpreadDisplay(game, game.home_team_id)
               const awaySpread = getSpreadDisplay(game, game.away_team_id)
+              const gameCompleted = game.is_final === true
+              const homeWon = gameCompleted && (game.home_score ?? 0) > (game.away_score ?? 0)
+              const awayWon = gameCompleted && (game.away_score ?? 0) > (game.home_score ?? 0)
 
               return (
-                <Card key={game.id} className="overflow-hidden">
+                <Card key={game.id} className={`overflow-hidden ${gameCompleted ? 'opacity-75' : ''}`}>
                   <div className="p-3 space-y-2">
                     <div className="text-xs text-muted-foreground flex items-center gap-1">
-                      <Clock className="h-3 w-3" />
-                      {getGameTime(game.game_time)}
+                      {gameCompleted ? (
+                        <>
+                          <Badge variant="secondary" className="text-xs">FINAL</Badge>
+                          <span className="font-semibold">
+                            {game.away_team.key} {game.away_score} - {game.home_team.key} {game.home_score}
+                          </span>
+                        </>
+                      ) : (
+                        <>
+                          <Clock className="h-3 w-3" />
+                          {getGameTime(game.game_time)}
+                        </>
+                      )}
                     </div>
 
                     {/* Betting Line Information */}
@@ -491,22 +509,31 @@ export function CurrentWeekPicker({
                     <div className="flex items-center gap-2 sm:gap-4">
                       {/* Away Team */}
                       <button
-                        onClick={() => awayAvailable && handleTeamSelect(game.away_team_id, game.id)}
-                        disabled={!awayAvailable || !!currentPick}
-                        title={!awayAvailable ? `${game.away_team.city} ${game.away_team.name} was already used in a previous week` : `Select ${game.away_team.city} ${game.away_team.name}`}
+                        onClick={() => awayAvailable && !gameCompleted && handleTeamSelect(game.away_team_id, game.id)}
+                        disabled={!awayAvailable || !!currentPick || gameCompleted}
+                        title={gameCompleted ? 'Game has already been played' : !awayAvailable ? `${game.away_team.city} ${game.away_team.name} was already used in a previous week` : `Select ${game.away_team.city} ${game.away_team.name}`}
                         className={`flex-1 p-3 sm:p-4 rounded-lg border transition-all min-h-[100px] sm:min-h-[120px] relative ${
-                          !awayAvailable 
+                          gameCompleted
+                            ? awayWon 
+                              ? 'bg-green-50 border-green-500 opacity-90'
+                              : 'bg-red-50 border-red-300 opacity-60'
+                            : !awayAvailable 
                             ? 'opacity-50 cursor-not-allowed bg-muted border-red-300' 
                             : selectedTeamId === game.away_team_id
                             ? 'border-primary bg-primary/10 ring-2 ring-primary'
                             : 'hover:bg-accent cursor-pointer'
                         }`}
                       >
-                        {!awayAvailable && (
+                        {!awayAvailable && !gameCompleted && (
                           <div className="absolute inset-0 bg-red-500/20 rounded-lg flex items-center justify-center">
                             <div className="bg-red-600 text-white rounded-full p-2">
                               <Lock className="h-4 w-4" />
                             </div>
+                          </div>
+                        )}
+                        {gameCompleted && awayWon && (
+                          <div className="absolute top-2 right-2 bg-green-600 text-white rounded-full p-1">
+                            <CustomIcon name="trophy" fallback="🏆" alt="Winner" size="sm" />
                           </div>
                         )}
                         <div className="flex flex-col items-center text-center space-y-2">
@@ -520,13 +547,28 @@ export function CurrentWeekPicker({
                           <div>
                             <p className="font-medium text-sm sm:text-base">{game.away_team.city}</p>
                             <p className="text-xs sm:text-sm text-muted-foreground">{game.away_team.name}</p>
+                            {gameCompleted && (
+                              <p className={`text-lg font-bold ${awayWon ? 'text-green-600' : 'text-red-500'}`}>
+                                {game.away_score}
+                              </p>
+                            )}
                           </div>
                           <div className="flex flex-col items-center gap-1">
                             <Badge variant="secondary" className="text-xs px-2 py-1">
                               <CustomIcon name="away" fallback="✈️" alt="Away team" size="sm" />
                               <span className="ml-1">Away</span>
                             </Badge>
-                            {awaySpread && (
+                            {gameCompleted && (
+                              <Badge 
+                                variant={awayWon ? "default" : "secondary"} 
+                                className={`text-xs px-2 py-1 font-bold ${
+                                  awayWon ? 'bg-green-600 text-white' : 'bg-red-500 text-white'
+                                }`}
+                              >
+                                {awayWon ? "WINNER" : "LOSER"}
+                              </Badge>
+                            )}
+                            {!gameCompleted && awaySpread && (
                               <Badge 
                                 variant={awaySpread.type === 'favorite' ? 'default' : 'outline'}
                                 className={`text-xs px-2 py-1 ${awaySpread.type === 'favorite' ? 'bg-green-600' : ''}`}
@@ -536,7 +578,7 @@ export function CurrentWeekPicker({
                                 {awaySpread.text}
                               </Badge>
                             )}
-                            {!awayAvailable && (
+                            {!awayAvailable && !gameCompleted && (
                               <Badge variant="destructive" className="text-xs px-2 py-1 flex items-center gap-1">
                                 <Lock className="h-3 w-3" />
                                 Already Used
@@ -554,22 +596,31 @@ export function CurrentWeekPicker({
 
                       {/* Home Team */}
                       <button
-                        onClick={() => homeAvailable && handleTeamSelect(game.home_team_id, game.id)}
-                        disabled={!homeAvailable || !!currentPick}
-                        title={!homeAvailable ? `${game.home_team.city} ${game.home_team.name} was already used in a previous week` : `Select ${game.home_team.city} ${game.home_team.name}`}
+                        onClick={() => homeAvailable && !gameCompleted && handleTeamSelect(game.home_team_id, game.id)}
+                        disabled={!homeAvailable || !!currentPick || gameCompleted}
+                        title={gameCompleted ? 'Game has already been played' : !homeAvailable ? `${game.home_team.city} ${game.home_team.name} was already used in a previous week` : `Select ${game.home_team.city} ${game.home_team.name}`}
                         className={`flex-1 p-3 sm:p-4 rounded-lg border transition-all min-h-[100px] sm:min-h-[120px] relative ${
-                          !homeAvailable 
+                          gameCompleted
+                            ? homeWon 
+                              ? 'bg-green-50 border-green-500 opacity-90'
+                              : 'bg-red-50 border-red-300 opacity-60'
+                            : !homeAvailable 
                             ? 'opacity-50 cursor-not-allowed bg-muted border-red-300' 
                             : selectedTeamId === game.home_team_id
                             ? 'border-primary bg-primary/10 ring-2 ring-primary'
                             : 'hover:bg-accent cursor-pointer'
                         }`}
                       >
-                        {!homeAvailable && (
+                        {!homeAvailable && !gameCompleted && (
                           <div className="absolute inset-0 bg-red-500/20 rounded-lg flex items-center justify-center">
                             <div className="bg-red-600 text-white rounded-full p-2">
                               <Lock className="h-4 w-4" />
                             </div>
+                          </div>
+                        )}
+                        {gameCompleted && homeWon && (
+                          <div className="absolute top-2 right-2 bg-green-600 text-white rounded-full p-1">
+                            <CustomIcon name="trophy" fallback="🏆" alt="Winner" size="sm" />
                           </div>
                         )}
                         <div className="flex flex-col items-center text-center space-y-2">
@@ -583,13 +634,28 @@ export function CurrentWeekPicker({
                           <div>
                             <p className="font-medium text-sm sm:text-base">{game.home_team.city}</p>
                             <p className="text-xs sm:text-sm text-muted-foreground">{game.home_team.name}</p>
+                            {gameCompleted && (
+                              <p className={`text-lg font-bold ${homeWon ? 'text-green-600' : 'text-red-500'}`}>
+                                {game.home_score}
+                              </p>
+                            )}
                           </div>
                           <div className="flex flex-col items-center gap-1">
                             <Badge variant="default" className="text-xs bg-blue-600 px-2 py-1">
                               <CustomIcon name="home" fallback="🏠" alt="Home team" size="sm" />
                               <span className="ml-1">Home</span>
                             </Badge>
-                            {homeSpread && (
+                            {gameCompleted && (
+                              <Badge 
+                                variant={homeWon ? "default" : "secondary"} 
+                                className={`text-xs px-2 py-1 font-bold ${
+                                  homeWon ? 'bg-green-600 text-white' : 'bg-red-500 text-white'
+                                }`}
+                              >
+                                {homeWon ? "WINNER" : "LOSER"}
+                              </Badge>
+                            )}
+                            {!gameCompleted && homeSpread && (
                               <Badge 
                                 variant={homeSpread.type === 'favorite' ? 'default' : 'outline'}
                                 className={`text-xs px-2 py-1 ${homeSpread.type === 'favorite' ? 'bg-green-600' : ''}`}
@@ -599,7 +665,7 @@ export function CurrentWeekPicker({
                                 {homeSpread.text}
                               </Badge>
                             )}
-                            {!homeAvailable && (
+                            {!homeAvailable && !gameCompleted && (
                               <Badge variant="destructive" className="text-xs px-2 py-1 flex items-center gap-1">
                                 <Lock className="h-3 w-3" />
                                 Already Used

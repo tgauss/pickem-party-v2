@@ -21,6 +21,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
+    "dotenv": "^17.2.2",
     "lucide-react": "^0.542.0",
     "music-metadata": "^11.8.3",
     "next": "15.5.2",
