@@ -241,6 +241,75 @@ export function CurrentWeekPicker({
     return null
   }
 
+  const getGameOutcomeAnalysis = (game: Game, line: { 
+    gameId?: string
+    spread: number
+    homeTeam: string
+    awayTeam: string
+    overUnder?: number
+    homeMoneyLine?: number
+    awayMoneyLine?: number
+    fetchedAt?: string
+  }) => {
+    if (!line || !game.is_final) return null
+    
+    const homeScore = game.home_score ?? 0
+    const awayScore = game.away_score ?? 0
+    const actualMargin = homeScore - awayScore // Positive = home won, negative = away won
+    const spread = line.spread // Positive = home favored, negative = away favored
+    
+    // Determine if it was an upset
+    const favoriteWon = (spread > 0 && actualMargin > 0) || (spread < 0 && actualMargin < 0)
+    const isUpset = !favoriteWon && spread !== 0
+    const coverSpread = actualMargin > spread
+    
+    // Calculate upset magnitude
+    const upsetMagnitude = Math.abs(spread)
+    let upsetSize = ''
+    if (isUpset) {
+      if (upsetMagnitude >= 10) upsetSize = 'MAJOR'
+      else if (upsetMagnitude >= 6) upsetSize = 'BIG'
+      else if (upsetMagnitude >= 3) upsetSize = 'SMALL'
+      else upsetSize = 'MINOR'
+    }
+    
+    // Determine favorite and underdog
+    const homeFavored = spread > 0
+    const favoriteTeam = homeFavored ? game.home_team : game.away_team
+    const underdogTeam = homeFavored ? game.away_team : game.home_team
+    const winner = actualMargin > 0 ? game.home_team : game.away_team
+    
+    if (spread === 0) {
+      // Pick'em game
+      return {
+        type: 'pickem',
+        message: `Pick'em game - ${winner.city} ${winner.name} won by ${Math.abs(actualMargin)} points`,
+        isUpset: false,
+        upsetSize: '',
+        covered: true
+      }
+    }
+    
+    if (isUpset) {
+      return {
+        type: 'upset',
+        message: `${upsetSize} UPSET! ${underdogTeam.city} ${underdogTeam.name} (+${Math.abs(spread)}) beat ${favoriteTeam.city} ${favoriteTeam.name}`,
+        isUpset: true,
+        upsetSize,
+        covered: actualMargin > spread
+      }
+    } else {
+      const coverText = coverSpread ? 'covered the spread' : 'won but didn\'t cover'
+      return {
+        type: 'favorite',
+        message: `${favoriteTeam.city} ${favoriteTeam.name} ${coverText} (${spread > 0 ? '-' : '+'}${Math.abs(spread)})`,
+        isUpset: false,
+        upsetSize: '',
+        covered: coverSpread
+      }
+    }
+  }
+
   const selectedTeam = getSelectedTeamInfo()
 
   // Get active (non-eliminated) members
@@ -457,7 +526,7 @@ export function CurrentWeekPicker({
               const awayWon = gameCompleted && (game.away_score ?? 0) > (game.home_score ?? 0)
 
               return (
-                <Card key={game.id} className={`overflow-hidden ${gameCompleted ? 'opacity-75' : ''}`}>
+                <Card key={game.id} className={`overflow-hidden ${gameCompleted ? 'opacity-95' : ''}`}>
                   <div className="p-3 space-y-2">
                     <div className="text-xs text-muted-foreground flex items-center gap-1">
                       {gameCompleted ? (
@@ -475,11 +544,50 @@ export function CurrentWeekPicker({
                       )}
                     </div>
 
-                    {/* Betting Line Information */}
+                    {/* Betting Line Information or Game Outcome Analysis */}
                     {(() => {
                       const gameKey = `${game.away_team.key}@${game.home_team.key}`
                       const line = gameLines?.[gameKey]
-                      if (line) {
+                      
+                      if (gameCompleted && line) {
+                        const analysis = getGameOutcomeAnalysis(game, line)
+                        if (analysis) {
+                          const bgColor = analysis.isUpset 
+                            ? analysis.upsetSize === 'MAJOR' || analysis.upsetSize === 'BIG'
+                              ? 'bg-orange-500/20 border-orange-400/50'
+                              : 'bg-yellow-500/20 border-yellow-400/50'
+                            : analysis.covered
+                            ? 'bg-green-500/20 border-green-400/50'
+                            : 'bg-blue-500/20 border-blue-400/50'
+                          
+                          const iconColor = analysis.isUpset 
+                            ? 'text-orange-400'
+                            : analysis.covered 
+                            ? 'text-green-400'
+                            : 'text-blue-400'
+                          
+                          const label = analysis.isUpset 
+                            ? 'UPSET ALERT' 
+                            : analysis.covered 
+                            ? 'SPREAD COVERED'
+                            : 'GAME RESULT'
+                          
+                          return (
+                            <div className={`${bgColor} rounded-lg p-2 text-center`}>
+                              <div className="flex items-center justify-center gap-1 mb-1">
+                                <Target className={`h-3 w-3 ${iconColor}`} />
+                                <span className={`text-xs font-medium ${iconColor}`}>{label}</span>
+                              </div>
+                              <p className="text-xs sm:text-sm font-medium leading-tight text-foreground">{analysis.message}</p>
+                              {line.overUnder && (
+                                <div className="text-xs text-muted-foreground mt-1">
+                                  Total: {line.overUnder} pts • Actual: {(game.home_score ?? 0) + (game.away_score ?? 0)} pts
+                                </div>
+                              )}
+                            </div>
+                          )
+                        }
+                      } else if (!gameCompleted && line) {
                         const naturalLanguage = formatSpreadToNaturalLanguage(game.home_team, game.away_team, line)
                         const confidence = getSpreadConfidenceIndicator(line.spread)
                         return (
@@ -515,8 +623,8 @@ export function CurrentWeekPicker({
                         className={`flex-1 p-3 sm:p-4 rounded-lg border transition-all min-h-[100px] sm:min-h-[120px] relative ${
                           gameCompleted
                             ? awayWon 
-                              ? 'bg-green-50 border-green-500 opacity-90'
-                              : 'bg-red-50 border-red-300 opacity-60'
+                              ? 'bg-green-500/10 border-green-500/30 hover:bg-green-500/15'
+                              : 'bg-muted/50 border-border'
                             : !awayAvailable 
                             ? 'opacity-50 cursor-not-allowed bg-muted border-red-300' 
                             : selectedTeamId === game.away_team_id
@@ -602,8 +710,8 @@ export function CurrentWeekPicker({
                         className={`flex-1 p-3 sm:p-4 rounded-lg border transition-all min-h-[100px] sm:min-h-[120px] relative ${
                           gameCompleted
                             ? homeWon 
-                              ? 'bg-green-50 border-green-500 opacity-90'
-                              : 'bg-red-50 border-red-300 opacity-60'
+                              ? 'bg-green-500/10 border-green-500/30 hover:bg-green-500/15'
+                              : 'bg-muted/50 border-border'
                             : !homeAvailable 
                             ? 'opacity-50 cursor-not-allowed bg-muted border-red-300' 
                             : selectedTeamId === game.home_team_id
