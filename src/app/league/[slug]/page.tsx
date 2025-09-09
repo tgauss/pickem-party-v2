@@ -217,20 +217,29 @@ export default function LeaguePage({
         setMembers(formattedMembers)
       }
       
-      // Calculate current week
+      // Calculate current week based on NFL schedule
+      // Week 1: Sept 5-8, 2025 (Thursday-Monday)
+      // Today is Tuesday Sept 9, 2025 - Week 2 pick week
       const now = new Date()
-      const seasonStart = new Date('2025-09-04') // 2025-26 NFL season starts Sep 4th
-      const week1Complete = new Date('2025-09-08T23:59:00-04:00') // Week 1 complete after Sunday games
+      const seasonStart = new Date('2025-09-05') // First game of season
       
       let calculatedWeek = 1
       if (now < seasonStart) {
         calculatedWeek = 1 // Before season starts
-      } else if (now < week1Complete) {
-        calculatedWeek = 1 // Week 1 in progress
       } else {
-        // After Week 1 completion, calculate based on weekly schedule
-        const weeksPassed = Math.floor((now.getTime() - week1Complete.getTime()) / (7 * 24 * 60 * 60 * 1000))
-        calculatedWeek = Math.min(2 + weeksPassed, 18) // Week 2 starts after Week 1 completes
+        // NFL weeks run Tuesday to Monday for pick purposes
+        // Week 1: Sept 2-8 (pick week), games Sept 5-8
+        // Week 2: Sept 9-15 (pick week), games Sept 12-15
+        const daysSinceStart = Math.floor((now.getTime() - seasonStart.getTime()) / (24 * 60 * 60 * 1000))
+        
+        // Tuesday after Week 1 MNF = start of Week 2 pick period
+        if (daysSinceStart < 4) {
+          calculatedWeek = 1 // Thursday-Sunday of Week 1
+        } else {
+          // Tuesday or later after first week = Week 2+
+          const weeksAfterFirst = Math.floor((daysSinceStart - 4) / 7)
+          calculatedWeek = Math.min(2 + weeksAfterFirst, 18)
+        }
       }
       setCurrentWeek(calculatedWeek)
       setSelectedWeek(calculatedWeek)
