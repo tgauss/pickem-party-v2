@@ -220,7 +220,7 @@ export default function LeaguePage({
       // Calculate current week
       const now = new Date()
       const seasonStart = new Date('2025-09-04') // 2025-26 NFL season starts Sep 4th
-      const week1Complete = new Date('2025-09-09T23:00:00-04:00') // Week 1 MNF completion
+      const week1Complete = new Date('2025-09-08T23:59:00-04:00') // Week 1 complete after Sunday games
       
       let calculatedWeek = 1
       if (now < seasonStart) {
