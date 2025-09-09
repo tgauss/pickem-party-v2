@@ -220,9 +220,18 @@ export default function LeaguePage({
       // Calculate current week
       const now = new Date()
       const seasonStart = new Date('2025-09-04') // 2025-26 NFL season starts Sep 4th
-      const weeksPassed = Math.floor((now.getTime() - seasonStart.getTime()) / (7 * 24 * 60 * 60 * 1000))
-      // If before season start, show Week 1 as upcoming (current week for picking purposes)
-      const calculatedWeek = now < seasonStart ? 1 : Math.min(Math.max(1, weeksPassed + 1), 18)
+      const week1Complete = new Date('2025-09-09T23:00:00-04:00') // Week 1 MNF completion
+      
+      let calculatedWeek = 1
+      if (now < seasonStart) {
+        calculatedWeek = 1 // Before season starts
+      } else if (now < week1Complete) {
+        calculatedWeek = 1 // Week 1 in progress
+      } else {
+        // After Week 1 completion, calculate based on weekly schedule
+        const weeksPassed = Math.floor((now.getTime() - week1Complete.getTime()) / (7 * 24 * 60 * 60 * 1000))
+        calculatedWeek = Math.min(2 + weeksPassed, 18) // Week 2 starts after Week 1 completes
+      }
       setCurrentWeek(calculatedWeek)
       setSelectedWeek(calculatedWeek)
       
