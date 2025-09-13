@@ -21,6 +21,24 @@ interface Member {
   is_paid: boolean
 }
 
+interface Game {
+  id: string
+  home_team: {
+    team_id: number
+    key: string
+    city: string
+    name: string
+  }
+  away_team: {
+    team_id: number
+    key: string
+    city: string
+    name: string
+  }
+  game_time: string
+  is_final?: boolean
+}
+
 interface AdminControlWidgetProps {
   currentUser: User
   league: {
@@ -32,6 +50,8 @@ interface AdminControlWidgetProps {
   }
   members: Member[]
   membersWithoutPicks: Member[]
+  games: Game[]
+  usedTeamIds: number[]
   onAdminPickSubmit?: (userId: string, teamId: number, gameId: string) => void
   children?: React.ReactNode
 }
@@ -45,14 +65,19 @@ function isUserAdmin(user: User, league: { commissioner_id?: string }): boolean 
   return isSuperAdmin || isCommissioner
 }
 
-export function AdminControlWidget({ 
-  currentUser, 
+export function AdminControlWidget({
+  currentUser,
   league,
-  members, 
+  members,
   membersWithoutPicks,
-  children 
+  games,
+  usedTeamIds,
+  onAdminPickSubmit,
+  children
 }: AdminControlWidgetProps) {
   const [adminPickingFor, setAdminPickingFor] = useState<string | null>(null)
+  const [selectedTeamId, setSelectedTeamId] = useState<number | null>(null)
+  const [selectedGameId, setSelectedGameId] = useState<string | null>(null)
   
   const isAdmin = isUserAdmin(currentUser, league)
   
@@ -146,14 +171,91 @@ export function AdminControlWidget({
                 </div>
 
                 {adminPickingFor && (
-                  <Alert className="border-orange-600 bg-orange-900/30">
-                    <AlertTriangle className="h-4 w-4 text-orange-400" />
-                    <AlertDescription className="text-orange-300">
-                      Setting pick for <strong className="text-orange-100">
-                        {membersWithoutPicks.find(m => m.user.id === adminPickingFor)?.user.display_name}
-                      </strong>. Select a team below to complete their pick.
-                    </AlertDescription>
-                  </Alert>
+                  <>
+                    <Alert className="border-orange-600 bg-orange-900/30">
+                      <AlertTriangle className="h-4 w-4 text-orange-400" />
+                      <AlertDescription className="text-orange-300">
+                        Setting pick for <strong className="text-orange-100">
+                          {membersWithoutPicks.find(m => m.user.id === adminPickingFor)?.user.display_name}
+                        </strong>. Select a team below to complete their pick.
+                      </AlertDescription>
+                    </Alert>
+
+                    {/* Team Selection */}
+                    <div className="space-y-3 mt-4">
+                      <label className="text-sm font-medium text-orange-300">Select team:</label>
+                      <div className="grid grid-cols-1 gap-2 max-h-60 overflow-y-auto">
+                        {games
+                          .filter(game => !game.is_final)
+                          .map(game => {
+                            const homeAvailable = !usedTeamIds.includes(game.home_team.team_id)
+                            const awayAvailable = !usedTeamIds.includes(game.away_team.team_id)
+
+                            if (!homeAvailable && !awayAvailable) return null
+
+                            return (
+                              <div key={game.id} className="border border-orange-600/30 rounded-lg p-3">
+                                <div className="text-xs text-orange-300 mb-2">
+                                  {new Date(game.game_time).toLocaleString('en-US', {
+                                    weekday: 'short',
+                                    month: 'short',
+                                    day: 'numeric',
+                                    hour: 'numeric',
+                                    minute: '2-digit'
+                                  })}
+                                </div>
+                                <div className="flex gap-2">
+                                  {awayAvailable && (
+                                    <Button
+                                      variant={selectedTeamId === game.away_team.team_id ? "default" : "outline"}
+                                      size="sm"
+                                      className="flex-1 text-xs"
+                                      onClick={() => {
+                                        setSelectedTeamId(game.away_team.team_id)
+                                        setSelectedGameId(game.id)
+                                      }}
+                                    >
+                                      {game.away_team.key} (Away)
+                                    </Button>
+                                  )}
+                                  {homeAvailable && (
+                                    <Button
+                                      variant={selectedTeamId === game.home_team.team_id ? "default" : "outline"}
+                                      size="sm"
+                                      className="flex-1 text-xs"
+                                      onClick={() => {
+                                        setSelectedTeamId(game.home_team.team_id)
+                                        setSelectedGameId(game.id)
+                                      }}
+                                    >
+                                      {game.home_team.key} (Home)
+                                    </Button>
+                                  )}
+                                </div>
+                              </div>
+                            )
+                          })
+                        }
+                      </div>
+
+                      {selectedTeamId && selectedGameId && (
+                        <Button
+                          onClick={async () => {
+                            if (onAdminPickSubmit && adminPickingFor && selectedTeamId && selectedGameId) {
+                              await onAdminPickSubmit(adminPickingFor, selectedTeamId, selectedGameId)
+                              // Reset state after successful submission
+                              setAdminPickingFor(null)
+                              setSelectedTeamId(null)
+                              setSelectedGameId(null)
+                            }
+                          }}
+                          className="w-full bg-orange-600 hover:bg-orange-700"
+                        >
+                          Set Pick for {membersWithoutPicks.find(m => m.user.id === adminPickingFor)?.user.display_name}
+                        </Button>
+                      )}
+                    </div>
+                  </>
                 )}
               </div>
             </div>

@@ -698,6 +698,8 @@ export default function LeaguePage({
                   membersWithoutPicks={members.filter(member =>
                     !member.is_eliminated && !picks.some(pick => pick.user_id === member.user.id)
                   )}
+                  games={games}
+                  usedTeamIds={usedTeamIds}
                   onAdminPickSubmit={submitAdminPick}
                 />
                 
