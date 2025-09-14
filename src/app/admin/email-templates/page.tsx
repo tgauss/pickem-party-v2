@@ -94,6 +94,8 @@ export default function SuperAdminEmailTemplatesPage() {
   }
 
   const handleCreateTemplate = async () => {
+    if (!currentUser) return
+
     try {
       const response = await fetch('/api/admin/email-templates', {
         method: 'POST',
@@ -120,7 +122,7 @@ export default function SuperAdminEmailTemplatesPage() {
   }
 
   const handleUpdateTemplate = async () => {
-    if (!selectedTemplate) return
+    if (!selectedTemplate || !currentUser) return
 
     try {
       const response = await fetch('/api/admin/email-templates', {
@@ -151,6 +153,8 @@ export default function SuperAdminEmailTemplatesPage() {
   }
 
   const handleDeleteTemplate = async (templateId: string, isSystem: boolean) => {
+    if (!currentUser) return
+
     if (isSystem) {
       setError('System templates cannot be deleted')
       return
