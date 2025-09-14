@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
-import { sendEmail, sendBulkEmails } from '@/lib/postmark'
+// import { sendEmail, sendBulkEmails } from '@/lib/postmark'
 
 interface CustomEmailData {
   to: string
@@ -131,11 +131,11 @@ export async function POST(request: Request) {
     // Send emails immediately
     const emailPromises = recipientUsers.map(async (recipient) => {
       // Replace template variables
-      let processedSubject = finalSubject
+      const processedSubject = finalSubject
         .replace(/\{\{user_name\}\}/g, recipient.display_name)
         .replace(/\{\{league_name\}\}/g, league.name)
 
-      let processedBody = finalBody
+      const processedBody = finalBody
         .replace(/\{\{user_name\}\}/g, recipient.display_name)
         .replace(/\{\{league_name\}\}/g, league.name)
         .replace(/\{\{current_week\}\}/g, getCurrentWeek().toString())

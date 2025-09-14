@@ -19,7 +19,7 @@ interface EmailTemplate {
   template_type: string
   subject: string
   body_template: string
-  variables: any
+  variables: string[] | Record<string, unknown>
   is_system: boolean
   created_at: string
   updated_at: string
@@ -29,11 +29,11 @@ export default function SuperAdminEmailTemplatesPage() {
   const [templates, setTemplates] = useState<EmailTemplate[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-  const [currentUser, setCurrentUser] = useState<any>(null)
+  const [currentUser, setCurrentUser] = useState<{id: string, username: string, display_name: string} | null>(null)
   const [selectedTemplate, setSelectedTemplate] = useState<EmailTemplate | null>(null)
   const [showCreateDialog, setShowCreateDialog] = useState(false)
   const [showPreview, setShowPreview] = useState(false)
-  const [previewData, setPreviewData] = useState<any>({})
+  const [previewData, setPreviewData] = useState<Record<string, string>>({})
 
   // Form states
   const [formData, setFormData] = useState({
@@ -211,7 +211,7 @@ export default function SuperAdminEmailTemplatesPage() {
     setShowPreview(true)
   }
 
-  const processTemplate = (template: string, data: any) => {
+  const processTemplate = (template: string, data: Record<string, string>) => {
     let processed = template
     Object.entries(data).forEach(([key, value]) => {
       const regex = new RegExp(`\\{\\{${key}\\}\\}`, 'g')
@@ -450,7 +450,7 @@ export default function SuperAdminEmailTemplatesPage() {
                 <Mail className="h-12 w-12 text-muted-foreground mb-4" />
                 <h3 className="text-lg font-semibold mb-2">No Custom Templates</h3>
                 <p className="text-muted-foreground text-center mb-4">
-                  You haven't created any custom email templates yet.
+                  You haven&apos;t created any custom email templates yet.
                 </p>
                 <Button onClick={() => setShowCreateDialog(true)}>
                   <Plus className="h-4 w-4 mr-2" />

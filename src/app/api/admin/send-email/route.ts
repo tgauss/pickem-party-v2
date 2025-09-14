@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
-import { sendEmail, sendBulkEmails, type EmailTemplate } from '@/lib/postmark'
+// import { sendEmail, sendBulkEmails, type EmailTemplate } from '@/lib/postmark'
 
 // Super admin check (matches existing pattern)
 function isSuperAdmin(username: string): boolean {

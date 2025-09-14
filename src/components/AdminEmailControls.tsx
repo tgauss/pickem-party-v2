@@ -9,7 +9,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Checkbox } from '@/components/ui/checkbox'
-import { Mail, Send, Users, Clock, Trophy, MessageSquare, UserPlus, AlertCircle } from 'lucide-react'
+import { Mail, Send, Clock, Trophy, MessageSquare, UserPlus, AlertCircle } from 'lucide-react'
 
 interface User {
   id: string
@@ -84,8 +84,8 @@ export function AdminEmailControls({
     setLastResult(null)
 
     try {
-      let recipients = selectedRecipients
-      let requestBody: any = {
+      const recipients = selectedRecipients
+      const requestBody: Record<string, unknown> = {
         emailType,
         leagueId: league.id,
         week: selectedWeek,
@@ -314,7 +314,7 @@ export function AdminEmailControls({
 
               <p className="text-xs text-muted-foreground mt-2">
                 {selectedRecipients.length} of {membersWithEmails.length} recipients selected
-                {emailType === 'pick-reminder' && ' (will be filtered to only users who haven\'t picked)'}
+                {emailType === 'pick-reminder' && ' (will be filtered to only users who haven&apos;t picked)'}
               </p>
             </div>
           )}

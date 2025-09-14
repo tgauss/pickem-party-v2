@@ -95,7 +95,7 @@ export async function sendEmail(
 }
 
 // Generate email configuration based on template
-function generateEmailConfig(template: EmailTemplate, data: any) {
+function generateEmailConfig(template: EmailTemplate, data: PickReminderData | WeeklyResultsData | EliminationData | LeagueInviteData | AdminAnnouncementData) {
   switch (template) {
     case 'pick-reminder':
       return generatePickReminderEmail(data as PickReminderData)
@@ -510,7 +510,7 @@ export async function sendBulkEmails(
   recipients: Array<{
     email: string
     name: string
-    data: any
+    data: Record<string, unknown>
   }>
 ) {
   const results = await Promise.allSettled(
