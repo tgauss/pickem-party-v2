@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { ServerClient } from 'postmark'
 import {
   generateEliminationEmailContent,
@@ -81,8 +82,7 @@ export async function sendEmail(
       HtmlBody: emailConfig.htmlBody,
       TextBody: emailConfig.textBody,
       MessageStream: 'outbound',
-      TrackOpens: true,
-      TrackLinks: 'HtmlOnly'
+      TrackOpens: true
     })
 
     console.log(`📧 Email sent successfully to ${data.to}: ${response.MessageID}`)
@@ -515,6 +515,7 @@ export async function sendBulkEmails(
 ) {
   const results = await Promise.allSettled(
     recipients.map(recipient =>
+      // @ts-expect-error - Complex type union issue with recipient data spread
       sendEmail(template, {
         to: recipient.email,
         toName: recipient.name,

@@ -880,7 +880,7 @@ export default function AdminDashboard({
           {/* Email Controls Tab */}
           <TabsContent value="emails">
             <AdminEmailControls
-              currentUser={currentUser}
+              currentUser={user}
               league={league}
               members={members}
               currentWeek={selectedWeek}

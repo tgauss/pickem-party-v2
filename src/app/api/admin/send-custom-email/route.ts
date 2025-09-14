@@ -287,8 +287,7 @@ async function sendCustomEmail(data: CustomEmailData, senderName: string) {
     HtmlBody: htmlBody,
     TextBody: textBody,
     MessageStream: 'outbound',
-    TrackOpens: true,
-    TrackLinks: 'HtmlOnly'
+    TrackOpens: true
   })
 
   return response

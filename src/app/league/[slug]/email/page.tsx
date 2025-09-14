@@ -425,7 +425,7 @@ export default function EmailControlCenter({
                       rows={8}
                     />
                     <p className="text-xs text-muted-foreground mt-1">
-                      Available variables: {{user_name}}, {{league_name}}, {{current_week}}
+                      Available variables: {`{{user_name}}, {{league_name}}, {{current_week}}`}
                     </p>
                   </div>
 

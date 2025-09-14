@@ -50,7 +50,12 @@ export function AdminEmailControls({
   const [customMessage, setCustomMessage] = useState('')
   const [inviteEmails, setInviteEmails] = useState('')
   const [sending, setSending] = useState(false)
-  const [lastResult, setLastResult] = useState<{ success: boolean; message?: string; error?: string } | null>(null)
+  const [lastResult, setLastResult] = useState<{
+    success: boolean;
+    message?: string;
+    error?: string;
+    details?: { successful: number; failed: number; total: number };
+  } | null>(null)
 
   // Check if user is super admin
   const isSuperAdmin = ['admin', 'tgauss', 'pickemking'].includes(currentUser.username.toLowerCase())
