@@ -50,7 +50,7 @@ export function AdminEmailControls({
   const [customMessage, setCustomMessage] = useState('')
   const [inviteEmails, setInviteEmails] = useState('')
   const [sending, setSending] = useState(false)
-  const [lastResult, setLastResult] = useState<any>(null)
+  const [lastResult, setLastResult] = useState<{ success: boolean; message?: string; error?: string } | null>(null)
 
   // Check if user is super admin
   const isSuperAdmin = ['admin', 'tgauss', 'pickemking'].includes(currentUser.username.toLowerCase())
@@ -178,7 +178,7 @@ export function AdminEmailControls({
                 <SelectItem value="pick-reminder">
                   <div className="flex items-center gap-2">
                     <Clock className="h-4 w-4" />
-                    Pick Reminders - Remind users who haven't picked
+                    Pick Reminders - Remind users who haven&apos;t picked
                   </div>
                 </SelectItem>
                 <SelectItem value="weekly-results">

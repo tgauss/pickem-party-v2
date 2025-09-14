@@ -86,7 +86,7 @@ export default function SuperAdminEmailTemplatesPage() {
       } else {
         setError(data.error || 'Failed to fetch templates')
       }
-    } catch (err) {
+    } catch {
       setError('Network error fetching templates')
     } finally {
       setLoading(false)
@@ -114,7 +114,7 @@ export default function SuperAdminEmailTemplatesPage() {
       } else {
         setError(data.error || 'Failed to create template')
       }
-    } catch (err) {
+    } catch {
       setError('Network error creating template')
     }
   }
@@ -145,7 +145,7 @@ export default function SuperAdminEmailTemplatesPage() {
       } else {
         setError(data.error || 'Failed to update template')
       }
-    } catch (err) {
+    } catch {
       setError('Network error updating template')
     }
   }
@@ -177,7 +177,7 @@ export default function SuperAdminEmailTemplatesPage() {
       } else {
         setError(data.error || 'Failed to delete template')
       }
-    } catch (err) {
+    } catch {
       setError('Network error deleting template')
     }
   }

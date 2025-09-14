@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextResponse } from 'next/server'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
 // import { sendEmail, sendBulkEmails, type EmailTemplate } from '@/lib/postmark'
@@ -90,7 +91,7 @@ export async function POST(request: Request) {
 }
 
 // Send pick reminder emails
-async function sendPickReminders(supabase: any, league: any, leagueUrl: string, week: number, recipients: string[]) {
+async function sendPickReminders(supabase: any, league: { id: string, name: string }, leagueUrl: string, week: number, recipients: string[]) {
   // Get users who haven't made picks and have email addresses
   const { data: usersWithoutPicks } = await supabase
     .from('league_members')
@@ -109,7 +110,7 @@ async function sendPickReminders(supabase: any, league: any, leagueUrl: string, 
     .eq('league_id', league.id)
     .eq('week', week)
 
-  const pickedUserIds = new Set(existingPicks?.map((p: any) => p.user_id) || [])
+  const pickedUserIds = new Set(existingPicks?.map((p: { user_id: string }) => p.user_id) || [])
 
   // Filter to users without picks
   const usersNeedingReminder = usersWithoutPicks?.filter((member: any) =>
