@@ -245,8 +245,13 @@ export default function EmailControlCenter({
   }, [currentUser, loadData])
 
   const handleSendEmail = async () => {
-    if (!selectedTemplate && (!customSubject || !customBody)) {
-      alert('Please select a template or provide custom subject and body')
+    if (selectedTemplate === 'custom' && (!customSubject || !customBody)) {
+      alert('Please provide custom subject and body for custom messages')
+      return
+    }
+
+    if (!selectedTemplate || selectedTemplate === '') {
+      alert('Please select a template or choose custom message')
       return
     }
 
@@ -262,7 +267,7 @@ export default function EmailControlCenter({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           leagueId: league?.id,
-          templateId: selectedTemplate || null,
+          templateId: selectedTemplate === 'custom' ? null : selectedTemplate,
           customSubject: customSubject || null,
           customBody: customBody || null,
           recipients: selectedRecipients,
@@ -395,7 +400,7 @@ export default function EmailControlCenter({
                         <SelectValue placeholder="Select a template or compose custom..." />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">Custom Message</SelectItem>
+                        <SelectItem value="custom">Custom Message</SelectItem>
                         {templates.map(template => (
                           <SelectItem key={template.id} value={template.id}>
                             {template.name} ({template.template_type})
@@ -411,7 +416,7 @@ export default function EmailControlCenter({
                     <Input
                       value={customSubject}
                       onChange={(e) => setCustomSubject(e.target.value)}
-                      placeholder={selectedTemplate ? 'Leave blank to use template default' : 'Enter email subject...'}
+                      placeholder={selectedTemplate && selectedTemplate !== 'custom' ? 'Leave blank to use template default' : 'Enter email subject...'}
                     />
                   </div>
 
@@ -421,7 +426,7 @@ export default function EmailControlCenter({
                     <Textarea
                       value={customBody}
                       onChange={(e) => setCustomBody(e.target.value)}
-                      placeholder={selectedTemplate ? 'Leave blank to use template default' : 'Enter your message...'}
+                      placeholder={selectedTemplate && selectedTemplate !== 'custom' ? 'Leave blank to use template default' : 'Enter your message...'}
                       rows={8}
                     />
                     <p className="text-xs text-muted-foreground mt-1">
