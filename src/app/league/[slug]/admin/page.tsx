@@ -10,6 +10,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Label } from '@/components/ui/label'
+import { Checkbox } from '@/components/ui/checkbox'
 import { 
   Shield, 
   Heart, 
@@ -23,6 +24,7 @@ import {
 } from 'lucide-react'
 import { CustomIcon } from '@/components/ui/custom-icon'
 import { ResurrectPlayers } from '@/components/admin/ResurrectPlayers'
+import { AdminEmailControls } from '@/components/AdminEmailControls'
 
 interface User {
   id: string
@@ -417,10 +419,11 @@ export default function AdminDashboard({
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="lives">Lives Management</TabsTrigger>
             <TabsTrigger value="players">Player Management</TabsTrigger>
             <TabsTrigger value="picks">Picks Overview</TabsTrigger>
+            <TabsTrigger value="emails">Email Controls</TabsTrigger>
             <TabsTrigger value="activity">Activity Log</TabsTrigger>
             <TabsTrigger value="league">League Settings</TabsTrigger>
           </TabsList>
@@ -872,6 +875,16 @@ export default function AdminDashboard({
                 </CardContent>
               </Card>
             </div>
+          </TabsContent>
+
+          {/* Email Controls Tab */}
+          <TabsContent value="emails">
+            <AdminEmailControls
+              currentUser={currentUser}
+              league={league}
+              members={members}
+              currentWeek={selectedWeek}
+            />
           </TabsContent>
 
           {/* League Settings Tab */}

@@ -5,6 +5,34 @@ All notable changes to Pick'em Party v2 will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.1] - 2025-09-09
+
+### Added
+- **Score Display**: Final scores and winner indicators on completed games interface
+- **Upset Analysis**: Sophisticated betting line analysis with color-coded alerts
+- **Natural Language Explanations**: Human-readable analysis of betting line accuracy
+- **Game Outcome Analysis**: Detailed spread and moneyline result summaries
+- **Audio Content**: Added Week 1 wrap-up audio analysis file
+- **Enhanced Dark Theme**: Improved readability with optimized opacity levels
+
+### Changed
+- **Week Detection Logic**: Fixed transition from Week 1 to Week 2 based on NFL schedule
+- **Game Interface**: Added visual indicators for wins/losses and game completion status
+- **Date Calculation**: Corrected week calculation to handle Tuesday-Monday NFL cycles
+- **Typography**: Enhanced contrast and visibility in dark mode interface
+
+### Fixed
+- **Week Transition Bug**: Resolved issue where league page remained on Week 1 after Monday night games
+- **TypeScript Errors**: Fixed type definitions in game outcome analysis functions
+- **ESPN API Sync**: Corrected development server port targeting
+- **Date Logic**: Fixed incorrect day-of-week calculations affecting week display
+
+### Technical
+- **Pick Processing**: Successfully synced Week 1 results (25 correct picks, 1 incorrect)
+- **Life Deduction**: Properly processed elimination for incorrect pick (Kevyn R)
+- **Score Integration**: Enhanced ESPN API integration with proper error handling
+- **Performance**: Maintained bundle size optimization during feature additions
+
 ## [2.0.0] - 2025-09-01
 
 ### Added

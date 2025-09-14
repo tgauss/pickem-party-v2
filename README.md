@@ -10,7 +10,15 @@ Visit: [https://www.pickemparty.app](https://www.pickemparty.app)
 
 ## ✨ Recent Updates (September 2025)
 
-### Latest Features
+### Latest Features (v2.0.1 - Sept 9, 2025)
+- **🏆 Score Display**: Final scores and winner/loser indicators on completed games
+- **⚡ Upset Analysis**: Sophisticated betting line analysis with color-coded alerts
+- **🧠 Natural Language Explanations**: Human-readable analysis of betting accuracy
+- **📱 Enhanced Dark Theme**: Improved readability with optimized contrast levels
+- **🎵 Audio Content**: Week 1 wrap-up analysis audio integration
+- **📅 Week Transition**: Fixed automatic progression from Week 1 to Week 2
+
+### Previous Features (v2.0.0 - Sept 1, 2025)
 - **📱 Phone Number Collection**: Optional phone field in user registration for league admin communication
 - **👮 Commissioner Controls**: Manual pick revelation system for better league management
 - **💰 Enhanced Invite System**: Fixed buy-in calculations and improved mobile experience
@@ -229,5 +237,5 @@ For issues or questions:
 
 ---
 
-**Last Updated**: September 2025
-**Version**: 2.0.0
+**Last Updated**: September 9, 2025
+**Version**: 2.0.1
