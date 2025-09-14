@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { sendEmail, sendBulkEmails, type EmailTemplate } from '@/lib/postmark'
 
 // Super admin check (matches existing pattern)
@@ -29,7 +29,7 @@ export async function POST(request: Request) {
       }, { status: 403 })
     }
 
-    const supabase = createClient()
+    const supabase = await createServerSupabaseClient()
 
     // Get league information
     const { data: league, error: leagueError } = await supabase

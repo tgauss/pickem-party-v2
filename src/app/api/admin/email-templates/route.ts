@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { createServerSupabaseClient } from '@/lib/supabase/server'
 
 // Super admin check
 function isSuperAdmin(username: string): boolean {
@@ -9,7 +9,7 @@ function isSuperAdmin(username: string): boolean {
 
 export async function GET() {
   try {
-    const supabase = createClient()
+    const supabase = await createServerSupabaseClient()
 
     // Get all email templates
     const { data: templates, error } = await supabase
@@ -51,7 +51,7 @@ export async function POST(request: Request) {
       adminUsername
     } = body
 
-    const supabase = createClient()
+    const supabase = await createServerSupabaseClient()
 
     // Get admin user and verify permissions
     const { data: adminUser } = await supabase
@@ -115,7 +115,7 @@ export async function PUT(request: Request) {
       adminUsername
     } = body
 
-    const supabase = createClient()
+    const supabase = await createServerSupabaseClient()
 
     // Get admin user and verify permissions
     const { data: adminUser } = await supabase
@@ -186,7 +186,7 @@ export async function DELETE(request: Request) {
     const body = await request.json()
     const { templateId, adminUsername } = body
 
-    const supabase = createClient()
+    const supabase = await createServerSupabaseClient()
 
     // Get admin user and verify permissions
     const { data: adminUser } = await supabase

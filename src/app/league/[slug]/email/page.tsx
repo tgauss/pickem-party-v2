@@ -15,7 +15,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import {
   Mail,
   Send,
-  Schedule,
+  CalendarDays,
   Users,
   Settings,
   ArrowLeft,
@@ -458,7 +458,7 @@ export default function EmailControlCenter({
                       </>
                     ) : (
                       <>
-                        {scheduleFor ? <Schedule className="h-4 w-4 mr-2" /> : <Send className="h-4 w-4 mr-2" />}
+                        {scheduleFor ? <CalendarDays className="h-4 w-4 mr-2" /> : <Send className="h-4 w-4 mr-2" />}
                         {scheduleFor ? 'Schedule Email' : 'Send Now'}
                       </>
                     )}
@@ -571,7 +571,7 @@ export default function EmailControlCenter({
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Schedule className="h-5 w-5" />
+                  <CalendarDays className="h-5 w-5" />
                   Scheduled Emails
                 </CardTitle>
               </CardHeader>

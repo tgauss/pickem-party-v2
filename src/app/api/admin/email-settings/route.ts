@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { createServerSupabaseClient } from '@/lib/supabase/server'
 
 // Super admin check
 function isSuperAdmin(username: string): boolean {
@@ -20,7 +20,7 @@ export async function GET(request: Request) {
       }, { status: 400 })
     }
 
-    const supabase = createClient()
+    const supabase = await createServerSupabaseClient()
 
     // Get admin user and verify permissions
     const { data: adminUser } = await supabase
@@ -123,7 +123,7 @@ export async function POST(request: Request) {
       adminUsername
     } = body
 
-    const supabase = createClient()
+    const supabase = await createServerSupabaseClient()
 
     // Get admin user and verify permissions
     const { data: adminUser } = await supabase

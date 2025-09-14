@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { sendEmail, sendBulkEmails } from '@/lib/postmark'
 
 interface CustomEmailData {
@@ -30,7 +30,7 @@ export async function POST(request: Request) {
       adminUsername
     } = body
 
-    const supabase = createClient()
+    const supabase = await createServerSupabaseClient()
 
     // Get admin user and verify permissions
     const { data: adminUser } = await supabase
