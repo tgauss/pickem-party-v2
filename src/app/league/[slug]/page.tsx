@@ -14,6 +14,8 @@ import { CurrentWeekPicker } from '@/components/CurrentWeekPicker'
 import { FutureWeekSchedule } from '@/components/FutureWeekSchedule'
 import { LeagueActivityLog } from '@/components/LeagueActivityLog'
 import LiveScores from '@/components/LiveScores'
+import { Cemetery } from '@/components/Cemetery'
+import { RIPPopup } from '@/components/RIPPopup'
 import Image from 'next/image'
 
 interface Team {
@@ -115,6 +117,9 @@ export default function LeaguePage({
   // Week navigation state
   const [currentWeek, setCurrentWeek] = useState(1)
   const [selectedWeek, setSelectedWeek] = useState(1)
+
+  // RIP popup state
+  const [showRIPPopup, setShowRIPPopup] = useState(false)
   
   const supabase = createClient()
 
@@ -526,8 +531,22 @@ export default function LeaguePage({
   // Get bye week teams (simplified - would need actual schedule data)
   const byeWeekTeams: string[] = [] // TODO: Fetch from actual schedule
 
+  // Get eliminated members for cemetery and RIP popup
+  const eliminatedMembers = members.filter(m => m.is_eliminated)
+  const eliminatedThisWeek = members.filter(m => m.is_eliminated && m.eliminated_week === currentWeek)
+
+  // Season start date (first game of NFL season)
+  const seasonStartDate = new Date('2025-09-04') // Week 1 Thursday Night Game
+
   return (
     <div className="min-h-screen bg-background p-2 sm:p-4">
+      {/* RIP Popup for newly eliminated players */}
+      <RIPPopup
+        eliminatedThisWeek={eliminatedThisWeek}
+        currentWeek={currentWeek}
+        onClose={() => setShowRIPPopup(false)}
+      />
+
       <div className="max-w-6xl mx-auto">
         {/* Header - Compact */}
         <div className="text-center mb-3 sm:mb-4">
@@ -785,15 +804,22 @@ export default function LeaguePage({
         </Card>
 
         {/* League Activity Log */}
-        <LeagueActivityLog 
+        <LeagueActivityLog
           leagueId={league.id}
           className="mt-3 sm:mt-4"
         />
 
+        {/* Cemetery Section */}
+        <Cemetery
+          eliminatedMembers={eliminatedMembers}
+          seasonStartDate={seasonStartDate}
+          currentWeek={currentWeek}
+        />
+
         {/* Back to Dashboard */}
         <div className="text-center mt-4 mb-20">
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             size="sm"
             onClick={() => window.location.href = '/dashboard'}
           >

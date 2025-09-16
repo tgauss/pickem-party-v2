@@ -73,6 +73,7 @@ export default function BoomBox() {
   const [hasAutoplayStarted, setHasAutoplayStarted] = useState(false)
   const [showAutoplayPrompt, setShowAutoplayPrompt] = useState(false)
   const [hasUserInteracted, setHasUserInteracted] = useState(false)
+  const [autoplayDelayPassed, setAutoplayDelayPassed] = useState(false)
   
   const audioRef = useRef<HTMLAudioElement>(null)
   const timelineRef = useRef<HTMLInputElement>(null)
@@ -124,15 +125,29 @@ export default function BoomBox() {
           }
           
           setTracks(trackList)
-          
-          // Show autoplay prompt after loading
-          if (trackList.length > 0 && !hasAutoplayStarted) {
+
+          // Check if user previously muted in this session
+          const sessionMuted = sessionStorage.getItem('boombox-session-muted')
+          const isSessionMuted = sessionMuted === 'true'
+
+          // Add delay before showing autoplay prompt (3 seconds)
+          if (trackList.length > 0 && !hasAutoplayStarted && !isSessionMuted) {
             setHasAutoplayStarted(true)
-            setShowAutoplayPrompt(true)
-            
+
+            // Wait 3 seconds before showing prompt to avoid being obnoxious
+            setTimeout(() => {
+              setAutoplayDelayPassed(true)
+
+              // Only show prompt if still not muted and not playing
+              if (!isMuted && !isPlaying) {
+                setShowAutoplayPrompt(true)
+              }
+            }, 3000)
+
             // Set up interaction listeners for automatic music start
             const startMusicOnInteraction = async () => {
-              if (!hasUserInteracted && audioRef.current && !isPlaying && !isMuted) {
+              // Only autoplay if delay passed, not muted, and not session muted
+              if (!hasUserInteracted && audioRef.current && !isPlaying && !isMuted && !isSessionMuted && autoplayDelayPassed) {
                 setHasUserInteracted(true)
                 setShowAutoplayPrompt(false)
                 try {
@@ -142,26 +157,31 @@ export default function BoomBox() {
                 } catch {
                   // Silent fail, user can still manually start
                 }
-              } else if (isMuted) {
+              } else if (isMuted || isSessionMuted) {
                 // User has muted, don't auto-start but mark as interacted
                 console.log('🔇 Music muted - autoplay skipped')
                 setHasUserInteracted(true)
                 setShowAutoplayPrompt(false)
               }
             }
-            
-            // Listen for any user interaction
-            const events = ['click', 'scroll', 'keydown', 'touchstart']
-            events.forEach(event => {
-              document.addEventListener(event, startMusicOnInteraction, { once: true, passive: true })
-            })
-            
-            // Cleanup function
-            return () => {
+
+            // Listen for any user interaction (but only after delay)
+            setTimeout(() => {
+              const events = ['click', 'scroll', 'keydown', 'touchstart']
               events.forEach(event => {
-                document.removeEventListener(event, startMusicOnInteraction)
+                document.addEventListener(event, startMusicOnInteraction, { once: true, passive: true })
               })
-            }
+
+              // Cleanup function
+              return () => {
+                events.forEach(event => {
+                  document.removeEventListener(event, startMusicOnInteraction)
+                })
+              }
+            }, 3000)
+          } else if (isSessionMuted) {
+            console.log('🔇 Session muted - autoplay disabled for this session')
+            setHasAutoplayStarted(true)
           }
         }
       } catch (error) {
@@ -172,7 +192,7 @@ export default function BoomBox() {
     }
     
     loadTracks()
-  }, [hasAutoplayStarted, hasUserInteracted, isPlaying, isMuted])
+  }, [hasAutoplayStarted, hasUserInteracted, isPlaying, isMuted, autoplayDelayPassed])
 
   // Note: Saved state is now loaded on component initialization to ensure
   // mute state is respected before autoplay logic runs
@@ -391,10 +411,19 @@ export default function BoomBox() {
             <div className="flex items-center gap-1">
               {/* Quick Mute Button - Most prominent */}
               <button
-                onClick={() => setIsMuted(!isMuted)}
+                onClick={() => {
+                  const newMuted = !isMuted
+                  setIsMuted(newMuted)
+                  // Track mute state for this session
+                  sessionStorage.setItem('boombox-session-muted', newMuted.toString())
+                  // Also hide autoplay prompt if muting
+                  if (newMuted) {
+                    setShowAutoplayPrompt(false)
+                  }
+                }}
                 className={`w-6 h-6 sm:w-8 sm:h-8 border-2 rounded flex items-center justify-center transition-all ${
-                  isMuted 
-                    ? 'bg-red-600 hover:bg-red-500 border-red-500 text-white' 
+                  isMuted
+                    ? 'bg-red-600 hover:bg-red-500 border-red-500 text-white'
                     : 'bg-green-600 hover:bg-green-500 border-green-500 text-white'
                 }`}
                 title={isMuted ? 'Unmute' : 'Mute'}
@@ -478,7 +507,16 @@ export default function BoomBox() {
 
               <div className="flex items-center gap-2">
                 <button
-                  onClick={() => setIsMuted(!isMuted)}
+                  onClick={() => {
+                    const newMuted = !isMuted
+                    setIsMuted(newMuted)
+                    // Track mute state for this session
+                    sessionStorage.setItem('boombox-session-muted', newMuted.toString())
+                    // Also hide autoplay prompt if muting
+                    if (newMuted) {
+                      setShowAutoplayPrompt(false)
+                    }
+                  }}
                   className="w-8 h-8 bg-gray-600 hover:bg-gray-500 border border-gray-500 rounded flex items-center justify-center text-green-400"
                 >
                   {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
