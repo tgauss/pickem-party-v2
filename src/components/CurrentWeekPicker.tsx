@@ -256,13 +256,13 @@ export function CurrentWeekPicker({
     const homeScore = game.home_score ?? 0
     const awayScore = game.away_score ?? 0
     const actualMargin = homeScore - awayScore // Positive = home won, negative = away won
-    const spread = line.spread // Positive = home favored, negative = away favored
-    
+    const spread = line.spread // Positive = home underdog (getting points), negative = home favored (giving points)
+
     // Determine if it was an upset
-    const favoriteWon = (spread > 0 && actualMargin > 0) || (spread < 0 && actualMargin < 0)
-    const isUpset = !favoriteWon && spread !== 0
+    // Upset occurs when underdog wins outright
+    const isUpset = (spread < 0 && actualMargin <= 0) || (spread > 0 && actualMargin >= 0)
     const coverSpread = actualMargin > spread
-    
+
     // Calculate upset magnitude
     const upsetMagnitude = Math.abs(spread)
     let upsetSize = ''
@@ -272,9 +272,9 @@ export function CurrentWeekPicker({
       else if (upsetMagnitude >= 3) upsetSize = 'SMALL'
       else upsetSize = 'MINOR'
     }
-    
+
     // Determine favorite and underdog
-    const homeFavored = spread > 0
+    const homeFavored = spread < 0  // Negative spread = home favored
     const favoriteTeam = homeFavored ? game.home_team : game.away_team
     const underdogTeam = homeFavored ? game.away_team : game.home_team
     const winner = actualMargin > 0 ? game.home_team : game.away_team

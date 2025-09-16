@@ -218,28 +218,25 @@ export default function LeaguePage({
       }
       
       // Calculate current week based on NFL schedule
-      // Week 1: Sept 5-8, 2025 (Thursday-Monday)
-      // Today is Tuesday Sept 9, 2025 - Week 2 pick week
+      // NFL weeks run Tuesday morning to Monday night (inclusive)
+      // Week 1: Sept 2-8, 2025 (Tues 12:00 AM - Mon 11:59 PM)
+      // Week 2: Sept 9-15, 2025 (Tues 12:00 AM - Mon 11:59 PM)
+      // Week 3: Sept 16-22, 2025 (Tues 12:00 AM - Mon 11:59 PM)
       const now = new Date()
-      const seasonStart = new Date('2025-09-05') // First game of season
-      
+      const seasonStart = new Date('2025-09-02T00:00:00') // Tuesday 12:00 AM of Week 1
+
       let calculatedWeek = 1
       if (now < seasonStart) {
         calculatedWeek = 1 // Before season starts
       } else {
-        // NFL weeks run Tuesday to Monday for pick purposes
-        // Week 1: Sept 2-8 (pick week), games Sept 5-8
-        // Week 2: Sept 9-15 (pick week), games Sept 12-15
-        const daysSinceStart = Math.floor((now.getTime() - seasonStart.getTime()) / (24 * 60 * 60 * 1000))
-        
-        // Tuesday after Week 1 MNF = start of Week 2 pick period
-        if (daysSinceStart < 4) {
-          calculatedWeek = 1 // Thursday-Sunday of Week 1
-        } else {
-          // Tuesday or later after first week = Week 2+
-          const weeksAfterFirst = Math.floor((daysSinceStart - 4) / 7)
-          calculatedWeek = Math.min(2 + weeksAfterFirst, 18)
+        // Add 1 day to account for Monday being part of the current week
+        const adjustedNow = new Date(now)
+        if (now.getDay() === 1) { // If it's Monday
+          adjustedNow.setDate(adjustedNow.getDate() - 1) // Treat as Sunday for calculation
         }
+
+        const daysSinceStart = Math.floor((adjustedNow.getTime() - seasonStart.getTime()) / (24 * 60 * 60 * 1000))
+        calculatedWeek = Math.min(Math.floor(daysSinceStart / 7) + 1, 18)
       }
       setCurrentWeek(calculatedWeek)
       setSelectedWeek(calculatedWeek)
