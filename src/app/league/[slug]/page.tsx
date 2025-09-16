@@ -764,45 +764,61 @@ export default function LeaguePage({
                   if (!a.is_eliminated && b.is_eliminated) return -1
                   return b.lives_remaining - a.lives_remaining
                 })
-                .map((member, index) => (
-                  <div 
-                    key={member.user.id}
-                    className={`flex items-center justify-between p-2 rounded-lg ${
-                      member.is_eliminated ? 'bg-muted opacity-50' : 'bg-background'
-                    } border`}
-                  >
-                    <div className="flex items-center gap-2">
-                      <span className="font-mono text-xs">#{index + 1}</span>
-                      <div className="flex flex-col">
-                        <span className="font-medium text-sm">{member.user.username}</span>
-                        <span className="text-xs text-muted-foreground">{member.user.display_name}</span>
+                .map((member, index, sortedArray) => {
+                  // Calculate tied position
+                  let position = 1
+                  if (!member.is_eliminated) {
+                    // Count how many players have more lives
+                    position = sortedArray.filter(m =>
+                      !m.is_eliminated && m.lives_remaining > member.lives_remaining
+                    ).length + 1
+                  } else {
+                    // Eliminated players don't get a ranking
+                    position = 0
+                  }
+
+                  return (
+                    <div
+                      key={member.user.id}
+                      className={`flex items-center justify-between p-2 rounded-lg ${
+                        member.is_eliminated ? 'bg-muted opacity-50' : 'bg-background'
+                      } border`}
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono text-xs w-8">
+                          {position > 0 ? `#${position}` : '—'}
+                        </span>
+                        <div className="flex flex-col">
+                          <span className="font-medium text-sm">{member.user.username}</span>
+                          <span className="text-xs text-muted-foreground">{member.user.display_name}</span>
+                        </div>
+                        {member.is_eliminated && (
+                          <Badge variant="destructive" className="text-xs px-2 py-0.5">
+                            Eliminated Week {member.eliminated_week}
+                          </Badge>
+                        )}
                       </div>
-                      {member.is_eliminated && (
-                        <Badge variant="destructive" className="text-xs px-2 py-0.5">
-                          Eliminated Week {member.eliminated_week}
-                        </Badge>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <div className="flex items-center gap-0.5">
-                        {Array.from({ length: Math.max(0, member.lives_remaining) }).map((_, index) => (
-                          <CustomIcon 
-                            key={index}
-                            name="heart" 
-                            fallback="❤️" 
-                            alt="Life remaining"
-                            size="sm"
-                          />
-                        ))}
+                      <div className="flex items-center gap-1">
+                        <div className="flex items-center gap-0.5">
+                          {Array.from({ length: Math.max(0, member.lives_remaining) }).map((_, index) => (
+                            <CustomIcon
+                              key={index}
+                              name="heart"
+                              fallback="❤️"
+                              alt="Life remaining"
+                              size="sm"
+                            />
+                          ))}
+                        </div>
+                        {!member.is_paid && (
+                          <Badge variant="outline" className="text-xs px-2 py-0.5">
+                            Unpaid
+                          </Badge>
+                        )}
                       </div>
-                      {!member.is_paid && (
-                        <Badge variant="outline" className="text-xs px-2 py-0.5">
-                          Unpaid
-                        </Badge>
-                      )}
                     </div>
-                  </div>
-                ))}
+                  )
+                })}
             </div>
           </div>
         </Card>
