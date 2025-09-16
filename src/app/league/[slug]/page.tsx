@@ -221,31 +221,21 @@ export default function LeaguePage({
       
       // Calculate current week based on NFL schedule
       // NFL weeks run Tuesday morning to Monday night (inclusive)
-      // Week 1: Sept 2-8, 2025 (Tues 12:00 AM - Mon 11:59 PM)
+      // Week 1: Sept 2-8, 2025 (Tues 12:00 AM - Mon 11:59 PM) - COMPLETED
       // Week 2: Sept 9-15, 2025 (Tues 12:00 AM - Mon 11:59 PM) - COMPLETED
       // Week 3: Sept 16-22, 2025 (Tues 12:00 AM - Mon 11:59 PM) - CURRENT
       const now = new Date()
-      const seasonStart = new Date('2025-09-02T00:00:00') // Tuesday 12:00 AM of Week 1
 
-      let calculatedWeek = 1
-      if (now < seasonStart) {
-        calculatedWeek = 1 // Before season starts
-      } else {
-        // Week 2 is now complete, so we're in Week 3
-        // Manual override since Week 2 just finished (Sept 15, 2025 MNF completed)
-        const week2End = new Date('2025-09-16T00:00:00') // Tuesday start of Week 3
-        if (now >= week2End) {
-          calculatedWeek = 3 // We're now in Week 3
-        } else {
-          // Normal calculation for future weeks
-          const adjustedNow = new Date(now)
-          if (now.getDay() === 1) { // If it's Monday
-            adjustedNow.setDate(adjustedNow.getDate() - 1) // Treat as Sunday for calculation
-          }
+      // Since Week 2 games are complete and picks processed, force Week 3 as current
+      // Even though it's still Monday Sept 15, Week 2 is done
+      let calculatedWeek = 3 // Week 3 is now active for picks
 
-          const daysSinceStart = Math.floor((adjustedNow.getTime() - seasonStart.getTime()) / (24 * 60 * 60 * 1000))
-          calculatedWeek = Math.min(Math.floor(daysSinceStart / 7) + 1, 18)
-        }
+      // After Tuesday Sept 16, continue with normal week calculation
+      const week3Start = new Date('2025-09-16T00:00:00')
+      if (now >= week3Start) {
+        const seasonStart = new Date('2025-09-02T00:00:00')
+        const daysSinceStart = Math.floor((now.getTime() - seasonStart.getTime()) / (24 * 60 * 60 * 1000))
+        calculatedWeek = Math.min(Math.floor(daysSinceStart / 7) + 1, 18)
       }
       setCurrentWeek(calculatedWeek)
       setSelectedWeek(calculatedWeek)
