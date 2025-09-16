@@ -24,7 +24,7 @@ interface CemeteryProps {
   currentWeek: number
 }
 
-export function Cemetery({ eliminatedMembers, seasonStartDate, currentWeek }: CemeteryProps) {
+export function Cemetery({ eliminatedMembers }: CemeteryProps) {
   if (eliminatedMembers.length === 0) {
     return null
   }
@@ -36,7 +36,7 @@ export function Cemetery({ eliminatedMembers, seasonStartDate, currentWeek }: Ce
     return Math.max(1, daysAlive) // Minimum 1 day
   }
 
-  const getGravestoneImage = (username: string) => {
+  const getGravestoneImage = () => {
     // Check if there's a custom gravestone for this user
     const customGravestone = `/Kevyn-Gravestone-Small.png`
     // For now, we'll use Kevyn's gravestone as the template
@@ -64,7 +64,7 @@ export function Cemetery({ eliminatedMembers, seasonStartDate, currentWeek }: Ce
           <CustomIcon name="skull" fallback="💀" alt="Cemetery" size="md" />
         </CardTitle>
         <p className="text-slate-300 text-sm">
-          "Here lie the fallen warriors who dared to enter the arena..."
+          &ldquo;Here lie the fallen warriors who dared to enter the arena...&rdquo;
         </p>
       </CardHeader>
       <CardContent>
@@ -79,7 +79,7 @@ export function Cemetery({ eliminatedMembers, seasonStartDate, currentWeek }: Ce
                 <div key={member.user.id} className="text-center">
                   <div className="relative mb-2">
                     <Image
-                      src={getGravestoneImage(member.user.username)}
+                      src={getGravestoneImage()}
                       alt={`${member.user.display_name}'s Gravestone`}
                       width={150}
                       height={200}
@@ -140,7 +140,7 @@ export function Cemetery({ eliminatedMembers, seasonStartDate, currentWeek }: Ce
 
         <div className="text-center mt-4">
           <p className="text-slate-400 text-xs italic">
-            "May their picks rest in peace... 🪦"
+            &ldquo;May their picks rest in peace... 🪦&rdquo;
           </p>
         </div>
       </CardContent>

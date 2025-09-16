@@ -117,9 +117,6 @@ export default function LeaguePage({
   // Week navigation state
   const [currentWeek, setCurrentWeek] = useState(1)
   const [selectedWeek, setSelectedWeek] = useState(1)
-
-  // RIP popup state
-  const [showRIPPopup, setShowRIPPopup] = useState(false)
   
   const supabase = createClient()
 
@@ -544,7 +541,7 @@ export default function LeaguePage({
       <RIPPopup
         eliminatedThisWeek={eliminatedThisWeek}
         currentWeek={currentWeek}
-        onClose={() => setShowRIPPopup(false)}
+        onClose={() => {}}
       />
 
       <div className="max-w-6xl mx-auto">
