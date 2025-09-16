@@ -1,10 +1,11 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { CustomIcon } from '@/components/ui/custom-icon'
 import Image from 'next/image'
+import { Play, Pause, Music } from 'lucide-react'
 
 interface User {
   id: string
@@ -28,6 +29,8 @@ interface RIPPopupProps {
 export function RIPPopup({ eliminatedThisWeek, currentWeek, onClose }: RIPPopupProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [currentIndex, setCurrentIndex] = useState(0)
+  const [isPlayingRecap, setIsPlayingRecap] = useState(false)
+  const audioRef = useRef<HTMLAudioElement>(null)
 
   useEffect(() => {
     // Only show popup if there are players eliminated this week
@@ -45,8 +48,24 @@ export function RIPPopup({ eliminatedThisWeek, currentWeek, onClose }: RIPPopupP
   }, [eliminatedThisWeek, currentWeek])
 
   const handleClose = () => {
+    // Stop audio if playing
+    if (audioRef.current) {
+      audioRef.current.pause()
+      setIsPlayingRecap(false)
+    }
     setIsOpen(false)
     onClose()
+  }
+
+  const toggleRecapAudio = () => {
+    if (audioRef.current) {
+      if (isPlayingRecap) {
+        audioRef.current.pause()
+      } else {
+        audioRef.current.play()
+      }
+      setIsPlayingRecap(!isPlayingRecap)
+    }
   }
 
   const handleNext = () => {
@@ -94,6 +113,13 @@ export function RIPPopup({ eliminatedThisWeek, currentWeek, onClose }: RIPPopupP
           </DialogTitle>
         </DialogHeader>
 
+        {/* Hidden audio element for Week 2 recap */}
+        <audio
+          ref={audioRef}
+          src="/music/GRIDIRON GAMBLE - Week 2 wRap.mp3"
+          onEnded={() => setIsPlayingRecap(false)}
+        />
+
         <div className="text-center space-y-4">
           {/* Gravestone */}
           <div className="relative mx-auto w-32 h-40">
@@ -104,18 +130,6 @@ export function RIPPopup({ eliminatedThisWeek, currentWeek, onClose }: RIPPopupP
               height={160}
               className="mx-auto filter drop-shadow-lg"
             />
-            {/* Player name overlay on gravestone */}
-            <div className="absolute inset-0 flex flex-col items-center justify-center text-white font-bold" style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.8)' }}>
-              <div className="text-sm font-black uppercase tracking-wide">
-                {(currentPlayer.user.display_name || currentPlayer.user.username).toUpperCase()}
-              </div>
-              <div className="text-xs mt-1">
-                WEEK {currentPlayer.eliminated_week}
-              </div>
-              <div className="text-xs">
-                2025
-              </div>
-            </div>
           </div>
 
           {/* Elimination message */}
@@ -132,6 +146,31 @@ export function RIPPopup({ eliminatedThisWeek, currentWeek, onClose }: RIPPopupP
               <CustomIcon name="skull" fallback="⚰️" alt="Coffin" size="sm" />
             </div>
           </div>
+
+          {/* Week 2 Recap Audio Button */}
+          {currentPlayer.eliminated_week === 2 && (
+            <div className="pt-2">
+              <Button
+                onClick={toggleRecapAudio}
+                variant="outline"
+                size="sm"
+                className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white border-purple-500"
+              >
+                <Music className="w-4 h-4 mr-2" />
+                {isPlayingRecap ? (
+                  <>
+                    <Pause className="w-4 h-4 mr-1" />
+                    Pause Week 2 wRap
+                  </>
+                ) : (
+                  <>
+                    <Play className="w-4 h-4 mr-1" />
+                    Listen to Week 2 wRap 🎵
+                  </>
+                )}
+              </Button>
+            </div>
+          )}
 
           {/* Navigation buttons */}
           <div className="flex items-center justify-between pt-4">

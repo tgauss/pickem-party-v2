@@ -85,18 +85,6 @@ export function Cemetery({ eliminatedMembers }: CemeteryProps) {
                       height={200}
                       className="mx-auto filter drop-shadow-lg"
                     />
-                    {/* Overlay text on gravestone */}
-                    <div className="absolute inset-0 flex flex-col items-center justify-center text-white font-bold" style={{ textShadow: '2px 2px 4px rgba(0,0,0,0.8)' }}>
-                      <div className="text-lg font-black uppercase tracking-wide">
-                        {(member.user.display_name || member.user.username).toUpperCase()}
-                      </div>
-                      <div className="text-xs mt-1">
-                        WEEK {member.eliminated_week}
-                      </div>
-                      <div className="text-xs">
-                        2025
-                      </div>
-                    </div>
                   </div>
 
                   <div className="space-y-1">
