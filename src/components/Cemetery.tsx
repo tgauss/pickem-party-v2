@@ -36,12 +36,10 @@ export function Cemetery({ eliminatedMembers }: CemeteryProps) {
     return Math.max(1, daysAlive) // Minimum 1 day
   }
 
-  const getGravestoneImage = () => {
-    // Check if there's a custom gravestone for this user
-    const customGravestone = `/Kevyn-Gravestone-Small.png`
-    // For now, we'll use Kevyn's gravestone as the template
-    // In the future, we could generate custom ones or have different styles
-    return customGravestone
+  const hasCustomGravestone = (member: Member) => {
+    // Only Kevyn R has a custom gravestone image
+    const username = member.user.username.toLowerCase()
+    return username === 'kevyn r' || username === 'kevynr' || member.user.display_name?.toLowerCase().includes('kevyn')
   }
 
   const getEpitaph = (member: Member, daysAlive: number) => {
@@ -77,15 +75,29 @@ export function Cemetery({ eliminatedMembers }: CemeteryProps) {
 
               return (
                 <div key={member.user.id} className="text-center">
-                  <div className="relative mb-2">
-                    <Image
-                      src={getGravestoneImage()}
-                      alt={`${member.user.display_name}'s Gravestone`}
-                      width={150}
-                      height={200}
-                      className="mx-auto filter drop-shadow-lg"
-                    />
-                  </div>
+                  {hasCustomGravestone(member) ? (
+                    // Custom gravestone image for Kevyn
+                    <div className="relative mb-2">
+                      <Image
+                        src="/Kevyn-Gravestone-Small.png"
+                        alt={`${member.user.display_name}'s Gravestone`}
+                        width={150}
+                        height={200}
+                        className="mx-auto filter drop-shadow-lg"
+                      />
+                    </div>
+                  ) : (
+                    // Text-based memorial for other players
+                    <div className="mb-2 p-4 bg-slate-700 rounded-lg border border-slate-600 mx-auto max-w-48">
+                      <div className="text-4xl mb-2">💀</div>
+                      <div className="text-white font-semibold text-lg">
+                        {member.user.display_name || member.user.username}
+                      </div>
+                      <div className="text-slate-300 text-sm mt-1">
+                        was eliminated
+                      </div>
+                    </div>
+                  )}
 
                   <div className="space-y-1">
                     <Badge variant="destructive" className="bg-red-800 text-white">

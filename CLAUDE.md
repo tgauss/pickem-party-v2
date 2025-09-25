@@ -1,8 +1,8 @@
 # Claude Development Guidelines & Memory Document
 # Pickem Party v2
 
-**Last Updated**: September 9, 2025
-**Version**: 2.1.0
+**Last Updated**: September 15, 2025
+**Version**: 2.2.0
 **Purpose**: This document serves as persistent memory for Claude Code across sessions
 
 ## 🎯 Project Overview
@@ -15,7 +15,50 @@
 - **GitHub**: https://github.com/tgauss/pickem-party-v2
 - **Supabase Project ID**: cggoycedsybrajvdqjjk
 
-## 🚀 Recent Work (September 9, 2025 Session)
+## 🚀 Recent Work (September 15, 2025 Session)
+
+### Major Updates - Week 2 Completion & Cemetery Feature
+1. **Cemetery & RIP Popup System**
+   - Implemented Cemetery component showing gravestones for eliminated players
+   - Added RIP popup that appears once when players are newly eliminated
+   - Custom gravestone graphics (Kevyn-Gravestone.png) with player names
+   - Removed overlay text from gravestones after feedback
+   - Cemetery displays player names, elimination week, and survival days
+
+2. **Week 2 Score Processing & Eliminations**
+   - Synced all 16 completed Week 2 games from ESPN API
+   - Processed 25 user picks with results:
+     - 21 correct picks (players remain at 2 lives)
+     - 4 incorrect picks: Dalton, Joe G, Shneebly (down to 1 life), Kevyn R (eliminated)
+   - First elimination: Kevyn R (picked Las Vegas, lost to LA Chargers 9-20)
+   - Updated all pick statuses with is_correct field
+
+3. **Music Player Improvements**
+   - Added session-based mute memory (sessionStorage)
+   - Implemented 3-second delay before autoplay prompt
+   - Respects user mute preference throughout browser session
+   - Less aggressive autoplay behavior
+
+4. **Week 2 Recap Audio Integration**
+   - Added "GRIDIRON GAMBLE - Week 2 wRap.mp3" to music directory
+   - Integrated play button in RIP popup for eliminated players
+   - Purple gradient button with play/pause controls
+   - Audio automatically stops when popup closes
+
+5. **Standings & UI Improvements**
+   - Fixed standings to show tied positions (22 players tied for 1st with 2 lives)
+   - Players with same lives share same position number
+   - Week 3 now properly shows as current week for picks
+   - Fixed upset detection logic (correct spread interpretation)
+   - Enhanced PastWeekResults to show correct/incorrect badges
+
+6. **Email System Implementation** (from earlier in session)
+   - Full Postmark integration for email notifications
+   - Admin email control center at /league/[slug]/email
+   - Templates for pick reminders, weekly results, announcements
+   - Commissioner and super admin access controls
+
+## 🚀 Previous Work (September 9, 2025 Session)
 
 ### Major Updates - Week 1 to Week 2 Transition
 1. **Week 1 Score Sync and Pick Processing**
@@ -175,6 +218,9 @@ const supabase = createServerClient()
 - Invite system with proper calculations
 - **Email notifications system** - Pick reminders, weekly results, admin announcements, league invites
 - **Admin email controls** - Full interface for commissioners and super admins
+- **Cemetery & RIP popup** - Memorial for eliminated players with audio integration
+- **Tied standings** - Proper ranking for players with same lives
+- **Week-by-week progression** - Automatic transitions with completed week views
 
 ### Partially Working ⚠️
 - Score syncing (manual trigger needed)
@@ -230,12 +276,13 @@ ALTER TABLE leagues ADD COLUMN picks_revealed_weeks integer[] DEFAULT '{}'::inte
 
 ## 💡 Future Session Context
 
-### Current Status After Sept 9 Session
-- **Week 1**: ✅ Completed with final scores, upset analysis, and life deductions
-- **Week 2**: 🟢 ACTIVE for picks (16 games scheduled, betting lines loaded)
-- **Players**: 26 with 2 lives, 1 with 1 life (Kevyn R), 0 eliminated
-- **Interface**: Enhanced dark theme with natural language game analysis
-- **System**: Smart week detection working automatically
+### Current Status After Sept 15 Session
+- **Week 1**: ✅ Completed with final scores and analysis
+- **Week 2**: ✅ Completed with first elimination (Kevyn R)
+- **Week 3**: 🟢 ACTIVE for picks (forced current after Week 2 completion)
+- **Players**: 22 with 2 lives (tied 1st), 3 with 1 life (tied 23rd), 1 eliminated
+- **Cemetery**: Live with Kevyn R's gravestone and RIP popup
+- **Interface**: Enhanced with Cemetery, tied standings, Week 2 recap audio
 
 ### Priority Tasks
 1. **Week-by-week maintenance** - Monitor score syncing and pick processing
@@ -357,7 +404,20 @@ SELECT * FROM picks WHERE user_id = '[id]' AND week = 1;
 3. CHANGELOG.md for recent changes
 4. This file (CLAUDE.md) for all context
 
-**Session Summary (Sept 9, 2025)**:
-Successfully transitioned from Week 1 to Week 2 with full score processing, enhanced UI with upset analysis, and fixed week detection logic. Week 2 is live with 16 games scheduled and betting lines active. All 27 players remain in the league (26 with 2 lives, 1 with 1 life). Enhanced dark theme interface now shows natural language analysis for completed games with sophisticated upset detection.
+**Session Summary (Sept 15, 2025)**:
+Successfully completed Week 2 with first elimination and comprehensive new features. Added Cemetery system for eliminated players with custom gravestones and RIP popups. Integrated Week 2 recap audio directly into elimination experience. Fixed standings to show proper ties, improved music player behavior, and transitioned to Week 3 as active. Processed 25 Week 2 picks resulting in first elimination (Kevyn R) and 3 players down to 1 life. Enhanced email system with full Postmark integration and admin controls.
 
-The codebase is well-documented and ready for continued development. All features are working in production at https://www.pickemparty.app.
+**Key Technical Achievements:**
+- Cemetery.tsx and RIPPopup.tsx components with audio integration
+- Tied standings algorithm for proper ranking display
+- Session-based music player mute memory
+- Week transition logic with manual override capability
+- Full score processing and pick result validation
+
+**Current League Status:**
+- 25 players remain (22 tied for 1st, 3 tied for 23rd)
+- Week 3 active for picks
+- Cemetery live with Kevyn R memorial
+- All systems operational in production
+
+The platform now includes the complete elimination experience from RIP notification to cemetery memorial, making the survivor pool more engaging and entertaining for players.
