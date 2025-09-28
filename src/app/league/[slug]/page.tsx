@@ -219,24 +219,24 @@ export default function LeaguePage({
         setMembers(formattedMembers)
       }
       
-      // Calculate current week based on NFL schedule
-      // NFL weeks run Tuesday morning to Monday night (inclusive)
-      // Week 1: Sept 2-8, 2025 (Tues 12:00 AM - Mon 11:59 PM) - COMPLETED
-      // Week 2: Sept 9-15, 2025 (Tues 12:00 AM - Mon 11:59 PM) - COMPLETED
-      // Week 3: Sept 16-22, 2025 (Tues 12:00 AM - Mon 11:59 PM) - CURRENT
+      // Calculate current NFL week dynamically
       const now = new Date()
+      const seasonStart = new Date('2025-09-04T00:00:00-07:00') // Thursday Sept 4, 2025 PST
+      let calculatedWeek = 1
 
-      // Since Week 2 games are complete and picks processed, force Week 3 as current
-      // Even though it's still Monday Sept 15, Week 2 is done
-      let calculatedWeek = 3 // Week 3 is now active for picks
-
-      // After Tuesday Sept 16, continue with normal week calculation
-      const week3Start = new Date('2025-09-16T00:00:00')
-      if (now >= week3Start) {
-        const seasonStart = new Date('2025-09-02T00:00:00')
+      if (now >= seasonStart) {
+        // Calculate days since season start
         const daysSinceStart = Math.floor((now.getTime() - seasonStart.getTime()) / (24 * 60 * 60 * 1000))
+        // Each week is 7 days, week 1 starts on day 0
         calculatedWeek = Math.min(Math.floor(daysSinceStart / 7) + 1, 18)
       }
+
+      console.log('Week calculation:', {
+        now: now.toISOString(),
+        seasonStart: seasonStart.toISOString(),
+        daysSinceStart: Math.floor((now.getTime() - seasonStart.getTime()) / (24 * 60 * 60 * 1000)),
+        calculatedWeek
+      })
       setCurrentWeek(calculatedWeek)
       setSelectedWeek(calculatedWeek)
       
@@ -292,18 +292,31 @@ export default function LeaguePage({
       alert(`🔒 TEAM ALREADY USED! You picked ${displayName} in a previous week. In Survivor pools, you can only use each team once per season.`)
       return
     }
-    
+
     // Check if deadline has passed
     const game = games.find(g => g.id === gameId)
     if (game) {
       const now = new Date()
       const gameTime = new Date(game.game_time)
+
+      // Debug logging to understand the timezone issue
+      console.log('Pick submission check:', {
+        gameId,
+        gameTimeString: game.game_time,
+        gameTimeObj: gameTime.toISOString(),
+        gameTimeLocal: gameTime.toLocaleString(),
+        nowObj: now.toISOString(),
+        nowLocal: now.toLocaleString(),
+        hasStarted: gameTime <= now,
+        timeDiffMinutes: (gameTime.getTime() - now.getTime()) / (1000 * 60)
+      })
+
       if (gameTime <= now) {
-        alert('⏰ DEADLINE PASSED! This game has already started.')
+        alert(`⏰ DEADLINE PASSED! This game has already started.\n\nGame time: ${gameTime.toLocaleString()}\nCurrent time: ${now.toLocaleString()}`)
         return
       }
     }
-    
+
     setLoading(true)
     
     try {
@@ -427,8 +440,19 @@ export default function LeaguePage({
     if (game) {
       const now = new Date()
       const gameTime = new Date(game.game_time)
+
+      // Debug logging for admin picks
+      console.log('Admin pick submission check:', {
+        gameId,
+        gameTimeString: game.game_time,
+        gameTimeObj: gameTime.toISOString(),
+        nowObj: now.toISOString(),
+        hasStarted: gameTime <= now,
+        timeDiffMinutes: (gameTime.getTime() - now.getTime()) / (1000 * 60)
+      })
+
       if (gameTime <= now) {
-        alert('⏰ DEADLINE PASSED! This game has already started.')
+        alert(`⏰ DEADLINE PASSED! This game has already started.\n\nGame time: ${gameTime.toLocaleString()}\nCurrent time: ${now.toLocaleString()}`)
         return
       }
     }
