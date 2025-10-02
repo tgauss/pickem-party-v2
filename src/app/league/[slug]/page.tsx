@@ -219,23 +219,23 @@ export default function LeaguePage({
         setMembers(formattedMembers)
       }
       
-      // Calculate current NFL week dynamically
+      // Calculate current NFL week
+      // Week 4 completed, force Week 5 as current
       const now = new Date()
-      const seasonStart = new Date('2025-09-04T00:00:00-07:00') // Thursday Sept 4, 2025 PST
-      let calculatedWeek = 1
+      let calculatedWeek = 5 // Week 5 is now active for picks
 
-      if (now >= seasonStart) {
-        // Calculate days since season start
+      // After Tuesday Oct 7, continue with normal week calculation
+      const week5Start = new Date('2025-10-07T00:00:00')
+      if (now >= week5Start) {
+        const seasonStart = new Date('2025-09-02T00:00:00')
         const daysSinceStart = Math.floor((now.getTime() - seasonStart.getTime()) / (24 * 60 * 60 * 1000))
-        // Each week is 7 days, week 1 starts on day 0
         calculatedWeek = Math.min(Math.floor(daysSinceStart / 7) + 1, 18)
       }
 
       console.log('Week calculation:', {
         now: now.toISOString(),
-        seasonStart: seasonStart.toISOString(),
-        daysSinceStart: Math.floor((now.getTime() - seasonStart.getTime()) / (24 * 60 * 60 * 1000)),
-        calculatedWeek
+        calculatedWeek,
+        note: 'Week 4 completed - Week 5 forced as current'
       })
       setCurrentWeek(calculatedWeek)
       setSelectedWeek(calculatedWeek)
