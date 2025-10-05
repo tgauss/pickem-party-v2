@@ -49,6 +49,8 @@ interface Pick {
   id: string
   user_id: string
   team_id: number
+  game_id: string
+  is_correct?: boolean | null
   teams?: Team
   user?: {
     id: string
@@ -390,41 +392,99 @@ export function CurrentWeekPicker({
             <div className="flex items-center gap-2 mb-2">
               <h3 className="font-medium">Player Status:</h3>
             </div>
-            
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+
+            <div className="grid grid-cols-1 gap-2">
               {activeMembers.map(member => {
                 const hasPick = picks.some(pick => pick.user_id === member.user.id)
                 const memberPick = picks.find(pick => pick.user_id === member.user.id)
-                
+                const pickGame = memberPick ? games.find(g => g.id === memberPick.game_id) : null
+                const isPickFinal = pickGame?.is_final === true
+                const pickOutcome = memberPick?.is_correct
+
                 return (
                   <div
                     key={member.user.id}
-                    className={`flex items-center justify-between p-2 rounded-lg border ${
-                      hasPick ? 'bg-surface border-primary/30' : 'bg-surface border-secondary/30'
+                    className={`flex items-center justify-between p-3 rounded-lg border ${
+                      hasPick
+                        ? pickOutcome === true
+                          ? 'bg-green-500/10 border-green-500/30'
+                          : pickOutcome === false
+                          ? 'bg-red-500/10 border-red-500/30'
+                          : 'bg-surface border-primary/30'
+                        : 'bg-surface border-secondary/30'
                     }`}
                   >
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-1">
                       {hasPick ? (
-                        <CustomIcon name="checkmark" fallback="✅" alt="Picked" size="sm" />
+                        pickOutcome === true ? (
+                          <Image
+                            src="/ui-icons/green checkmark-pickem-part.png"
+                            alt="Correct"
+                            width={20}
+                            height={20}
+                            className="w-5 h-5"
+                          />
+                        ) : pickOutcome === false ? (
+                          <Image
+                            src="/ui-icons/Skull Dead-pickem-part.png"
+                            alt="Incorrect"
+                            width={20}
+                            height={20}
+                            className="w-5 h-5"
+                          />
+                        ) : (
+                          <Image
+                            src="/ui-icons/Hourglass Waiting-pickem-part.png"
+                            alt="Picked"
+                            width={20}
+                            height={20}
+                            className="w-5 h-5"
+                          />
+                        )
                       ) : (
-                        <CustomIcon name="hourglass" fallback="⏰" alt="Waiting" size="sm" />
+                        <Image
+                          src="/ui-icons/Hourglass Waiting-pickem-part.png"
+                          alt="Waiting"
+                          width={20}
+                          height={20}
+                          className="w-5 h-5"
+                        />
                       )}
-                      <span className={`text-xs sm:text-sm font-medium ${
-                        hasPick ? 'text-primary' : 'text-secondary'
-                      }`} title={member.user.display_name}>{member.user.username}</span>
+                      <div className="flex flex-col">
+                        <span className={`text-sm font-medium ${
+                          hasPick ? 'text-primary' : 'text-secondary'
+                        }`} title={member.user.display_name}>{member.user.username}</span>
+                        <span className="text-xs text-muted-foreground">
+                          {member.lives_remaining} {member.lives_remaining === 1 ? 'life' : 'lives'}
+                        </span>
+                      </div>
                     </div>
-                    
-                    {hasPick && !picksArePrivate && memberPick?.teams && (
-                      <Badge variant="secondary" className="text-xs px-2 py-0.5">
-                        {memberPick.teams.key}
-                      </Badge>
-                    )}
-                    
-                    {hasPick && picksArePrivate && (
-                      <Badge variant="outline" className="text-xs px-2 py-0.5">
-                        Picked
-                      </Badge>
-                    )}
+
+                    <div className="flex items-center gap-2">
+                      {hasPick && !picksArePrivate && memberPick?.teams && (
+                        <>
+                          <Badge variant="secondary" className="text-xs px-2 py-0.5">
+                            {memberPick.teams.key}
+                          </Badge>
+                          {isPickFinal && pickOutcome !== null && (
+                            <Badge
+                              variant={pickOutcome ? "default" : "destructive"}
+                              className={`text-xs px-2 py-0.5 ${
+                                pickOutcome ? 'bg-green-600' : 'bg-red-600'
+                              }`}
+                            >
+                              {pickOutcome ? 'WIN' : 'LOSS'}
+                            </Badge>
+                          )}
+                        </>
+                      )}
+
+                      {hasPick && picksArePrivate && (
+                        <Badge variant="outline" className="text-xs px-2 py-0.5">
+                          Picked
+                        </Badge>
+                      )}
+                    </div>
                   </div>
                 )
               })}
