@@ -515,6 +515,21 @@ export function CurrentWeekPicker({
           </p>
         </CardHeader>
         <CardContent className="pt-2">
+          {/* Lock Status Legend */}
+          {availableGames.some(game => {
+            const now = new Date()
+            const gameTime = new Date(game.game_time)
+            return gameTime <= now
+          }) && (
+            <Alert className="mb-4 border-orange-600 bg-orange-900/20">
+              <Lock className="h-4 w-4 text-orange-400" />
+              <AlertDescription className="text-orange-300">
+                <strong>Game Locked:</strong> Games that have started or finished are locked and cannot be picked.
+                You can only pick teams whose games haven&apos;t started yet.
+              </AlertDescription>
+            </Alert>
+          )}
+
           <div className="grid grid-cols-1 gap-2 sm:gap-3">
             {availableGames.map(game => {
               const homeAvailable = !usedTeamIds.includes(game.home_team_id)
@@ -525,8 +540,14 @@ export function CurrentWeekPicker({
               const homeWon = gameCompleted && (game.home_score ?? 0) > (game.away_score ?? 0)
               const awayWon = gameCompleted && (game.away_score ?? 0) > (game.home_score ?? 0)
 
+              // Check if game has started (either in progress or completed)
+              const now = new Date()
+              const gameTime = new Date(game.game_time)
+              const gameStarted = gameTime <= now
+              const gameInProgress = gameStarted && !gameCompleted
+
               return (
-                <Card key={game.id} className={`overflow-hidden ${gameCompleted ? 'opacity-95' : ''}`}>
+                <Card key={game.id} className={`overflow-hidden ${gameStarted ? 'opacity-95' : ''}`}>
                   <div className="p-3 space-y-2">
                     <div className="text-xs text-muted-foreground flex items-center gap-1">
                       {gameCompleted ? (
@@ -535,6 +556,14 @@ export function CurrentWeekPicker({
                           <span className="font-semibold">
                             {game.away_team.key} {game.away_score} - {game.home_team.key} {game.home_score}
                           </span>
+                        </>
+                      ) : gameInProgress ? (
+                        <>
+                          <Badge variant="default" className="text-xs bg-red-600">IN PROGRESS</Badge>
+                          <span className="font-semibold">
+                            {game.away_team.key} {game.away_score ?? 0} - {game.home_team.key} {game.home_score ?? 0}
+                          </span>
+                          {game.game_status && <span className="text-xs">• {game.game_status}</span>}
                         </>
                       ) : (
                         <>
@@ -617,24 +646,38 @@ export function CurrentWeekPicker({
                     <div className="flex items-center gap-2 sm:gap-4">
                       {/* Away Team */}
                       <button
-                        onClick={() => awayAvailable && !gameCompleted && handleTeamSelect(game.away_team_id, game.id)}
-                        disabled={!awayAvailable || !!currentPick || gameCompleted}
-                        title={gameCompleted ? 'Game has already been played' : !awayAvailable ? `${game.away_team.city} ${game.away_team.name} was already used in a previous week` : `Select ${game.away_team.city} ${game.away_team.name}`}
+                        onClick={() => awayAvailable && !gameStarted && handleTeamSelect(game.away_team_id, game.id)}
+                        disabled={!awayAvailable || !!currentPick || gameStarted}
+                        title={
+                          gameInProgress ? 'Game is in progress - picks are locked' :
+                          gameCompleted ? 'Game has already been played' :
+                          !awayAvailable ? `${game.away_team.city} ${game.away_team.name} was already used in a previous week` :
+                          `Select ${game.away_team.city} ${game.away_team.name}`
+                        }
                         className={`flex-1 p-3 sm:p-4 rounded-lg border transition-all min-h-[100px] sm:min-h-[120px] relative ${
-                          gameCompleted
-                            ? awayWon 
-                              ? 'bg-green-500/10 border-green-500/30 hover:bg-green-500/15'
-                              : 'bg-muted/50 border-border'
-                            : !awayAvailable 
-                            ? 'opacity-50 cursor-not-allowed bg-muted border-red-300' 
+                          gameStarted
+                            ? awayWon
+                              ? 'bg-green-500/10 border-green-500/30 hover:bg-green-500/15 cursor-not-allowed'
+                              : gameInProgress
+                              ? 'bg-orange-500/10 border-orange-500/30 cursor-not-allowed opacity-75'
+                              : 'bg-muted/50 border-border cursor-not-allowed'
+                            : !awayAvailable
+                            ? 'opacity-50 cursor-not-allowed bg-muted border-red-300'
                             : selectedTeamId === game.away_team_id
                             ? 'border-primary bg-primary/10 ring-2 ring-primary'
                             : 'hover:bg-accent cursor-pointer'
                         }`}
                       >
-                        {!awayAvailable && !gameCompleted && (
+                        {!awayAvailable && !gameStarted && (
                           <div className="absolute inset-0 bg-red-500/20 rounded-lg flex items-center justify-center">
                             <div className="bg-red-600 text-white rounded-full p-2">
+                              <Lock className="h-4 w-4" />
+                            </div>
+                          </div>
+                        )}
+                        {gameInProgress && (
+                          <div className="absolute inset-0 bg-orange-500/20 rounded-lg flex items-center justify-center">
+                            <div className="bg-orange-600 text-white rounded-full p-2">
                               <Lock className="h-4 w-4" />
                             </div>
                           </div>
@@ -704,24 +747,38 @@ export function CurrentWeekPicker({
 
                       {/* Home Team */}
                       <button
-                        onClick={() => homeAvailable && !gameCompleted && handleTeamSelect(game.home_team_id, game.id)}
-                        disabled={!homeAvailable || !!currentPick || gameCompleted}
-                        title={gameCompleted ? 'Game has already been played' : !homeAvailable ? `${game.home_team.city} ${game.home_team.name} was already used in a previous week` : `Select ${game.home_team.city} ${game.home_team.name}`}
+                        onClick={() => homeAvailable && !gameStarted && handleTeamSelect(game.home_team_id, game.id)}
+                        disabled={!homeAvailable || !!currentPick || gameStarted}
+                        title={
+                          gameInProgress ? 'Game is in progress - picks are locked' :
+                          gameCompleted ? 'Game has already been played' :
+                          !homeAvailable ? `${game.home_team.city} ${game.home_team.name} was already used in a previous week` :
+                          `Select ${game.home_team.city} ${game.home_team.name}`
+                        }
                         className={`flex-1 p-3 sm:p-4 rounded-lg border transition-all min-h-[100px] sm:min-h-[120px] relative ${
-                          gameCompleted
-                            ? homeWon 
-                              ? 'bg-green-500/10 border-green-500/30 hover:bg-green-500/15'
-                              : 'bg-muted/50 border-border'
-                            : !homeAvailable 
-                            ? 'opacity-50 cursor-not-allowed bg-muted border-red-300' 
+                          gameStarted
+                            ? homeWon
+                              ? 'bg-green-500/10 border-green-500/30 hover:bg-green-500/15 cursor-not-allowed'
+                              : gameInProgress
+                              ? 'bg-orange-500/10 border-orange-500/30 cursor-not-allowed opacity-75'
+                              : 'bg-muted/50 border-border cursor-not-allowed'
+                            : !homeAvailable
+                            ? 'opacity-50 cursor-not-allowed bg-muted border-red-300'
                             : selectedTeamId === game.home_team_id
                             ? 'border-primary bg-primary/10 ring-2 ring-primary'
                             : 'hover:bg-accent cursor-pointer'
                         }`}
                       >
-                        {!homeAvailable && !gameCompleted && (
+                        {!homeAvailable && !gameStarted && (
                           <div className="absolute inset-0 bg-red-500/20 rounded-lg flex items-center justify-center">
                             <div className="bg-red-600 text-white rounded-full p-2">
+                              <Lock className="h-4 w-4" />
+                            </div>
+                          </div>
+                        )}
+                        {gameInProgress && (
+                          <div className="absolute inset-0 bg-orange-500/20 rounded-lg flex items-center justify-center">
+                            <div className="bg-orange-600 text-white rounded-full p-2">
                               <Lock className="h-4 w-4" />
                             </div>
                           </div>
