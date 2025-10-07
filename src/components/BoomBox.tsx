@@ -347,7 +347,7 @@ export default function BoomBox() {
   }
 
   return (
-    <div className="fixed top-4 right-4 sm:bottom-4 sm:top-auto z-40">
+    <div className="fixed top-4 right-4 sm:bottom-4 sm:top-auto z-40" data-boombox>
       {/* Audio Element */}
       <audio
         ref={audioRef}

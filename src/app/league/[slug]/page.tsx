@@ -614,7 +614,7 @@ export default function LeaguePage({
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => window.location.href = `/league/${resolvedParams.slug}/recap/week${currentWeek - 1}`}
+                onClick={() => window.location.href = `/league/${resolvedParams.slug}/recap/${currentWeek - 1}`}
                 className="flex items-center gap-1 text-xs px-2 py-1 bg-purple-600/20 border-purple-500/50 hover:bg-purple-600/30"
               >
                 <CustomIcon name="music" fallback="🎵" alt="Recap" size="sm" />
