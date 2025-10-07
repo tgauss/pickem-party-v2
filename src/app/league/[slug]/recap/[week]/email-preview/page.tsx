@@ -230,19 +230,19 @@ function generateEmailHTML(data: {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Week ${data.week} Recap - ${data.leagueName}</title>
 </head>
-<body style="margin: 0; padding: 0; font-family: Arial, Helvetica, sans-serif; background-color: #1a1a1a; color: #ffffff;">
-  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #1a1a1a;">
+<body style="margin: 0; padding: 0; font-family: Arial, Helvetica, sans-serif; background-color: #0B0E0C; color: #E6E8EA;">
+  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #0B0E0C;">
     <tr>
       <td align="center" style="padding: 20px 0;">
-        <table width="600" cellpadding="0" cellspacing="0" border="0" style="max-width: 600px; background-color: #262626; border-radius: 8px; overflow: hidden;">
+        <table width="600" cellpadding="0" cellspacing="0" border="0" style="max-width: 600px; background-color: #171A17; border-radius: 8px; overflow: hidden; border: 2px solid #2B2A28;">
 
           <!-- Header -->
           <tr>
-            <td align="center" style="padding: 30px 20px; background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);">
-              <h1 style="margin: 0; font-size: 32px; font-weight: bold; color: #ffffff;">
+            <td align="center" style="padding: 30px 20px; background-color: #171A17; border-bottom: 3px solid #B0CA47;">
+              <h1 style="margin: 0; font-size: 32px; font-weight: bold; color: #B0CA47;">
                 🏈 WEEK ${data.week} RECAP
               </h1>
-              <p style="margin: 10px 0 0 0; font-size: 18px; color: #f3e8ff;">
+              <p style="margin: 10px 0 0 0; font-size: 18px; color: #E6E8EA;">
                 ${data.leagueName}
               </p>
             </td>
@@ -250,14 +250,14 @@ function generateEmailHTML(data: {
 
           <!-- Audio Player CTA -->
           <tr>
-            <td style="padding: 20px; background-color: #7c3aed20; border-bottom: 2px solid #7c3aed;">
+            <td style="padding: 20px; background-color: #171A17; border-bottom: 2px solid #2B2A28;">
               <table width="100%" cellpadding="0" cellspacing="0" border="0">
                 <tr>
                   <td align="center">
-                    <p style="margin: 0 0 15px 0; font-size: 18px; font-weight: bold; color: #a855f7;">
+                    <p style="margin: 0 0 15px 0; font-size: 18px; font-weight: bold; color: #B0CA47;">
                       🎵 Listen to This Week's Recap Song!
                     </p>
-                    <a href="${data.recapUrl}" style="display: inline-block; padding: 12px 30px; background-color: #7c3aed; color: #ffffff; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 16px;">
+                    <a href="${data.recapUrl}" style="display: inline-block; padding: 12px 30px; background-color: #B0CA47; color: #0B0E0C; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 16px;">
                       ▶ Play Week ${data.week} Recap
                     </a>
                   </td>
@@ -271,23 +271,27 @@ function generateEmailHTML(data: {
             <td style="padding: 20px;">
               <table width="100%" cellpadding="10" cellspacing="0" border="0">
                 <tr>
-                  <td width="50%" style="padding: 15px; background-color: #166534; border-radius: 8px; text-align: center;">
+                  <td width="50%" style="padding: 15px; background-color: #1a2e1a; border-radius: 8px; text-align: center; border: 2px solid #166534;">
+                    <div style="font-size: 24px; margin-bottom: 8px;">✅</div>
                     <div style="font-size: 32px; font-weight: bold; color: #22c55e;">${data.wins}</div>
                     <div style="font-size: 14px; color: #86efac; margin-top: 5px;">Correct Picks</div>
                   </td>
-                  <td width="50%" style="padding: 15px; background-color: #991b1b; border-radius: 8px; text-align: center;">
+                  <td width="50%" style="padding: 15px; background-color: #2e1a1a; border-radius: 8px; text-align: center; border: 2px solid #991b1b;">
+                    <div style="font-size: 24px; margin-bottom: 8px;">❌</div>
                     <div style="font-size: 32px; font-weight: bold; color: #ef4444;">${data.losses}</div>
                     <div style="font-size: 14px; color: #fca5a5; margin-top: 5px;">Wrong Picks</div>
                   </td>
                 </tr>
                 <tr>
-                  <td width="50%" style="padding: 15px; background-color: #581c87; border-radius: 8px; text-align: center;">
-                    <div style="font-size: 32px; font-weight: bold; color: #a855f7;">${data.activeMembers}</div>
-                    <div style="font-size: 14px; color: #d8b4fe; margin-top: 5px;">Still Alive</div>
+                  <td width="50%" style="padding: 15px; background-color: #1a2e1a; border-radius: 8px; text-align: center; border: 2px solid #B0CA47;">
+                    <div style="font-size: 24px; margin-bottom: 8px;">💚</div>
+                    <div style="font-size: 32px; font-weight: bold; color: #B0CA47;">${data.activeMembers}</div>
+                    <div style="font-size: 14px; color: #C3D775; margin-top: 5px;">Still Alive</div>
                   </td>
-                  <td width="50%" style="padding: 15px; background-color: #9a3412; border-radius: 8px; text-align: center;">
-                    <div style="font-size: 32px; font-weight: bold; color: #fb923c;">${data.eliminated}</div>
-                    <div style="font-size: 14px; color: #fed7aa; margin-top: 5px;">Eliminated</div>
+                  <td width="50%" style="padding: 15px; background-color: #2e1e1a; border-radius: 8px; text-align: center; border: 2px solid #C38B5A;">
+                    <div style="font-size: 24px; margin-bottom: 8px;">💀</div>
+                    <div style="font-size: 32px; font-weight: bold; color: #C38B5A;">${data.eliminated}</div>
+                    <div style="font-size: 14px; color: #D2A883; margin-top: 5px;">Eliminated</div>
                   </td>
                 </tr>
               </table>
@@ -297,11 +301,11 @@ function generateEmailHTML(data: {
           <!-- Main Content -->
           <tr>
             <td style="padding: 20px; line-height: 1.6;">
-              <h2 style="color: #a855f7; font-size: 24px; margin: 0 0 15px 0;">
+              <h2 style="color: #B0CA47; font-size: 24px; margin: 0 0 15px 0;">
                 Week ${data.week}: Chaos, Upsets & Graveyard Vibes
               </h2>
 
-              <p style="font-size: 16px; line-height: 1.8; margin: 0 0 20px 0; color: #e5e5e5;">
+              <p style="font-size: 16px; line-height: 1.8; margin: 0 0 20px 0; color: #E6E8EA;">
                 Week 5 of the NFL season brought more chaos than a Monday night tailgate, and our survivor pool took a brutal hit.
                 With a 47% win rate, ${data.losses} losses, and two no-shows, the graveyard's getting crowded.
                 Let's break down the carnage with a little sass and a lot of stats—because this pool's a battlefield, and some of y'all just got smoked!
@@ -355,13 +359,13 @@ function generateEmailHTML(data: {
               </table>
 
               <!-- Current Standings -->
-              <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin: 20px 0; background-color: #7c3aed20; border-radius: 8px;">
+              <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin: 20px 0; background-color: rgba(176, 202, 71, 0.12); border-radius: 8px; border: 2px solid #B0CA47;">
                 <tr>
                   <td style="padding: 15px;">
-                    <h3 style="color: #a855f7; font-size: 20px; margin: 0 0 15px 0;">📊 Current Standings</h3>
+                    <h3 style="color: #B0CA47; font-size: 20px; margin: 0 0 15px 0;">📊 Current Standings</h3>
                     <p style="margin: 0; font-size: 14px; line-height: 1.8;">
-                      <strong style="color: #22c55e;">💪 Safe (2 Lives):</strong> ${data.twoLives} players<br>
-                      <strong style="color: #fb923c;">⚠️ On the Bubble (1 Life):</strong> ${data.oneLife} players
+                      <strong style="color: #22c55e;">💚 Safe (2 Lives):</strong> ${data.twoLives} players<br>
+                      <strong style="color: #C38B5A;">⚠️ On the Bubble (1 Life):</strong> ${data.oneLife} players
                     </p>
                   </td>
                 </tr>
@@ -390,8 +394,8 @@ function generateEmailHTML(data: {
 
           <!-- CTA Button -->
           <tr>
-            <td align="center" style="padding: 30px 20px; background-color: #1a1a1a;">
-              <a href="${data.recapUrl}" style="display: inline-block; padding: 15px 40px; background-color: #7c3aed; color: #ffffff; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 18px;">
+            <td align="center" style="padding: 30px 20px; background-color: #0B0E0C; border-top: 2px solid #2B2A28;">
+              <a href="${data.recapUrl}" style="display: inline-block; padding: 15px 40px; background-color: #B0CA47; color: #0B0E0C; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 18px;">
                 View Full Recap & Listen to Song
               </a>
             </td>
@@ -399,11 +403,11 @@ function generateEmailHTML(data: {
 
           <!-- Footer -->
           <tr>
-            <td style="padding: 20px; text-align: center; background-color: #0a0a0a; border-top: 1px solid #404040;">
-              <p style="margin: 0 0 10px 0; font-size: 14px; color: #888888;">
+            <td style="padding: 20px; text-align: center; background-color: #0B0E0C; border-top: 1px solid #2B2A28;">
+              <p style="margin: 0 0 10px 0; font-size: 14px; color: #8B949E;">
                 — The Pick'em Party Crew
               </p>
-              <p style="margin: 0; font-size: 12px; color: #666666;">
+              <p style="margin: 0; font-size: 12px; color: #8B949E;">
                 You're receiving this because you're a member of ${data.leagueName}
               </p>
             </td>
