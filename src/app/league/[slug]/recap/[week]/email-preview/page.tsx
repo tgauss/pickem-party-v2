@@ -90,12 +90,29 @@ export default function EmailPreviewPage({ params }: EmailPreviewProps) {
         users: Array.isArray(member.users) ? member.users[0] : member.users
       }))
 
-      const wins = picks.filter((p: any) => p.is_correct === true)
-      const losses = picks.filter((p: any) => p.is_correct === false)
-      const eliminated = members.filter((m: any) => m.is_eliminated && m.eliminated_week === week)
-      const activeMembers = members.filter((m: any) => !m.is_eliminated)
-      const twoLives = activeMembers.filter((m: any) => m.lives_remaining === 2)
-      const oneLife = activeMembers.filter((m: any) => m.lives_remaining === 1)
+      interface Pick {
+        id: string
+        user_id: string
+        team_id: number
+        is_correct: boolean | null
+        users: { id: string; username: string; display_name: string }
+        teams: { team_id: number; key: string; city: string; name: string }
+      }
+
+      interface Member {
+        user_id: string
+        lives_remaining: number
+        is_eliminated: boolean
+        eliminated_week: number | null
+        users: { id: string; username: string; display_name: string }
+      }
+
+      const wins = picks.filter((p: Pick) => p.is_correct === true)
+      const losses = picks.filter((p: Pick) => p.is_correct === false)
+      const eliminated = members.filter((m: Member) => m.is_eliminated && m.eliminated_week === week)
+      const activeMembers = members.filter((m: Member) => !m.is_eliminated)
+      const twoLives = activeMembers.filter((m: Member) => m.lives_remaining === 2)
+      const oneLife = activeMembers.filter((m: Member) => m.lives_remaining === 1)
 
       const recapUrl = `${window.location.origin}/league/${resolvedParams.slug}/recap/${week}`
 
@@ -185,6 +202,14 @@ export default function EmailPreviewPage({ params }: EmailPreviewProps) {
   )
 }
 
+interface EliminatedPlayer {
+  user_id: string
+  lives_remaining: number
+  is_eliminated: boolean
+  eliminated_week: number | null
+  users: { id: string; username: string; display_name: string }
+}
+
 function generateEmailHTML(data: {
   week: number
   leagueName: string
@@ -194,7 +219,7 @@ function generateEmailHTML(data: {
   activeMembers: number
   twoLives: number
   oneLife: number
-  eliminatedPlayers: any[]
+  eliminatedPlayers: EliminatedPlayer[]
   recapUrl: string
 }) {
   return `
