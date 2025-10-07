@@ -81,6 +81,8 @@ export default function WeeklyRecapPage({ params }: RecapPageProps) {
     }
   }, [])
 
+  // Public page - no auth required
+
   useEffect(() => {
     const fetchRecapData = async () => {
       const supabase = createClient()
