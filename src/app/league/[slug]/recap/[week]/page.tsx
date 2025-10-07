@@ -47,11 +47,18 @@ interface Member {
   users: User
 }
 
+interface League {
+  id: string
+  name: string
+  slug: string
+  season_year: number
+}
+
 export default function WeeklyRecapPage({ params }: RecapPageProps) {
   const resolvedParams = use(params)
   const week = parseInt(resolvedParams.week)
 
-  const [league, setLeague] = useState<any>(null)
+  const [league, setLeague] = useState<League | null>(null)
   const [picks, setPicks] = useState<Pick[]>([])
   const [members, setMembers] = useState<Member[]>([])
   const [loading, setLoading] = useState(true)
@@ -199,9 +206,9 @@ export default function WeeklyRecapPage({ params }: RecapPageProps) {
                 <div>
                   <div className="flex items-center gap-2 mb-1">
                     <Volume2 className="h-5 w-5" />
-                    <h3 className="text-xl font-bold">Hear This Week's Recap Song!</h3>
+                    <h3 className="text-xl font-bold">Hear This Week&apos;s Recap Song!</h3>
                   </div>
-                  <p className="text-sm text-white/90">Week {week} Wrap - "Gone Too Soon (In the Pool)"</p>
+                  <p className="text-sm text-white/90">Week {week} Wrap - &quot;Gone Too Soon (In the Pool)&quot;</p>
                 </div>
               </div>
             </div>
@@ -243,7 +250,7 @@ export default function WeeklyRecapPage({ params }: RecapPageProps) {
                   ))}.
                   {noPicks.some(np => np.is_eliminated && np.eliminated_week === week) ?
                     ' Some fell to bad picks, others to the cruel fate of inaction.' :
-                    ' Their picks proved fatal, and they\'ve been laid to rest alongside the other fallen competitors.'}
+                    ' Their picks proved fatal, and they&apos;ve been laid to rest alongside the other fallen competitors.'}
                 </p>
               )}
 
@@ -254,7 +261,7 @@ export default function WeeklyRecapPage({ params }: RecapPageProps) {
               </p>
 
               <p className="text-gray-400 italic border-l-4 border-purple-500 pl-4">
-                "The pool is getting smaller, and the stakes have never been higher. One wrong move, and you're done."
+                &quot;The pool is getting smaller, and the stakes have never been higher. One wrong move, and you&apos;re done.&quot;
                 - Anonymous Survivor
               </p>
             </div>
@@ -388,7 +395,7 @@ export default function WeeklyRecapPage({ params }: RecapPageProps) {
                       <div className="text-2xl">⏰</div>
                       <div>
                         <div className="font-bold text-white">{member.users.display_name}</div>
-                        <div className="text-sm text-yellow-300">Didn't submit a pick - Auto-loss</div>
+                        <div className="text-sm text-yellow-300">Didn&apos;t submit a pick - Auto-loss</div>
                       </div>
                     </div>
                     <Badge variant={member.is_eliminated ? "destructive" : member.lives_remaining === 1 ? "destructive" : "secondary"}>
