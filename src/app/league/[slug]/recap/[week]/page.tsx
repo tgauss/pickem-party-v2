@@ -103,7 +103,17 @@ export default function WeeklyRecapPage({ params }: RecapPageProps) {
           .eq('league_id', leagueData.id)
           .eq('week', week)
 
-        setPicks(picksData || [])
+        // Transform picks data to match interface
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const transformedPicks = (picksData || []).map((pick: any) => ({
+          id: pick.id,
+          user_id: pick.user_id,
+          team_id: pick.team_id,
+          is_correct: pick.is_correct,
+          users: Array.isArray(pick.users) ? pick.users[0] : pick.users,
+          teams: Array.isArray(pick.teams) ? pick.teams[0] : pick.teams
+        }))
+        setPicks(transformedPicks as Pick[])
 
         // Get member status
         const { data: membersData } = await supabase
@@ -121,7 +131,16 @@ export default function WeeklyRecapPage({ params }: RecapPageProps) {
           `)
           .eq('league_id', leagueData.id)
 
-        setMembers(membersData || [])
+        // Transform members data to match interface
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const transformedMembers = (membersData || []).map((member: any) => ({
+          user_id: member.user_id,
+          lives_remaining: member.lives_remaining,
+          is_eliminated: member.is_eliminated,
+          eliminated_week: member.eliminated_week,
+          users: Array.isArray(member.users) ? member.users[0] : member.users
+        }))
+        setMembers(transformedMembers as Member[])
       }
 
       setLoading(false)
