@@ -170,6 +170,43 @@ export default function EmailPreviewPage({ params }: EmailPreviewProps) {
     }
   }
 
+  const sendToAllMembers = async () => {
+    const confirmed = window.confirm(
+      `Are you sure you want to send the Week ${week} recap email to ALL league members? This cannot be undone.`
+    )
+
+    if (!confirmed) return
+
+    setSending(true)
+    setSendStatus(null)
+
+    try {
+      const response = await fetch('/api/admin/send-recap-email', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          leagueSlug: resolvedParams.slug,
+          week: week
+          // No testEmail = send to all members
+        })
+      })
+
+      const result = await response.json()
+
+      if (result.success) {
+        setSendStatus(`✅ ${result.message}`)
+      } else {
+        setSendStatus(`❌ Error: ${result.error}`)
+      }
+    } catch (error) {
+      setSendStatus(`❌ Error: ${error instanceof Error ? error.message : 'Unknown error'}`)
+    } finally {
+      setSending(false)
+    }
+  }
+
   if (loading) {
     return (
       <div style={{ padding: '40px', textAlign: 'center', fontFamily: 'Arial, sans-serif' }}>
@@ -186,6 +223,22 @@ export default function EmailPreviewPage({ params }: EmailPreviewProps) {
           This is how the Week {week} recap email will look when sent to members.
         </p>
         <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap' }}>
+          <button
+            onClick={sendToAllMembers}
+            disabled={sending}
+            style={{
+              padding: '12px 24px',
+              backgroundColor: sending ? '#6b7280' : '#dc2626',
+              color: 'white',
+              border: 'none',
+              borderRadius: '6px',
+              cursor: sending ? 'not-allowed' : 'pointer',
+              fontSize: '16px',
+              fontWeight: '700'
+            }}
+          >
+            {sending ? 'Sending...' : '📨 Send to All Members'}
+          </button>
           <button
             onClick={sendTestEmail}
             disabled={sending}
