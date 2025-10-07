@@ -610,6 +610,17 @@ export default function LeaguePage({
               <CustomIcon name="calendar" fallback="📅" alt="Schedule" size="sm" />
               View Schedule
             </Button>
+            {currentWeek > 1 && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => window.location.href = `/league/${resolvedParams.slug}/recap/week${currentWeek - 1}`}
+                className="flex items-center gap-1 text-xs px-2 py-1 bg-purple-600/20 border-purple-500/50 hover:bg-purple-600/30"
+              >
+                <CustomIcon name="music" fallback="🎵" alt="Recap" size="sm" />
+                Week {currentWeek - 1} Recap
+              </Button>
+            )}
           </div>
         </div>
 
