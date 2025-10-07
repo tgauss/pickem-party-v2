@@ -290,13 +290,59 @@ function generateEmailHTML(data: {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="dark">
+  <meta name="supported-color-schemes" content="dark">
   <title>Week ${data.week} Recap - ${data.leagueName}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+  <style type="text/css">
+    @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+    /* Force dark mode */
+    :root {
+      color-scheme: dark;
+      supported-color-schemes: dark;
+    }
+
+    body {
+      background-color: #0B0E0C !important;
+      color: #E6E8EA !important;
+    }
+
+    /* Prevent Gmail from changing background */
+    .body-wrap {
+      background-color: #0B0E0C !important;
+    }
+
+    /* Press Start 2P for headings */
+    .pixel-font {
+      font-family: 'Press Start 2P', monospace, Arial, Helvetica, sans-serif !important;
+      line-height: 1.4 !important;
+    }
+
+    /* Gmail dark mode fixes */
+    @media (prefers-color-scheme: dark) {
+      .email-container {
+        background-color: #171A17 !important;
+      }
+      .dark-bg {
+        background-color: #0B0E0C !important;
+      }
+      .card-bg {
+        background-color: #171A17 !important;
+      }
+    }
+  </style>
 </head>
-<body style="margin: 0; padding: 0; font-family: Arial, Helvetica, sans-serif; background-color: #0B0E0C; color: #E6E8EA;">
-  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #0B0E0C;">
+<body style="margin: 0 !important; padding: 0 !important; font-family: Arial, Helvetica, sans-serif !important; background-color: #0B0E0C !important; color: #E6E8EA !important;">
+  <!-- 100% background wrapper -->
+  <table width="100%" cellpadding="0" cellspacing="0" border="0" class="body-wrap" style="background-color: #0B0E0C !important; margin: 0 !important; padding: 0 !important;">
     <tr>
-      <td align="center" style="padding: 20px 0;">
-        <table width="600" cellpadding="0" cellspacing="0" border="0" style="max-width: 600px; background-color: #171A17; border-radius: 8px; overflow: hidden; border: 2px solid #2B2A28;">
+      <td align="center" style="padding: 20px 10px !important; background-color: #0B0E0C !important;">
+        <!-- Main container -->
+        <table width="600" cellpadding="0" cellspacing="0" border="0" class="email-container" style="max-width: 600px !important; background-color: #171A17 !important; border-radius: 8px !important; border: 2px solid #2B2A28 !important;"
+          role="presentation">
 
           <!-- Header -->
           <tr>
