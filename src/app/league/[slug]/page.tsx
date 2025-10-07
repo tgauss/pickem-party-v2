@@ -220,13 +220,13 @@ export default function LeaguePage({
       }
       
       // Calculate current NFL week
-      // Week 4 completed, force Week 5 as current
+      // Week 5 completed (Oct 6 MNF final), force Week 6 as current
       const now = new Date()
-      let calculatedWeek = 5 // Week 5 is now active for picks
+      let calculatedWeek = 6 // Week 6 is now active for picks
 
-      // After Tuesday Oct 7, continue with normal week calculation
-      const week5Start = new Date('2025-10-07T00:00:00')
-      if (now >= week5Start) {
+      // After Tuesday Oct 14, continue with normal week calculation
+      const week6Start = new Date('2025-10-14T00:00:00')
+      if (now >= week6Start) {
         const seasonStart = new Date('2025-09-02T00:00:00')
         const daysSinceStart = Math.floor((now.getTime() - seasonStart.getTime()) / (24 * 60 * 60 * 1000))
         calculatedWeek = Math.min(Math.floor(daysSinceStart / 7) + 1, 18)
@@ -235,7 +235,7 @@ export default function LeaguePage({
       console.log('Week calculation:', {
         now: now.toISOString(),
         calculatedWeek,
-        note: 'Week 4 completed - Week 5 forced as current'
+        note: 'Week 5 completed - Week 6 forced as current'
       })
       setCurrentWeek(calculatedWeek)
       setSelectedWeek(calculatedWeek)
