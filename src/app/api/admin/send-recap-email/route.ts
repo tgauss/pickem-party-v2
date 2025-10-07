@@ -1,267 +1,210 @@
-'use client'
+import { NextResponse } from 'next/server'
+import { createServerSupabaseClient } from '@/lib/supabase/server'
+import { ServerClient } from 'postmark'
 
-import { useState, useEffect, use } from 'react'
-import { createClient } from '@/lib/supabase/client'
+const postmark = new ServerClient(process.env.POSTMARK_API_TOKEN!)
 
-interface EmailPreviewProps {
-  params: Promise<{
-    slug: string
-    week: string
-  }>
-}
+export async function POST(request: Request) {
+  try {
+    const body = await request.json()
+    const { leagueSlug, week, testEmail } = body
 
-export default function EmailPreviewPage({ params }: EmailPreviewProps) {
-  const resolvedParams = use(params)
-  const week = parseInt(resolvedParams.week.replace('week', ''))
-  const [emailHtml, setEmailHtml] = useState('')
-  const [loading, setLoading] = useState(true)
-  const [sending, setSending] = useState(false)
-  const [sendStatus, setSendStatus] = useState<string | null>(null)
+    const supabase = await createServerSupabaseClient()
 
-  useEffect(() => {
-    const fetchRecapData = async () => {
-      const supabase = createClient()
+    // Get league
+    const { data: league } = await supabase
+      .from('leagues')
+      .select('*')
+      .eq('slug', leagueSlug)
+      .single()
 
-      // Get league
-      const { data: leagueData } = await supabase
-        .from('leagues')
-        .select('*')
-        .eq('slug', resolvedParams.slug)
-        .single()
+    if (!league) {
+      return NextResponse.json({
+        success: false,
+        error: 'League not found'
+      }, { status: 404 })
+    }
 
-      if (!leagueData) {
-        setLoading(false)
-        return
-      }
-
-      // Get picks for this week
-      const { data: picksData } = await supabase
-        .from('picks')
-        .select(`
+    // Get picks for this week
+    const { data: picksData } = await supabase
+      .from('picks')
+      .select(`
+        id,
+        user_id,
+        team_id,
+        is_correct,
+        users:user_id (
           id,
-          user_id,
+          username,
+          display_name,
+          email
+        ),
+        teams:team_id (
           team_id,
-          is_correct,
-          users:user_id (
-            id,
-            username,
-            display_name
-          ),
-          teams:team_id (
-            team_id,
-            key,
-            city,
-            name
-          )
-        `)
-        .eq('league_id', leagueData.id)
-        .eq('week', week)
+          key,
+          city,
+          name
+        )
+      `)
+      .eq('league_id', league.id)
+      .eq('week', week)
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const picks = (picksData || []).map((pick: any) => ({
-        id: pick.id,
-        user_id: pick.user_id,
-        team_id: pick.team_id,
-        is_correct: pick.is_correct,
-        users: Array.isArray(pick.users) ? pick.users[0] : pick.users,
-        teams: Array.isArray(pick.teams) ? pick.teams[0] : pick.teams
-      }))
-
-      // Get member status
-      const { data: membersData } = await supabase
-        .from('league_members')
-        .select(`
-          user_id,
-          lives_remaining,
-          is_eliminated,
-          eliminated_week,
-          users:user_id (
-            id,
-            username,
-            display_name
-          )
-        `)
-        .eq('league_id', leagueData.id)
-
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const members = (membersData || []).map((member: any) => ({
-        user_id: member.user_id,
-        lives_remaining: member.lives_remaining,
-        is_eliminated: member.is_eliminated,
-        eliminated_week: member.eliminated_week,
-        users: Array.isArray(member.users) ? member.users[0] : member.users
-      }))
-
-      interface Pick {
-        id: string
-        user_id: string
-        team_id: number
-        is_correct: boolean | null
-        users: { id: string; username: string; display_name: string }
-        teams: { team_id: number; key: string; city: string; name: string }
-      }
-
-      interface Member {
-        user_id: string
-        lives_remaining: number
-        is_eliminated: boolean
-        eliminated_week: number | null
-        users: { id: string; username: string; display_name: string }
-      }
-
-      const wins = picks.filter((p: Pick) => p.is_correct === true)
-      const losses = picks.filter((p: Pick) => p.is_correct === false)
-      const eliminated = members.filter((m: Member) => m.is_eliminated && m.eliminated_week === week)
-      const activeMembers = members.filter((m: Member) => !m.is_eliminated)
-      const twoLives = activeMembers.filter((m: Member) => m.lives_remaining === 2)
-      const oneLife = activeMembers.filter((m: Member) => m.lives_remaining === 1)
-
-      const recapUrl = `${window.location.origin}/league/${resolvedParams.slug}/recap/${week}`
-
-      // Generate email HTML
-      const html = generateEmailHTML({
-        week,
-        leagueName: leagueData.name,
-        wins: wins.length,
-        losses: losses.length,
-        eliminated: eliminated.length,
-        activeMembers: activeMembers.length,
-        twoLives: twoLives.length,
-        oneLife: oneLife.length,
-        eliminatedPlayers: eliminated,
-        recapUrl
-      })
-
-      setEmailHtml(html)
-      setLoading(false)
+    interface PickData {
+      id: string
+      user_id: string
+      team_id: number
+      is_correct: boolean | null
+      users: { id: string; username: string; display_name: string; email: string } | { id: string; username: string; display_name: string; email: string }[]
+      teams: { team_id: number; key: string; city: string; name: string } | { team_id: number; key: string; city: string; name: string }[]
     }
 
-    fetchRecapData()
-  }, [resolvedParams.slug, week])
+    const picks = (picksData || []).map((pick: PickData) => ({
+      id: pick.id,
+      user_id: pick.user_id,
+      team_id: pick.team_id,
+      is_correct: pick.is_correct,
+      users: Array.isArray(pick.users) ? pick.users[0] : pick.users,
+      teams: Array.isArray(pick.teams) ? pick.teams[0] : pick.teams
+    }))
 
-  const sendTestEmail = async () => {
-    setSending(true)
-    setSendStatus(null)
+    // Get member status
+    const { data: membersData } = await supabase
+      .from('league_members')
+      .select(`
+        user_id,
+        lives_remaining,
+        is_eliminated,
+        eliminated_week,
+        users:user_id (
+          id,
+          username,
+          display_name,
+          email
+        )
+      `)
+      .eq('league_id', league.id)
 
-    try {
-      const response = await fetch('/api/admin/send-recap-email', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          leagueSlug: resolvedParams.slug,
-          week: week,
-          testEmail: 'tgaussoin@gmail.com'
-        })
+    interface MemberData {
+      user_id: string
+      lives_remaining: number
+      is_eliminated: boolean
+      eliminated_week: number | null
+      users: { id: string; username: string; display_name: string; email: string } | { id: string; username: string; display_name: string; email: string }[]
+    }
+
+    const members = (membersData || []).map((member: MemberData) => ({
+      user_id: member.user_id,
+      lives_remaining: member.lives_remaining,
+      is_eliminated: member.is_eliminated,
+      eliminated_week: member.eliminated_week,
+      users: Array.isArray(member.users) ? member.users[0] : member.users
+    }))
+
+    interface Pick {
+      id: string
+      user_id: string
+      team_id: number
+      is_correct: boolean | null
+      users: { id: string; username: string; display_name: string; email: string }
+      teams: { team_id: number; key: string; city: string; name: string }
+    }
+
+    interface Member {
+      user_id: string
+      lives_remaining: number
+      is_eliminated: boolean
+      eliminated_week: number | null
+      users: { id: string; username: string; display_name: string; email: string }
+    }
+
+    const wins = picks.filter((p: Pick) => p.is_correct === true)
+    const losses = picks.filter((p: Pick) => p.is_correct === false)
+    const eliminated = members.filter((m: Member) => m.is_eliminated && m.eliminated_week === week)
+    const activeMembers = members.filter((m: Member) => !m.is_eliminated)
+    const twoLives = activeMembers.filter((m: Member) => m.lives_remaining === 2)
+    const oneLife = activeMembers.filter((m: Member) => m.lives_remaining === 1)
+
+    const recapUrl = `https://www.pickemparty.app/league/${leagueSlug}/recap/${week}`
+
+    // Generate email HTML
+    const emailHtml = generateRecapEmailHTML({
+      week,
+      leagueName: league.name,
+      wins: wins.length,
+      losses: losses.length,
+      eliminated: eliminated.length,
+      activeMembers: activeMembers.length,
+      twoLives: twoLives.length,
+      oneLife: oneLife.length,
+      eliminatedPlayers: eliminated,
+      recapUrl
+    })
+
+    // If test email, send to specified address
+    if (testEmail) {
+      const response = await postmark.sendEmail({
+        From: 'commish@pickemparty.app',
+        To: testEmail,
+        Subject: `[TEST] Week ${week} Recap - ${league.name}`,
+        HtmlBody: emailHtml,
+        TextBody: `This is a test of the Week ${week} recap email. View the full recap at ${recapUrl}`,
+        MessageStream: 'outbound',
+        TrackOpens: true
       })
 
-      const result = await response.json()
-
-      if (result.success) {
-        setSendStatus('✅ Test email sent successfully to tgaussoin@gmail.com!')
-      } else {
-        setSendStatus(`❌ Error: ${result.error}`)
-      }
-    } catch (error) {
-      setSendStatus(`❌ Error: ${error instanceof Error ? error.message : 'Unknown error'}`)
-    } finally {
-      setSending(false)
+      return NextResponse.json({
+        success: true,
+        message: `Test email sent to ${testEmail}`,
+        messageId: response.MessageID
+      })
     }
-  }
 
-  if (loading) {
-    return (
-      <div style={{ padding: '40px', textAlign: 'center', fontFamily: 'Arial, sans-serif' }}>
-        <p>Loading email preview...</p>
-      </div>
+    // Otherwise send to all members with emails
+    const recipientsWithEmail = members
+      .filter((m: Member) => m.users.email)
+      .map((m: Member) => ({
+        email: m.users.email,
+        name: m.users.display_name
+      }))
+
+    if (recipientsWithEmail.length === 0) {
+      return NextResponse.json({
+        success: false,
+        error: 'No members with email addresses found'
+      }, { status: 400 })
+    }
+
+    // Send to all recipients
+    const emailPromises = recipientsWithEmail.map(recipient =>
+      postmark.sendEmail({
+        From: 'commish@pickemparty.app',
+        To: recipient.email,
+        Subject: `Week ${week} Recap - ${league.name}`,
+        HtmlBody: emailHtml,
+        TextBody: `View the Week ${week} recap at ${recapUrl}`,
+        MessageStream: 'outbound',
+        TrackOpens: true
+      })
     )
-  }
 
-  return (
-    <div style={{ backgroundColor: '#f5f5f5', padding: '20px', minHeight: '100vh' }}>
-      <div style={{ maxWidth: '800px', margin: '0 auto', backgroundColor: 'white', padding: '20px', borderRadius: '8px', marginBottom: '20px' }}>
-        <h1 style={{ fontSize: '24px', marginBottom: '10px' }}>Email Preview</h1>
-        <p style={{ color: '#666', marginBottom: '20px' }}>
-          This is how the Week {week} recap email will look when sent to members.
-        </p>
-        <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap' }}>
-          <button
-            onClick={sendTestEmail}
-            disabled={sending}
-            style={{
-              padding: '10px 20px',
-              backgroundColor: sending ? '#6b7280' : '#B0CA47',
-              color: sending ? '#d1d5db' : '#0B0E0C',
-              border: 'none',
-              borderRadius: '6px',
-              cursor: sending ? 'not-allowed' : 'pointer',
-              fontSize: '14px',
-              fontWeight: '600'
-            }}
-          >
-            {sending ? 'Sending...' : '📧 Send Test to tgaussoin@gmail.com'}
-          </button>
-          <button
-            onClick={() => {
-              const blob = new Blob([emailHtml], { type: 'text/html' })
-              const url = URL.createObjectURL(blob)
-              const a = document.createElement('a')
-              a.href = url
-              a.download = `week-${week}-recap-email.html`
-              a.click()
-            }}
-            style={{
-              padding: '10px 20px',
-              backgroundColor: '#7c3aed',
-              color: 'white',
-              border: 'none',
-              borderRadius: '6px',
-              cursor: 'pointer',
-              fontSize: '14px',
-              fontWeight: '600'
-            }}
-          >
-            Download HTML
-          </button>
-          <button
-            onClick={() => {
-              navigator.clipboard.writeText(emailHtml)
-              alert('Email HTML copied to clipboard!')
-            }}
-            style={{
-              padding: '10px 20px',
-              backgroundColor: '#059669',
-              color: 'white',
-              border: 'none',
-              borderRadius: '6px',
-              cursor: 'pointer',
-              fontSize: '14px',
-              fontWeight: '600'
-            }}
-          >
-            Copy HTML
-          </button>
-        </div>
-        {sendStatus && (
-          <div style={{
-            padding: '12px',
-            marginBottom: '20px',
-            borderRadius: '6px',
-            backgroundColor: sendStatus.includes('✅') ? '#d1fae5' : '#fee2e2',
-            color: sendStatus.includes('✅') ? '#065f46' : '#991b1b',
-            fontSize: '14px',
-            fontWeight: '500'
-          }}>
-            {sendStatus}
-          </div>
-        )}
-      </div>
-      <div style={{ maxWidth: '800px', margin: '0 auto' }}>
-        <div dangerouslySetInnerHTML={{ __html: emailHtml }} />
-      </div>
-    </div>
-  )
+    const results = await Promise.allSettled(emailPromises)
+    const successful = results.filter(r => r.status === 'fulfilled').length
+    const failed = results.length - successful
+
+    return NextResponse.json({
+      success: true,
+      message: `Sent ${successful}/${results.length} emails successfully`,
+      details: { successful, failed, total: results.length }
+    })
+
+  } catch (error) {
+    console.error('Recap email sending error:', error)
+    return NextResponse.json({
+      success: false,
+      error: 'Failed to send recap email',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    }, { status: 500 })
+  }
 }
 
 interface EliminatedPlayer {
@@ -269,10 +212,10 @@ interface EliminatedPlayer {
   lives_remaining: number
   is_eliminated: boolean
   eliminated_week: number | null
-  users: { id: string; username: string; display_name: string }
+  users: { id: string; username: string; display_name: string; email: string }
 }
 
-function generateEmailHTML(data: {
+function generateRecapEmailHTML(data: {
   week: number
   leagueName: string
   wins: number
