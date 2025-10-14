@@ -68,16 +68,25 @@ export default function WeeklyRecapPage({ params }: RecapPageProps) {
   const audioRef = useRef<HTMLAudioElement | null>(null)
 
   useEffect(() => {
-    // Hide BoomBox on this page
-    const boombox = document.querySelector('[data-boombox]')
-    if (boombox) {
-      (boombox as HTMLElement).style.display = 'none'
+    // Hide BoomBox on this page to avoid conflict with hero audio player
+    const hideBoomBox = () => {
+      const boombox = document.querySelector('[data-boombox]') as HTMLElement
+      if (boombox) {
+        boombox.style.display = 'none'
+      }
     }
 
+    // Hide immediately
+    hideBoomBox()
+
+    // Also hide after a brief delay in case BoomBox renders after this effect
+    const timeoutId = setTimeout(hideBoomBox, 100)
+
     return () => {
-      const boombox = document.querySelector('[data-boombox]')
+      clearTimeout(timeoutId)
+      const boombox = document.querySelector('[data-boombox]') as HTMLElement
       if (boombox) {
-        (boombox as HTMLElement).style.display = ''
+        boombox.style.display = ''
       }
     }
   }, [])
@@ -209,9 +218,17 @@ export default function WeeklyRecapPage({ params }: RecapPageProps) {
   const weeklyContent = getWeeklyRecapContent(week)
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Hidden audio element */}
-      <audio
+    <>
+      {/* Hide BoomBox widget on recap pages to avoid audio conflict */}
+      <style>{`
+        [data-boombox] {
+          display: none !important;
+        }
+      `}</style>
+
+      <div className="min-h-screen bg-background">
+        {/* Hidden audio element */}
+        <audio
         ref={audioRef}
         src={
           week === 5
@@ -592,5 +609,6 @@ export default function WeeklyRecapPage({ params }: RecapPageProps) {
         </div>
       </div>
     </div>
+    </>
   )
 }
