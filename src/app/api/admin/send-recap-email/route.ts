@@ -140,12 +140,22 @@ export async function POST(request: Request) {
       recapUrl
     })
 
+    // Get subject line based on week
+    const getSubjectLine = (week: number, leagueName: string, isTest: boolean = false) => {
+      const prefix = isTest ? '[TEST] ' : ''
+      const weekTitles: Record<number, string> = {
+        5: 'Week 5: Chaos, Upsets & Graveyard Vibes',
+        6: 'Week 6: Packers Parade Saves the Day!'
+      }
+      return `${prefix}${weekTitles[week] || `Week ${week} Recap`} - ${leagueName}`
+    }
+
     // If test email, send to specified address
     if (testEmail) {
       const response = await postmark.sendEmail({
         From: 'commish@pickemparty.app',
         To: testEmail,
-        Subject: `[TEST] Week ${week} Recap - ${league.name}`,
+        Subject: getSubjectLine(week, league.name, true),
         HtmlBody: emailHtml,
         TextBody: `This is a test of the Week ${week} recap email. View the full recap at ${recapUrl}`,
         MessageStream: 'outbound',
@@ -179,7 +189,7 @@ export async function POST(request: Request) {
       postmark.sendEmail({
         From: 'commish@pickemparty.app',
         To: recipient.email,
-        Subject: `Week ${week} Recap - ${league.name}`,
+        Subject: getSubjectLine(week, league.name),
         HtmlBody: emailHtml,
         TextBody: `View the Week ${week} recap at ${recapUrl}`,
         MessageStream: 'outbound',
@@ -227,6 +237,114 @@ function generateRecapEmailHTML(data: {
   eliminatedPlayers: EliminatedPlayer[]
   recapUrl: string
 }) {
+  // Week-specific content
+  const weekContent: Record<number, {
+    title: string
+    songTitle: string
+    intro: string
+    sections: Array<{ type: 'eliminated' | 'lifeLoss' | 'survivors' | 'custom', title: string, bgColor: string, borderColor: string, textColor: string, content: string }>
+    nextWeekPreview: string
+  }> = {
+    5: {
+      title: "Week 5: Chaos, Upsets & Graveyard Vibes",
+      songTitle: "Gone Too Soon (In the Pool)",
+      intro: `Week 5 of the NFL season brought more chaos than a Monday night tailgate, and our survivor pool took a brutal hit. With a 47% win rate, ${data.losses} losses, and two no-shows, the graveyard's getting crowded. Let's break down the carnage with a little sass and a lot of stats—because this pool's a battlefield, and some of y'all just got smoked!`,
+      sections: [
+        {
+          type: 'eliminated',
+          title: '💀 The Fallen Four: RIP to These Picks',
+          bgColor: 'rgba(153, 27, 27, 0.2)',
+          borderColor: '#dc2626',
+          textColor: '#ef4444',
+          content: `
+            <p style="margin: 0 0 10px 0 !important; font-size: 14px !important; color: #E6E8EA !important;">Week 5 was a grim reaper's delight, claiming four players in one fell swoop. Pour one out for:</p>
+            <ul style="margin: 10px 0 !important; padding-left: 20px !important; font-size: 14px !important; line-height: 1.8 !important; color: #E6E8EA !important;">
+              <li style="margin-bottom: 8px !important;"><strong style="color: #fca5a5 !important;">Cowboyup (Dan Evans):</strong> Thought the Seahawks would soar. Nope! They crashed hard, leaving Dan's survivor dreams in the Pacific Northwest fog. Adios, cowboy.</li>
+              <li style="margin-bottom: 8px !important;"><strong style="color: #fca5a5 !important;">Timodore (Osprey):</strong> Also hitched his wagon to Seattle's sinking ship. When the Hawks tanked, so did Osprey's chances. Fly away, birdie, straight to the cemetery.</li>
+              <li style="margin-bottom: 8px !important;"><strong style="color: #fca5a5 !important;">Hayden (Hayden Gaussoin):</strong> Bet on the Bills to buffalo their way past the Patriots. Plot twist: New England pulled a 23-20 upset, sending Hayden to the gravestone gang. Ouch, rookie.</li>
+              <li><strong style="color: #fca5a5 !important;">Kyler Stroud:</strong> Yo, Kyler, where you at? No pick = auto-elimination. With one life left, you ghosted us and joined the fallen. Gotta show up to survive, man!</li>
+            </ul>
+          `
+        },
+        {
+          type: 'lifeLoss',
+          title: '⚠️ Life Losses: The Bubble Gets Shakier',
+          bgColor: 'rgba(154, 52, 18, 0.2)',
+          borderColor: '#ea580c',
+          textColor: '#fb923c',
+          content: `
+            <p style="margin: 0 0 10px 0 !important; font-size: 14px !important; color: #E6E8EA !important;">Eight players felt the Week 5 heat, dropping to one life. Y'all are one bad pick from the graveyard, so step up your game:</p>
+            <ul style="margin: 10px 0 !important; padding-left: 20px !important; font-size: 14px !important; line-height: 1.8 !important; color: #E6E8EA !important;">
+              <li style="margin-bottom: 5px !important;"><strong style="color: #fed7aa !important;">RazG, Jonathan (JSizzle), Josh:</strong> All three banked on the Cardinals, but Arizona got grounded.</li>
+              <li style="margin-bottom: 5px !important;"><strong style="color: #fed7aa !important;">Jordan Petrusich:</strong> Rams let you down, leaving you clinging to a single life.</li>
+              <li style="margin-bottom: 5px !important;"><strong style="color: #fed7aa !important;">Jaren Petrusich:</strong> Giants fumbled your hopes. One life to go!</li>
+              <li style="margin-bottom: 5px !important;"><strong style="color: #fed7aa !important;">Dustin Dimicelli, Rolyat Toor:</strong> Bills' upset loss to the Pats stung you both.</li>
+              <li><strong style="color: #fed7aa !important;">Keegan McAdam:</strong> No pick? That's a free strike! Down to one life.</li>
+            </ul>
+          `
+        },
+        {
+          type: 'survivors',
+          title: '✅ Still Standing: The Survivors',
+          bgColor: 'rgba(22, 101, 52, 0.2)',
+          borderColor: '#16a34a',
+          textColor: '#22c55e',
+          content: `
+            <p style="margin: 0 0 10px 0 !important; font-size: 14px !important; color: #E6E8EA !important;">Nine players dodged the Week 5 chaos with correct picks, and the Colts and Lions were the MVPs:</p>
+            <ul style="margin: 10px 0 !important; padding-left: 20px !important; font-size: 14px !important; line-height: 1.8 !important; color: #E6E8EA !important;">
+              <li style="margin-bottom: 5px !important;"><strong style="color: #86efac !important;">Colts Crew (5 safe):</strong> Brandon O'Dore, Decks, Steven McCoy, Joe G, and Bobbie Boucher rode Indianapolis to victory.</li>
+              <li><strong style="color: #86efac !important;">Lions Pride (4 safe):</strong> Taylor Gaussoin, Tyler Roberts, Matador, and Amanda G roared with Detroit.</li>
+            </ul>
+          `
+        }
+      ],
+      nextWeekPreview: `With 71% of survivors on one life, Week 6 is make-or-break. Only five players are sitting pretty with two lives. The rest? Better bring your A-game.`
+    },
+    6: {
+      title: "Packers Parade Saves the Day, But Keegan's Heartbreak Steals the Show!",
+      songTitle: "Fell By One (Keegan's Song)",
+      intro: `Week 6 was like that rom-com where everyone gets a plot twist—mostly happy endings, but one gut-punch that leaves you ugly-crying into your nachos. With a stellar 94.1% success rate and perfect participation (shoutout to all 17 of you for showing up!), our pool dodged a massacre. But hold the confetti: One heartbreaking loss means we're down to 16 warriors, and 11 of 'em are sweating bullets on their last life. It's like The Hunger Games meets Survivor—except with more cheeseheads celebrating. Let's unpack the glory, the gore, and the NFL's wild side with some sass, stats, and a dash of pop culture flair.`,
+      sections: [
+        {
+          type: 'eliminated',
+          title: '💀 The Sole Survivor Slaughter: RIP Keegan McAdam',
+          bgColor: 'rgba(153, 27, 27, 0.2)',
+          borderColor: '#dc2626',
+          textColor: '#ef4444',
+          content: `
+            <p style="margin: 0 0 10px 0 !important; font-size: 14px !important; color: #E6E8EA !important;">In a week of near-perfection, Keegan McAdam became the tragic hero nobody asked for. Y'all, this man picked the Washington Commanders—and they almost pulled it off!</p>
+            <p style="margin: 0 0 10px 0 !important; font-size: 14px !important; color: #E6E8EA !important;">A nail-biting <strong style="color: #fca5a5 !important;">Bears 25 @ Commanders 24</strong> loss by <strong>one single point</strong> on Monday Night Football? That's not a defeat; that's the football gods trolling him harder than a Marvel plot twist where the hero gets Thanos-snapped at 99% health.</p>
+            <p style="margin: 0 0 10px 0 !important; font-size: 14px !important; color: #E6E8EA !important;">Keegan went from one life to zero faster than you can say "Hail Mary regret." If this were <em>The Office</em>, you'd be the Jim Halpert of picks—endearing, but doomed by a Dwight-sized upset.</p>
+            <p style="margin: 0 !important; font-size: 14px !important; color: #E6E8EA !important;">Your gravestone's up in the cemetery section now, complete with a RIP popup that'll haunt our league page like a bad ex at a wedding. We salute you... from a safe, still-alive distance. Pool's now at 9 eliminated total.</p>
+          `
+        },
+        {
+          type: 'custom',
+          title: '🧀 The Packers Parade: 9 Heroes Ride the Cheese Wave',
+          bgColor: 'rgba(22, 101, 52, 0.2)',
+          borderColor: '#16a34a',
+          textColor: '#22c55e',
+          content: `
+            <p style="margin: 0 0 10px 0 !important; font-size: 14px !important; color: #E6E8EA !important;">Talk about a mob mentality that paid off! Nine players jumped on the Green Bay Packers bandwagon, and boy, did it roll right over the doubters. All correct—boom, 100% survival for the cheesehead contingent!</p>
+            <p style="margin: 0 0 10px 0 !important; font-size: 14px !important; color: #E6E8EA !important;"><strong style="color: #86efac !important;">Packers Posse (all survived):</strong> Taylor Root, Tyler Roberts, Dustin Dimicelli, RazG, Josh, Bobbie Boucher, Jordan Petrusich, Taylor Gaussoin, Amanda G</p>
+            <p style="margin: 0 0 10px 0 !important; font-size: 14px !important; color: #E6E8EA !important;">Y'all turned Week 6 into a Lambeau Leap of faith. As for the other smart cookies who zigged while others zagged:</p>
+            <ul style="margin: 10px 0 !important; padding-left: 20px !important; font-size: 14px !important; line-height: 1.8 !important; color: #E6E8EA !important;">
+              <li style="margin-bottom: 5px !important;"><strong style="color: #86efac !important;">Patriots (2):</strong> Decks, Jaren Petrusich – Channeling that Week 5 upset energy like a Stranger Things comeback kid.</li>
+              <li style="margin-bottom: 5px !important;"><strong style="color: #86efac !important;">Rams (2):</strong> Steven McCoy, Joe G – Stafford's arm stayed hot, no Warner injury drama here.</li>
+              <li style="margin-bottom: 5px !important;"><strong style="color: #86efac !important;">Broncos (1):</strong> JSizzle – Denver's pass rush feasted like a Willy Wonka golden ticket.</li>
+              <li style="margin-bottom: 5px !important;"><strong style="color: #86efac !important;">Colts (1):</strong> Matador – Steady Eddie win, no Cam Ward Titan upset to rain on your parade.</li>
+              <li><strong style="color: #86efac !important;">Steelers (1):</strong> Brandon O'Dore – Pittsburgh grinded it out, because of course they did.</li>
+            </ul>
+            <p style="margin: 0 !important; font-size: 14px !important; color: #E6E8EA !important;">Only one loss in 17 picks? That's not luck; that's the kind of week that makes you feel like you hacked the Matrix.</p>
+          `
+        }
+      ],
+      nextWeekPreview: `We're tightening up like a Squid Game elimination round—16 alive, but 68% on their final life? The pressure's thicker than a Breaking Bad blue candy cook-off. One wrong pick, and you're ghost-town bound. Channel your inner Katniss—aim true for Week 7!`
+    }
+  }
+
+  const content = weekContent[data.week] || weekContent[5] // Default to Week 5 if week not found
+
   return `
 <!DOCTYPE html>
 <html lang="en">
@@ -306,7 +424,7 @@ function generateRecapEmailHTML(data: {
                 <tr>
                   <td align="center">
                     <p style="margin: 0 0 15px 0 !important; font-size: 18px !important; font-weight: bold !important; color: #B0CA47 !important;">
-                      🎵 Listen to This Week's Recap Song!
+                      🎵 Listen to "${content.songTitle}"
                     </p>
                     <a href="${data.recapUrl}" style="display: inline-block !important; padding: 12px 30px !important; background-color: #B0CA47 !important; color: #0B0E0C !important; text-decoration: none !important; border-radius: 6px !important; font-weight: bold !important; font-size: 16px !important;">
                       ▶ Play Week ${data.week} Recap
@@ -353,61 +471,24 @@ function generateRecapEmailHTML(data: {
           <tr>
             <td class="card-bg" style="padding: 20px !important; line-height: 1.6 !important; background-color: #171A17 !important;">
               <h2 class="pixel-font" style="color: #B0CA47 !important; font-size: 20px !important; margin: 0 0 15px 0 !important; font-family: 'Press Start 2P', monospace, Arial !important; line-height: 1.4 !important; font-weight: normal !important;">
-                Week ${data.week}: Chaos, Upsets & Graveyard Vibes
+                ${content.title}
               </h2>
 
               <p style="font-size: 16px !important; line-height: 1.8 !important; margin: 0 0 20px 0 !important; color: #E6E8EA !important;">
-                Week 5 of the NFL season brought more chaos than a Monday night tailgate, and our survivor pool took a brutal hit.
-                With a 47% win rate, ${data.losses} losses, and two no-shows, the graveyard's getting crowded.
-                Let's break down the carnage with a little sass and a lot of stats—because this pool's a battlefield, and some of y'all just got smoked!
+                ${content.intro}
               </p>
 
-              <!-- The Fallen Four -->
-              <table width="100%" cellpadding="0" cellspacing="0" border="0" role="presentation" style="margin: 20px 0 !important; border-left: 4px solid #dc2626 !important; background-color: rgba(153, 27, 27, 0.2) !important;">
+              ${content.sections.map(section => `
+              <!-- ${section.title} -->
+              <table width="100%" cellpadding="0" cellspacing="0" border="0" role="presentation" style="margin: 20px 0 !important; border-left: 4px solid ${section.borderColor} !important; background-color: ${section.bgColor} !important;">
                 <tr>
-                  <td style="padding: 15px !important; background-color: rgba(153, 27, 27, 0.2) !important;">
-                    <h3 style="color: #ef4444 !important; font-size: 18px !important; margin: 0 0 10px 0 !important; line-height: 1.4 !important;">💀 The Fallen Four: RIP to These Picks</h3>
-                    <p style="margin: 0 0 10px 0 !important; font-size: 14px !important; color: #E6E8EA !important;">Week 5 was a grim reaper's delight, claiming four players in one fell swoop. Pour one out for:</p>
-                    <ul style="margin: 10px 0 !important; padding-left: 20px !important; font-size: 14px !important; line-height: 1.8 !important; color: #E6E8EA !important;">
-                      <li style="margin-bottom: 8px !important;"><strong style="color: #fca5a5 !important;">Cowboyup (Dan Evans):</strong> Thought the Seahawks would soar. Nope! They crashed hard, leaving Dan's survivor dreams in the Pacific Northwest fog. Adios, cowboy.</li>
-                      <li style="margin-bottom: 8px !important;"><strong style="color: #fca5a5 !important;">Timodore (Osprey):</strong> Also hitched his wagon to Seattle's sinking ship. When the Hawks tanked, so did Osprey's chances. Fly away, birdie, straight to the cemetery.</li>
-                      <li style="margin-bottom: 8px !important;"><strong style="color: #fca5a5 !important;">Hayden (Hayden Gaussoin):</strong> Bet on the Bills to buffalo their way past the Patriots. Plot twist: New England pulled a 23-20 upset, sending Hayden to the gravestone gang. Ouch, rookie.</li>
-                      <li><strong style="color: #fca5a5 !important;">Kyler Stroud:</strong> Yo, Kyler, where you at? No pick = auto-elimination. With one life left, you ghosted us and joined the fallen. Gotta show up to survive, man!</li>
-                    </ul>
+                  <td style="padding: 15px !important; background-color: ${section.bgColor} !important;">
+                    <h3 style="color: ${section.textColor} !important; font-size: 18px !important; margin: 0 0 10px 0 !important; line-height: 1.4 !important;">${section.title}</h3>
+                    ${section.content}
                   </td>
                 </tr>
               </table>
-
-              <!-- Life Losses -->
-              <table width="100%" cellpadding="0" cellspacing="0" border="0" role="presentation" style="margin: 20px 0 !important; border-left: 4px solid #ea580c !important; background-color: rgba(154, 52, 18, 0.2) !important;">
-                <tr>
-                  <td style="padding: 15px !important; background-color: rgba(154, 52, 18, 0.2) !important;">
-                    <h3 style="color: #fb923c !important; font-size: 18px !important; margin: 0 0 10px 0 !important; line-height: 1.4 !important;">⚠️ Life Losses: The Bubble Gets Shakier</h3>
-                    <p style="margin: 0 0 10px 0 !important; font-size: 14px !important; color: #E6E8EA !important;">Eight players felt the Week 5 heat, dropping to one life. Y'all are one bad pick from the graveyard, so step up your game:</p>
-                    <ul style="margin: 10px 0 !important; padding-left: 20px !important; font-size: 14px !important; line-height: 1.8 !important; color: #E6E8EA !important;">
-                      <li style="margin-bottom: 5px !important;"><strong style="color: #fed7aa !important;">RazG, Jonathan (JSizzle), Josh:</strong> All three banked on the Cardinals, but Arizona got grounded.</li>
-                      <li style="margin-bottom: 5px !important;"><strong style="color: #fed7aa !important;">Jordan Petrusich:</strong> Rams let you down, leaving you clinging to a single life.</li>
-                      <li style="margin-bottom: 5px !important;"><strong style="color: #fed7aa !important;">Jaren Petrusich:</strong> Giants fumbled your hopes. One life to go!</li>
-                      <li style="margin-bottom: 5px !important;"><strong style="color: #fed7aa !important;">Dustin Dimicelli, Rolyat Toor:</strong> Bills' upset loss to the Pats stung you both.</li>
-                      <li><strong style="color: #fed7aa !important;">Keegan McAdam:</strong> No pick? That's a free strike! Down to one life.</li>
-                    </ul>
-                  </td>
-                </tr>
-              </table>
-
-              <!-- Still Standing -->
-              <table width="100%" cellpadding="0" cellspacing="0" border="0" role="presentation" style="margin: 20px 0 !important; border-left: 4px solid #16a34a !important; background-color: rgba(22, 101, 52, 0.2) !important;">
-                <tr>
-                  <td style="padding: 15px !important; background-color: rgba(22, 101, 52, 0.2) !important;">
-                    <h3 style="color: #22c55e !important; font-size: 18px !important; margin: 0 0 10px 0 !important; line-height: 1.4 !important;">✅ Still Standing: The Survivors</h3>
-                    <p style="margin: 0 0 10px 0 !important; font-size: 14px !important; color: #E6E8EA !important;">Nine players dodged the Week 5 chaos with correct picks, and the Colts and Lions were the MVPs:</p>
-                    <ul style="margin: 10px 0 !important; padding-left: 20px !important; font-size: 14px !important; line-height: 1.8 !important; color: #E6E8EA !important;">
-                      <li style="margin-bottom: 5px !important;"><strong style="color: #86efac !important;">Colts Crew (5 safe):</strong> Brandon O'Dore, Decks, Steven McCoy, Joe G, and Bobbie Boucher rode Indianapolis to victory.</li>
-                      <li><strong style="color: #86efac !important;">Lions Pride (4 safe):</strong> Taylor Gaussoin, Tyler Roberts, Matador, and Amanda G roared with Detroit.</li>
-                    </ul>
-                  </td>
-                </tr>
-              </table>
+              `).join('')}
 
               <!-- Current Standings -->
               <table width="100%" cellpadding="0" cellspacing="0" border="0" role="presentation" style="margin: 20px 0 !important; background-color: rgba(176, 202, 71, 0.15) !important; border-radius: 8px !important; border: 2px solid #B0CA47 !important;">
@@ -422,13 +503,13 @@ function generateRecapEmailHTML(data: {
                 </tr>
               </table>
 
-              <!-- Week 6 Preview -->
+              <!-- Week Preview -->
               <table width="100%" cellpadding="0" cellspacing="0" border="0" role="presentation" style="margin: 20px 0 !important; background-color: rgba(153, 27, 27, 0.3) !important; border-radius: 8px !important; border: 2px solid #dc2626 !important;">
                 <tr>
                   <td style="padding: 15px !important; background-color: rgba(153, 27, 27, 0.3) !important;">
                     <h3 style="color: #fca5a5 !important; font-size: 18px !important; margin: 0 0 10px 0 !important; line-height: 1.4 !important;">⚡ Week ${data.week + 1} Preview: Pressure's On!</h3>
                     <p style="margin: 0 0 10px 0 !important; font-size: 14px !important; line-height: 1.8 !important; color: #E6E8EA !important;">
-                      With 71% of survivors on one life, Week ${data.week + 1} is make-or-break. Only five players are sitting pretty with two lives. The rest? Better bring your A-game.
+                      ${content.nextWeekPreview}
                     </p>
                     <p style="margin: 0 !important; font-size: 14px !important; font-weight: bold !important; color: #E6E8EA !important;">
                       <strong style="color: #fca5a5 !important;">Pro Tip:</strong> No picks = no chance. Log in, pick a team, and keep your survivor soul alive!
