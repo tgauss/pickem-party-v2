@@ -2,6 +2,7 @@
 
 import { useState, useEffect, use } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { getWeeklyRecapContent } from '@/components/WeeklyRecapContent'
 
 interface EmailPreviewProps {
   params: Promise<{
@@ -118,6 +119,9 @@ export default function EmailPreviewPage({ params }: EmailPreviewProps) {
 
       const recapUrl = `${window.location.origin}/league/${resolvedParams.slug}/recap/${week}`
 
+      // Get dynamic weekly content
+      const weeklyContent = getWeeklyRecapContent(week)
+
       // Generate email HTML
       const html = generateEmailHTML({
         week,
@@ -129,7 +133,8 @@ export default function EmailPreviewPage({ params }: EmailPreviewProps) {
         twoLives: twoLives.length,
         oneLife: oneLife.length,
         eliminatedPlayers: eliminated,
-        recapUrl
+        recapUrl,
+        weeklyContent
       })
 
       setEmailHtml(html)
@@ -336,7 +341,14 @@ function generateEmailHTML(data: {
   oneLife: number
   eliminatedPlayers: EliminatedPlayer[]
   recapUrl: string
+  weeklyContent: ReturnType<typeof getWeeklyRecapContent>
 }) {
+  // Get song title based on week
+  const songTitle = data.week === 5
+    ? 'Gone Too Soon (In the Pool)'
+    : data.week === 6
+    ? 'Fell By One (Keegan\'s Song)'
+    : 'Week ' + data.week + ' Wrap'
   return `
 <!DOCTYPE html>
 <html lang="en">
@@ -418,6 +430,9 @@ function generateEmailHTML(data: {
                     <p style="margin: 0 0 15px 0; font-size: 18px; font-weight: bold; color: #B0CA47;">
                       🎵 Listen to This Week's Recap Song!
                     </p>
+                    <p style="margin: 0 0 15px 0; font-size: 14px; color: #E6E8EA;">
+                      "${songTitle}"
+                    </p>
                     <a href="${data.recapUrl}" style="display: inline-block; padding: 12px 30px; background-color: #B0CA47; color: #0B0E0C; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 16px;">
                       ▶ Play Week ${data.week} Recap
                     </a>
@@ -463,61 +478,54 @@ function generateEmailHTML(data: {
           <tr>
             <td style="padding: 20px; line-height: 1.6;">
               <h2 style="color: #B0CA47; font-size: 24px; margin: 0 0 15px 0;">
-                Week ${data.week}: Chaos, Upsets & Graveyard Vibes
+                ${data.weeklyContent.title}
               </h2>
 
               <p style="font-size: 16px; line-height: 1.8; margin: 0 0 20px 0; color: #E6E8EA;">
-                Week 5 of the NFL season brought more chaos than a Monday night tailgate, and our survivor pool took a brutal hit.
-                With a 47% win rate, ${data.losses} losses, and two no-shows, the graveyard's getting crowded.
-                Let's break down the carnage with a little sass and a lot of stats—because this pool's a battlefield, and some of y'all just got smoked!
+                ${data.weeklyContent.paragraphs[0]?.content || ''}
               </p>
 
-              <!-- The Fallen Four -->
+              <!-- Casualties -->
+              ${data.eliminated > 0 ? `
               <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin: 20px 0; border-left: 4px solid #dc2626; background-color: #991b1b20;">
                 <tr>
                   <td style="padding: 15px;">
-                    <h3 style="color: #ef4444; font-size: 20px; margin: 0 0 10px 0;">💀 The Fallen Four: RIP to These Picks</h3>
-                    <p style="margin: 0 0 10px 0; font-size: 14px;">Week 5 was a grim reaper's delight, claiming four players in one fell swoop. Pour one out for:</p>
-                    <ul style="margin: 10px 0; padding-left: 20px; font-size: 14px; line-height: 1.8;">
-                      <li style="margin-bottom: 8px;"><strong>Cowboyup (Dan Evans):</strong> Thought the Seahawks would soar. Nope! They crashed hard, leaving Dan's survivor dreams in the Pacific Northwest fog. Adios, cowboy.</li>
-                      <li style="margin-bottom: 8px;"><strong>Timodore (Osprey):</strong> Also hitched his wagon to Seattle's sinking ship. When the Hawks tanked, so did Osprey's chances. Fly away, birdie, straight to the cemetery.</li>
-                      <li style="margin-bottom: 8px;"><strong>Hayden (Hayden Gaussoin):</strong> Bet on the Bills to buffalo their way past the Patriots. Plot twist: New England pulled a 23-20 upset, sending Hayden to the gravestone gang. Ouch, rookie.</li>
-                      <li><strong>Kyler Stroud:</strong> Yo, Kyler, where you at? No pick = auto-elimination. With one life left, you ghosted us and joined the fallen. Gotta show up to survive, man!</li>
-                    </ul>
+                    <h3 style="color: #ef4444; font-size: 20px; margin: 0 0 10px 0;">💀 ${data.week === 6 ? 'The Sole Survivor Slaughter: RIP Keegan McAdam' : 'Casualties This Week'}</h3>
+                    ${data.week === 6 ? `
+                      <p style="margin: 0 0 10px 0; font-size: 14px;">In a week of near-perfection, Keegan McAdam became the tragic hero nobody asked for. Y'all, this man picked the Washington Commanders—and they almost pulled it off!</p>
+                      <p style="margin: 0 0 10px 0; font-size: 14px;">A nail-biting <strong>Bears 25 @ Commanders 24</strong> loss by ONE SINGLE POINT on Monday Night Football? That's not a defeat; that's the football gods trolling him harder than a Marvel plot twist where the hero gets Thanos-snapped at 99% health.</p>
+                      <p style="margin: 0; font-size: 14px;">Keegan went from one life to zero faster than you can say "Hail Mary regret." Pool's now at 9 eliminated total. No hard feelings; just hard lessons.</p>
+                    ` : `
+                      <p style="margin: 0 0 10px 0; font-size: 14px;">This week claimed ${data.eliminated} player${data.eliminated > 1 ? 's' : ''}. The graveyard grows...</p>
+                      ${data.eliminatedPlayers.map(p => `<p style="margin: 5px 0; font-size: 14px;"><strong>${p.users.display_name}</strong> - Eliminated</p>`).join('')}
+                    `}
                   </td>
                 </tr>
               </table>
+              ` : ''}
 
-              <!-- Life Losses -->
-              <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin: 20px 0; border-left: 4px solid #ea580c; background-color: #9a341220;">
-                <tr>
-                  <td style="padding: 15px;">
-                    <h3 style="color: #fb923c; font-size: 20px; margin: 0 0 10px 0;">⚠️ Life Losses: The Bubble Gets Shakier</h3>
-                    <p style="margin: 0 0 10px 0; font-size: 14px;">Eight players felt the Week 5 heat, dropping to one life. Y'all are one bad pick from the graveyard, so step up your game:</p>
-                    <ul style="margin: 10px 0; padding-left: 20px; font-size: 14px; line-height: 1.8;">
-                      <li style="margin-bottom: 5px;"><strong>RazG, Jonathan (JSizzle), Josh:</strong> All three banked on the Cardinals, but Arizona got grounded.</li>
-                      <li style="margin-bottom: 5px;"><strong>Jordan Petrusich:</strong> Rams let you down, leaving you clinging to a single life.</li>
-                      <li style="margin-bottom: 5px;"><strong>Jaren Petrusich:</strong> Giants fumbled your hopes. One life to go!</li>
-                      <li style="margin-bottom: 5px;"><strong>Dustin Dimicelli, Rolyat Toor:</strong> Bills' upset loss to the Pats stung you both.</li>
-                      <li><strong>Keegan McAdam:</strong> No pick? That's a free strike! Down to one life.</li>
-                    </ul>
-                  </td>
-                </tr>
-              </table>
-
-              <!-- Still Standing -->
+              ${data.week === 6 && data.wins > 0 ? `
+              <!-- Packers Parade -->
               <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin: 20px 0; border-left: 4px solid #16a34a; background-color: #16653420;">
                 <tr>
                   <td style="padding: 15px;">
-                    <h3 style="color: #22c55e; font-size: 20px; margin: 0 0 10px 0;">✅ Still Standing: The Survivors</h3>
-                    <p style="margin: 0 0 10px 0; font-size: 14px;">Nine players dodged the Week 5 chaos with correct picks, and the Colts and Lions were the MVPs:</p>
+                    <h3 style="color: #22c55e; font-size: 20px; margin: 0 0 10px 0;">🧀 The Packers Parade: 9 Heroes Ride the Cheese Wave</h3>
+                    <p style="margin: 0 0 10px 0; font-size: 14px;">Talk about a mob mentality that paid off! <strong>Nine players</strong> jumped on the Green Bay Packers bandwagon, and boy, did it roll right over the doubters. All correct—boom, 100% survival for the cheesehead contingent!</p>
+                    <p style="margin: 0 0 10px 0; font-size: 14px;"><strong>Packers Posse:</strong> Taylor Root, Tyler Roberts, Dustin Dimicelli, RazG, Josh, Bobbie Boucher, Jordan Petrusich, Taylor Gaussoin, Amanda G</p>
+                    <p style="margin: 0 0 10px 0; font-size: 14px;"><strong>Other Winners:</strong></p>
                     <ul style="margin: 10px 0; padding-left: 20px; font-size: 14px; line-height: 1.8;">
-                      <li style="margin-bottom: 5px;"><strong>Colts Crew (5 safe):</strong> Brandon O'Dore, Decks, Steven McCoy, Joe G, and Bobbie Boucher rode Indianapolis to victory.</li>
-                      <li><strong>Lions Pride (4 safe):</strong> Taylor Gaussoin, Tyler Roberts, Matador, and Amanda G roared with Detroit.</li>
+                      <li style="margin-bottom: 5px;"><strong>Patriots (2):</strong> Decks, Jaren Petrusich</li>
+                      <li style="margin-bottom: 5px;"><strong>Rams (2):</strong> Steven McCoy, Joe G</li>
+                      <li style="margin-bottom: 5px;"><strong>Broncos (1):</strong> JSizzle</li>
+                      <li style="margin-bottom: 5px;"><strong>Colts (1):</strong> Matador</li>
+                      <li><strong>Steelers (1):</strong> Brandon O'Dore</li>
                     </ul>
+                    <p style="margin: 0; font-size: 14px; font-style: italic;">Only one loss in 17 picks? That's not luck; that's Matrix-level skill!</p>
                   </td>
                 </tr>
               </table>
+              ` : ''}
+
 
               <!-- Current Standings -->
               <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin: 20px 0; background-color: rgba(176, 202, 71, 0.12); border-radius: 8px; border: 2px solid #B0CA47;">
@@ -532,16 +540,18 @@ function generateEmailHTML(data: {
                 </tr>
               </table>
 
-              <!-- Week 6 Preview -->
+              <!-- Next Week Preview -->
               <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin: 20px 0; background-color: #991b1b; border-radius: 8px; border: 2px solid #dc2626;">
                 <tr>
                   <td style="padding: 15px;">
-                    <h3 style="color: #fca5a5; font-size: 20px; margin: 0 0 10px 0;">⚡ Week ${data.week + 1} Preview: Pressure's On!</h3>
+                    <h3 style="color: #fca5a5; font-size: 20px; margin: 0 0 10px 0;">⚡ Week ${data.week + 1} ${data.week === 6 ? 'Wake-Up Call: Lock In or Log Out!' : 'Preview: Pressure\'s On!'}</h3>
                     <p style="margin: 0 0 10px 0; font-size: 14px; line-height: 1.8;">
-                      With 71% of survivors on one life, Week ${data.week + 1} is make-or-break. Only five players are sitting pretty with two lives. The rest? Better bring your A-game.
+                      ${data.week === 6
+                        ? `Week 6's closed, but Week 7's gates are creakin' open—get those picks in via the app before the deadline! With ${data.oneLife} on one life, it's do-or-die: Use those strategy tools, scout the odds, and rally your private league for moral support.`
+                        : `With ${Math.round((data.oneLife / data.activeMembers) * 100)}% of survivors on one life, Week ${data.week + 1} is make-or-break. Only ${data.twoLives} players are sitting pretty with two lives. The rest? Better bring your A-game.`}
                     </p>
                     <p style="margin: 0; font-size: 14px; font-weight: bold;">
-                      <strong>Pro Tip:</strong> No picks = no chance. Log in, pick a team, and keep your survivor soul alive!
+                      <strong>Pro Tip:</strong> ${data.week === 6 ? 'Check the app for real-time odds, strategy tools, and private league banter. Don\'t be the next gravestone.' : 'No picks = no chance. Log in, pick a team, and keep your survivor soul alive!'}
                     </p>
                   </td>
                 </tr>
