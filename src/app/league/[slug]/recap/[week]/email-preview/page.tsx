@@ -1,5 +1,6 @@
 'use client'
 
+// Week 6 Email Preview with Dynamic Content
 import { useState, useEffect, use } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { getWeeklyRecapContent } from '@/components/WeeklyRecapContent'

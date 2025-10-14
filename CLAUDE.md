@@ -1,8 +1,8 @@
 # Claude Development Guidelines & Memory Document
 # Pickem Party v2
 
-**Last Updated**: September 15, 2025
-**Version**: 2.2.0
+**Last Updated**: October 7, 2025
+**Version**: 2.3.0
 **Purpose**: This document serves as persistent memory for Claude Code across sessions
 
 ## 🎯 Project Overview
@@ -12,10 +12,63 @@
 ### Key URLs
 - **Production**: https://www.pickemparty.app
 - **Invite Example**: https://www.pickemparty.app/?invite=GRID2025&inviter=taylor%20g
+- **Recap Example**: https://www.pickemparty.app/league/the-gridiron-gamble-2025/recap/5
 - **GitHub**: https://github.com/tgauss/pickem-party-v2
 - **Supabase Project ID**: cggoycedsybrajvdqjjk
 
-## 🚀 Recent Work (September 15, 2025 Session)
+## 🚀 Recent Work (October 7, 2025 Session)
+
+### Major Updates - Weekly Recap System & Week 5/6 Transition
+1. **Weekly Recap Pages**
+   - Created repeatable weekly recap page system at `/league/[slug]/recap/[week]`
+   - Blog post/news story format with custom narrative content
+   - Integrated HTML5 audio player for weekly parody recap songs
+   - Collapsible detailed player status sections
+   - Public access (no login required) for easy sharing
+   - Mobile-optimized with brand theme consistency
+   - Week 5 recap includes full custom narrative with sass and personality
+
+2. **Email Template System with Postmark**
+   - Full HTML email template for weekly recaps
+   - Dark mode optimized with `!important` declarations for Gmail compatibility
+   - Press Start 2P pixel font loaded via Google Fonts
+   - Email-safe table-based layout (600px width)
+   - Color-scheme meta tags for dark mode enforcement
+   - RGBA backgrounds with transparency for proper layering
+   - Email preview page at `/recap/[week]/email-preview`
+   - Download and copy HTML functionality
+   - Send test email feature (to tgaussoin@gmail.com)
+   - **Send to All Members** button with confirmation dialog
+   - Postmark integration sending from commish@pickemparty.app
+
+3. **Week 5 Closure & Week 6 Transition**
+   - Closed Week 5: All 14 games marked final
+   - Updated Monday Night Football: KC Chiefs 26, NO Saints 13
+   - Processed all 19 Week 5 picks (9 correct, 10 incorrect)
+   - Applied 4 eliminations (no double processing):
+     - Cowboyup, Timodore (picked Seattle)
+     - Hayden (picked Buffalo)
+     - Kyler (no pick submitted)
+   - Current standings: 5 with 2 lives, 12 with 1 life, 8 eliminated
+   - Opened Week 6 for picks
+   - Updated forced current week from 5 to 6
+
+4. **Logout Page**
+   - Created `/logout` route for clearing user session
+   - localStorage cleanup (currentUser removal)
+   - Confirmation dialog to prevent accidental logouts
+   - Success message with auto-redirect
+   - Device-specific (doesn't affect other users)
+   - Perfect for testing with different accounts
+
+5. **Brand & Theme Consistency**
+   - Replaced all purple (#7c3aed) with brand green (#B0CA47)
+   - Updated email templates with proper brand colors
+   - Added custom icon emojis (✅, ❌, 💚, 💀) to stat blocks
+   - Consistent dark theme (#0B0E0C, #171A17) throughout
+   - Secondary copper color (#C38B5A) for warnings/eliminations
+
+## 🚀 Previous Work (September 15, 2025 Session)
 
 ### Major Updates - Week 2 Completion & Cemetery Feature
 1. **Cemetery & RIP Popup System**
