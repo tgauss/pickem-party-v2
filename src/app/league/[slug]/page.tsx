@@ -16,6 +16,7 @@ import { LeagueActivityLog } from '@/components/LeagueActivityLog'
 import LiveScores from '@/components/LiveScores'
 import { Cemetery } from '@/components/Cemetery'
 import { RIPPopup } from '@/components/RIPPopup'
+import { useAutoScoreSync } from '@/hooks/useAutoScoreSync'
 import Image from 'next/image'
 
 interface Team {
@@ -117,8 +118,11 @@ export default function LeaguePage({
   // Week navigation state
   const [currentWeek, setCurrentWeek] = useState(1)
   const [selectedWeek, setSelectedWeek] = useState(1)
-  
+
   const supabase = createClient()
+
+  // Auto-sync scores on page load and periodically for live games
+  const { syncScores, isSyncing, lastSync, syncResult } = useAutoScoreSync(true)
 
 
   const loadWeekData = useCallback(async (week: number, leagueId: string, userId: string) => {
@@ -583,6 +587,32 @@ export default function LeaguePage({
           <p className="text-xs sm:text-sm text-muted-foreground mb-2">
             {members.filter(m => !m.is_eliminated).length} FIGHTERS REMAIN
           </p>
+
+          {/* Live Score Sync Status */}
+          {isSyncing && (
+            <div className="flex items-center justify-center gap-2 mb-2 text-xs text-muted-foreground">
+              <div className="animate-spin">⚡</div>
+              <span>Syncing live scores...</span>
+            </div>
+          )}
+          {!isSyncing && syncResult?.success && (syncResult.liveGames ?? 0) > 0 && (
+            <div className="flex items-center justify-center gap-2 mb-2 text-xs text-green-600">
+              <span>🔴 LIVE</span>
+              <span>{syncResult.liveGames} game{syncResult.liveGames !== 1 ? 's' : ''} in progress</span>
+              {lastSync && (
+                <span className="text-muted-foreground">
+                  • Updated {new Date(lastSync).toLocaleTimeString()}
+                </span>
+              )}
+            </div>
+          )}
+          {!isSyncing && syncResult?.success && (syncResult.updatedGames ?? 0) > 0 && (syncResult.liveGames ?? 0) === 0 && (
+            <div className="flex items-center justify-center gap-2 mb-2 text-xs text-blue-600">
+              <span>✅</span>
+              <span>Scores updated • {syncResult.completedGames ?? 0} game{(syncResult.completedGames ?? 0) !== 1 ? 's' : ''} final</span>
+            </div>
+          )}
+
           <div className="flex flex-col sm:flex-row items-center justify-center gap-2">
             <p className="text-xs text-muted-foreground">
               Code: <strong>{league.invite_code}</strong>
@@ -610,6 +640,18 @@ export default function LeaguePage({
               <CustomIcon name="calendar" fallback="📅" alt="Schedule" size="sm" />
               View Schedule
             </Button>
+            {(user && league && (user.id === league.commissioner_id || ['admin', 'tgauss', 'pickemking'].includes(user.username.toLowerCase()))) && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => syncScores(true)}
+                disabled={isSyncing}
+                className="flex items-center gap-1 text-xs px-2 py-1"
+              >
+                <span className={isSyncing ? 'animate-spin' : ''}>🔄</span>
+                {isSyncing ? 'Syncing...' : 'Refresh Scores'}
+              </Button>
+            )}
             {currentWeek > 1 && (
               <Button
                 variant="outline"
