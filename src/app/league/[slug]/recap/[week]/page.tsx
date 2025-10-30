@@ -235,6 +235,10 @@ export default function WeeklyRecapPage({ params }: RecapPageProps) {
             ? `/music/GRIDIRON GAMBLE - Week 5 Wrap - Gone Too Soon (In the Pool).mp3`
             : week === 6
             ? `/music/GRIDIRON GAMBLE - Week 6 Wrap_Fell By One (Keegan's Song).mp3`
+            : week === 7
+            ? `/music/Week 7 - GRIDIRON GAMBLE - Pick em' Party Recap.mp3`
+            : week === 8
+            ? `/music/Week 8 Survivor Pool Recap_ _Falcons Fell and Bengals Broke My Heart_.mp3`
             : `/music/GRIDIRON GAMBLE - Week ${week} wRap.mp3`
         }
         onEnded={() => setIsPlaying(false)}
@@ -289,6 +293,10 @@ export default function WeeklyRecapPage({ params }: RecapPageProps) {
                     ? 'Week 5 Wrap - "Gone Too Soon (In the Pool)"'
                     : week === 6
                     ? 'Week 6 Wrap - "Fell By One (Keegan\'s Song)"'
+                    : week === 7
+                    ? 'Week 7 Wrap - "Pick em\' Party Recap"'
+                    : week === 8
+                    ? 'Week 8 Wrap - "Falcons Fell and Bengals Broke My Heart"'
                     : `Week ${week} Wrap - Gridiron Gamble Recap`}
                 </p>
               </div>
