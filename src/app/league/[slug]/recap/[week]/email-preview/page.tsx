@@ -349,6 +349,10 @@ function generateEmailHTML(data: {
     ? 'Gone Too Soon (In the Pool)'
     : data.week === 6
     ? 'Fell By One (Keegan\'s Song)'
+    : data.week === 7
+    ? 'Pick em\' Party Recap'
+    : data.week === 8
+    ? 'Falcons Fell and Bengals Broke My Heart'
     : 'Week ' + data.week + ' Wrap'
   return `
 <!DOCTYPE html>
