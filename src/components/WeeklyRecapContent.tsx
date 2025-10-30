@@ -118,6 +118,75 @@ export function getWeeklyRecapContent(week: number): {
           content: '— The Pick\'em Party Crew'
         }
       ]
+    },
+    8: {
+      title: "Week 8: Falcons Flop, Bengals Bungle – Five More Bite the Dust!",
+      subtitle: "Upset City! Falcons & Bengals Send Five Packing 😱",
+      paragraphs: [
+        {
+          type: 'text',
+          content: "Week 8 turned the NFL into Upset Central Station, and our survivor pool? It got absolutely wrecked. With a 60% success rate (9 correct out of 15 picks), we waved goodbye to five players faster than a bad blind date. Miami's splash on Atlanta and the Jets' one-point thriller over Cincy had us all yelling at our screens. But hey, nine of you are still kicking—though six are dangling by a single life thread. Let's dive into the drama with our usual sass, stats, and a hefty side of shade."
+        },
+        {
+          type: 'alert',
+          heading: '💀 The Graveyard Grows: Five Fallen Heroes',
+          content: [
+            'Week 8 was a bloodbath, courtesy of two massive upsets. Pour one out for these brave souls who chased the wrong birds and stripes:',
+            '🔴 Steven McCoy, Joe G, JSizzle: Y\'all tripled down on the Falcons? Bold move, but Miami said "nah" with a 34-10 drubbing. Now you\'re joining the cemetery crew—hope those ATL wings weren\'t too crispy.',
+            '🔴 Jordan Petrusich: Bengals seemed safe, right? Wrong! Jets edged \'em 39-38 in a heart-stopper. Jordan, your survivor streak ends here—better luck next season, buddy.',
+            '🔴 Matador (Matt O\'Dore): Oh, Matador, our co-commissioner extraordinaire! You wave that red cape like a boss in the league office, but Week 8\'s Bengals bull charged right through you. Picked Cincy, got gored 38-39 by the Jets. As co-commish, you run this show flawlessly... except your own picks! Olé? More like "oh no!" Your gravestone\'s popping up like a bad bullfight rerun. We still love ya, but dang, that\'s some poetic justice.',
+            'That\'s five eliminations, bringing our total to 16 ghosts. The pool\'s down to 36% survival rate—yikes, it\'s getting real!'
+          ]
+        },
+        {
+          type: 'success',
+          heading: '✅ The Lucky Nine: Dodging Bullets Like Pros',
+          content: [
+            'Shoutout to the nine who navigated the upset minefield:',
+            '🟢 Chiefs of the Perfect Pack (3 with 2 lives): Tyler Roberts (TB over NO, 23-3), Brandon O\'Dore (NE over CLE, 32-13), Amanda G (IND over TEN, 38-14). Y\'all are 8-0 now—untouchable like a country ballad hero!',
+            '🟡 Bills & Colts Riders (6 with 1 life): Decks and Jaren Petrusich crushed with BUF\'s 40-9 romp over CAR. RazG, Josh, Taylor Gaussoin, and Taylor Root rode IND to a 38-14 win over TEN. One life left, folks—don\'t squander it!',
+            'Pro tip: Indy and Buffalo were the safe havens this week. Next time, maybe skip the "underdog vibes"?'
+          ]
+        },
+        {
+          type: 'info',
+          heading: '📊 Updated Standings: Elite vs. Edge-of-Your-Seat',
+          content: [
+            'We\'re slimming down like a bad diet fad—9 alive out of 25. Here\'s the lowdown:',
+            '🟢 2 Lives (The Untouchables – 3 Players): Tyler Roberts, Amanda G, Brandon O\'Dore. Perfect records, sitting pretty. Y\'all are the VIP section.',
+            '🟡 1 Life (Danger Zone – 6 Players): Decks, Jaren Petrusich, RazG, Josh, Taylor Gaussoin, Taylor Root. One slip-up, and you\'re graveyard-bound. Sweat much?',
+            '💀 Eliminated (16 Total): Kevyn R (Week 2), Dalton/CoDore/Shneebly (Week 4), Kyler Stroud/Osprey/Dan Evans/Hayden Gaussoin (Week 5), Keegan McAdam (Week 6), Dustin Dimicelli (Week 7), and now Steven McCoy/Joe G/JSizzle/Jordan Petrusich/Matador (Week 8). The cemetery\'s hopping—RIP popups incoming!'
+          ]
+        },
+        {
+          type: 'info',
+          heading: '🏈 NFL Week 8: Upsets, Blowouts, and "What Just Happened?!" Vibes',
+          content: [
+            'The league served chaos hotter than a Nashville hot chicken wing, with pop culture parallels everywhere:',
+            '• Dolphins Drown Falcons (34-10): Miami flipped the script like a Twister sequel nobody saw coming. Tua\'s arm was on fire—Falcons fans roasting like Game of Thrones extras.',
+            '• Jets Edge Bengals (39-38): A one-point thriller wilder than a Squid Game finale. NYJ pulled the upset, leaving Cincy scratching heads like The Office after a prank gone wrong.',
+            '• Bills Blowout Panthers (40-9): Buffalo stampeded like a Yellowstone ranch raid. Josh Allen\'s bombs? Pure fireworks.',
+            '• Chiefs Crush Commanders (28-7): KC shutout vibes, Mahomes channeling Top Gun Maverick precision.',
+            '• Packers Top Steelers (35-25): GB\'s win had Pittsburgh fans groaning like a bad Friends breakup episode.',
+            '• Other Gems: Chargers demolished Vikes 37-10 (Herbert\'s a beast), Eagles flew past Giants 38-20 (Philly\'s back!), Bucs blanked Saints 23-3 (Baker\'s cooking again).',
+            'X is buzzing with memes—fans dragging ATL like a Real Housewives takedown. Highest-scoring week yet? Drama level: 10/10.'
+          ]
+        },
+        {
+          type: 'warning',
+          heading: '⚡ Week 9 Wake-Up: Lock In or Log Out!',
+          content: [
+            'With 67% of survivors on one life, Week 9\'s a make-or-break hoedown. Nine left—will the perfect trio stay flawless?',
+            'Use those strategy tools, scout the odds, and banter in your private leagues. No picks? No mercy (looking at past ghosts).',
+            'Get in the app, submit before deadline, and let\'s see who survives the next rodeo.',
+            'Stay sassy, stay survivin\'. If you\'re feeling the heat (or haunting the graveyard), hit the chat—we\'re all in this gridiron gamble together.'
+          ]
+        },
+        {
+          type: 'text',
+          content: '— The Pick\'em Party Crew (Sassing stats since Week 1 – because football\'s better with a bullfight roast!)'
+        }
+      ]
     }
   }
 
