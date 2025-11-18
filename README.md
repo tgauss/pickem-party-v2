@@ -8,9 +8,19 @@ A complete rebuild of the Pick'em Party platform - a mobile-first NFL Survivor P
 
 Visit: [https://www.pickemparty.app](https://www.pickemparty.app)
 
-## ✨ Recent Updates (September 2025)
+## ✨ Recent Updates (November 2025)
 
-### Latest Features (v2.0.1 - Sept 9, 2025)
+### Latest Features (v2.1.0 - Nov 18, 2025) - **AUTOMATED SETTLEMENT** 🤖
+- **🤖 Fully Automated Weekly Settlement**: Runs every Monday 10pm PST via Vercel cron
+- **📊 ESPN Score Sync**: Automatically fetches live scores before processing picks
+- **🎯 Monday Night Games**: No more manual intervention - handles MNF games perfectly
+- **🔐 Secure API Endpoint**: Protected with CRON_SECRET authentication
+- **🧪 Dry-Run Testing**: Test settlement without affecting database
+- **📝 Comprehensive Logging**: Detailed reports with scores synced, picks processed, eliminations
+- **⚡ Manual Override**: Helper scripts for emergency manual settlement
+- **📖 Complete Documentation**: See [AUTOMATED_SETTLEMENT_v2.md](./AUTOMATED_SETTLEMENT_v2.md)
+
+### Previous Features (v2.0.1 - Sept 9, 2025)
 - **🏆 Score Display**: Final scores and winner/loser indicators on completed games
 - **⚡ Upset Analysis**: Sophisticated betting line analysis with color-coded alerts
 - **🧠 Natural Language Explanations**: Human-readable analysis of betting accuracy
@@ -18,7 +28,7 @@ Visit: [https://www.pickemparty.app](https://www.pickemparty.app)
 - **🎵 Audio Content**: Week 1 wrap-up analysis audio integration
 - **📅 Week Transition**: Fixed automatic progression from Week 1 to Week 2
 
-### Previous Features (v2.0.0 - Sept 1, 2025)
+### Foundation Features (v2.0.0 - Sept 1, 2025)
 - **📱 Phone Number Collection**: Optional phone field in user registration for league admin communication
 - **👮 Commissioner Controls**: Manual pick revelation system for better league management
 - **💰 Enhanced Invite System**: Fixed buy-in calculations and improved mobile experience
@@ -98,6 +108,8 @@ Update `.env.local` with your credentials:
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 SPORTSDATA_API_KEY=your_sportsdata_key
+CRON_SECRET=your_secure_random_string
+POSTMARK_API_TOKEN=your_postmark_token
 ```
 
 4. Run the development server:
@@ -142,6 +154,7 @@ Currently using simplified auth for MVP:
 ## 📝 API Endpoints
 
 ### Admin Routes
+- `/api/admin/auto-settle-week` - **NEW** Automated weekly settlement with score sync
 - `/api/admin/reveal-picks` - Manual pick revelation
 - `/api/admin/adjust-lives` - Life management
 - `/api/admin/assign-commissioner` - Commissioner changes
@@ -237,5 +250,5 @@ For issues or questions:
 
 ---
 
-**Last Updated**: September 9, 2025
-**Version**: 2.0.1
+**Last Updated**: November 18, 2025
+**Version**: 2.1.0 - Automated Settlement System

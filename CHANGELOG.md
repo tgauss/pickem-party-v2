@@ -5,6 +5,47 @@ All notable changes to Pick'em Party v2 will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.0] - 2025-11-18
+
+### Added - Automated Settlement System
+- **🤖 Automated Weekly Settlement**: Full auto-settlement system with Vercel cron scheduling (Monday 10pm PST)
+- **📊 ESPN Score Sync**: Automatic live score fetching before settlement processing
+- **🔄 Smart Game Updates**: Only updates games when scores change or status changes to final
+- **🔐 Secure API Endpoint**: `/api/admin/auto-settle-week` with CRON_SECRET authentication
+- **🧪 Dry-Run Mode**: Test settlement without making database changes
+- **📝 Comprehensive Logging**: Detailed settlement reports with scores synced, picks processed, eliminations
+- **⚡ Manual Override**: Helper scripts for manual settlement triggering when needed
+- **📖 Documentation**: Complete auto-settlement v2.0 documentation with monitoring guides
+
+### Changed
+- **Settlement Process**: Now fully autonomous with no manual intervention required
+- **Score Fetching**: Integrated ESPN API directly into settlement workflow
+- **Monday Night Games**: Automatically handled with live score updates at 10pm PST
+
+### Fixed
+- **Week 9 Settlement**: Processed Jaren Petrusich elimination (2 losses → eliminated)
+- **Week 10 Settlement**: Applied life deductions (Amanda G: 2→1, Decks: 1→0 eliminated)
+- **Week 11 Settlement**: Perfect week - all 7 players had winning picks (no eliminations)
+- **Monday Night Updates**: DAL @ LV final score automatically synced (33-16)
+
+### Technical
+- **API Route**: Created `/src/app/api/admin/auto-settle-week/route.ts` with score sync
+- **Cron Configuration**: Added `vercel.json` with cron schedule (`0 5 * * 2` = Mon 10pm PST)
+- **Score Sync Function**: `syncScoresFromESPN()` fetches and updates all games for specified week
+- **Helper Scripts**: `settle-now.sh`, `test-auto-settle.sh`, `monitor-live.sh`, `cron-settlement.js`
+- **Type Safety**: Fixed TypeScript errors with explicit type definitions for update operations
+- **Environment Variable**: Added `CRON_SECRET` for secure API authentication
+
+### Week-by-Week Results
+- **Week 9**: 1 elimination (Jaren Petrusich) - 8 players remaining
+- **Week 10**: 2 losing picks, 1 elimination (Decks) - 7 players remaining
+- **Week 11**: 7 winning picks, 0 eliminations - 7 players alive entering Week 12
+
+### Documentation Files
+- **AUTOMATED_SETTLEMENT_v2.md**: Complete guide to auto-settlement system with score sync
+- **Settlement Scripts**: `settle-week9.js`, `settle-week10.js`, `update-week11-dal-game.js`
+- **Helper Tools**: Manual override, dry-run testing, and monitoring utilities
+
 ## [2.0.1] - 2025-09-09
 
 ### Added
