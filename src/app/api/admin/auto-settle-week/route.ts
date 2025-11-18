@@ -11,6 +11,7 @@ const LEAGUE_ID = 'ce87e7df-2aa1-460e-b48f-0f2c0a905643' // The Gridiron Gamble 
 interface SettlementResult {
   success: boolean
   week: number
+  scoresSynced: number
   gamesProcessed: number
   picksProcessed: number
   lifeDeductions: number
@@ -99,12 +100,107 @@ async function getCurrentWeek(): Promise<number> {
 }
 
 /**
+ * Sync scores from ESPN API for a given week
+ * This ensures Monday night games are updated before settlement
+ */
+async function syncScoresFromESPN(week: number): Promise<number> {
+  try {
+    console.log(`[AUTO-SETTLE] Syncing scores from ESPN for Week ${week}`)
+
+    // Fetch scores from ESPN API
+    const espnUrl = `https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?week=${week}&seasontype=2&year=2025`
+    const response = await fetch(espnUrl)
+
+    if (!response.ok) {
+      console.error(`[AUTO-SETTLE] ESPN API error: ${response.status}`)
+      return 0
+    }
+
+    const data = await response.json()
+    let updatedCount = 0
+
+    // Process each game from ESPN
+    for (const event of data.events || []) {
+      const competition = event.competitions?.[0]
+      if (!competition) continue
+
+      const status = competition.status?.type
+      const isCompleted = status?.completed === true
+
+      // Get team abbreviations
+      const competitors = competition.competitors || []
+      const awayTeam = competitors.find((c: { homeAway: string }) => c.homeAway === 'away')
+      const homeTeam = competitors.find((c: { homeAway: string }) => c.homeAway === 'home')
+
+      if (!awayTeam || !homeTeam) continue
+
+      const awayKey = awayTeam.team?.abbreviation
+      const homeKey = homeTeam.team?.abbreviation
+      const awayScore = parseInt(awayTeam.score || '0')
+      const homeScore = parseInt(homeTeam.score || '0')
+
+      // Find matching game in our database
+      const { data: dbGames } = await supabase
+        .from('games')
+        .select(`
+          id,
+          away_score,
+          home_score,
+          is_final,
+          away_team:teams!games_away_team_id_fkey(key),
+          home_team:teams!games_home_team_id_fkey(key)
+        `)
+        .eq('week', week)
+        .eq('season_year', 2025)
+
+      const matchingGame = dbGames?.find(
+        (g: { away_team: { key: string }; home_team: { key: string } }) =>
+          g.away_team.key === awayKey && g.home_team.key === homeKey
+      )
+
+      if (!matchingGame) continue
+
+      // Update if score changed or game became final
+      const scoreChanged =
+        matchingGame.away_score !== awayScore ||
+        matchingGame.home_score !== homeScore
+      const statusChanged = !matchingGame.is_final && isCompleted
+
+      if (scoreChanged || statusChanged) {
+        const { error } = await supabase
+          .from('games')
+          .update({
+            away_score: awayScore,
+            home_score: homeScore,
+            is_final: isCompleted,
+            game_status: status?.description || 'Unknown',
+            last_updated: new Date().toISOString()
+          })
+          .eq('id', matchingGame.id)
+
+        if (!error) {
+          updatedCount++
+          console.log(`[AUTO-SETTLE] Updated ${awayKey} @ ${homeKey}: ${awayScore}-${homeScore} ${isCompleted ? 'FINAL' : ''}`)
+        }
+      }
+    }
+
+    console.log(`[AUTO-SETTLE] Synced ${updatedCount} games from ESPN`)
+    return updatedCount
+  } catch (error) {
+    console.error('[AUTO-SETTLE] Error syncing scores:', error)
+    return 0
+  }
+}
+
+/**
  * Main settlement logic for a given week
  */
 async function settleWeek(week: number, dryRun: boolean): Promise<SettlementResult> {
   const result: SettlementResult = {
     success: false,
     week,
+    scoresSynced: 0,
     gamesProcessed: 0,
     picksProcessed: 0,
     lifeDeductions: 0,
@@ -115,6 +211,11 @@ async function settleWeek(week: number, dryRun: boolean): Promise<SettlementResu
   }
 
   try {
+    // Step 0: Sync latest scores from ESPN first
+    if (!dryRun) {
+      result.scoresSynced = await syncScoresFromESPN(week)
+    }
+
     // Step 1: Check if all games are final
     const { data: games, error: gamesError } = await supabase
       .from('games')
@@ -284,8 +385,8 @@ async function settleWeek(week: number, dryRun: boolean): Promise<SettlementResu
     // Success!
     result.success = true
     result.message = dryRun
-      ? `Dry run complete: Would process ${result.picksProcessed} picks, ${result.lifeDeductions} life deductions, ${result.eliminations.length} eliminations`
-      : `Week ${week} settled: ${result.picksProcessed} picks processed, ${result.lifeDeductions} life deductions, ${result.eliminations.length} eliminations`
+      ? `Dry run complete: Would sync ${result.scoresSynced} scores, process ${result.picksProcessed} picks, ${result.lifeDeductions} life deductions, ${result.eliminations.length} eliminations`
+      : `Week ${week} settled: ${result.scoresSynced} scores synced, ${result.picksProcessed} picks processed, ${result.lifeDeductions} life deductions, ${result.eliminations.length} eliminations`
 
     console.log(`[AUTO-SETTLE] ${result.message}`)
 
