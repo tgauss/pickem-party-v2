@@ -248,7 +248,11 @@ async function settleWeek(week: number, dryRun: boolean): Promise<SettlementResu
       const willBeEliminated = newLives === 0
 
       if (!dryRun) {
-        const updateData: any = {
+        const updateData: {
+          lives_remaining: number
+          is_eliminated?: boolean
+          eliminated_week?: number
+        } = {
           lives_remaining: newLives
         }
 
