@@ -768,27 +768,126 @@ export default function LeaguePage({
             </>
           )}
 
-          {/* Fallen Warriors Section (Simplified Cemetery) */}
-          {eliminatedMembers.length > 0 && (
-            <Card className="mt-6 bg-surface/50 border-border/50">
-              <div className="p-4">
-                <h3 className="text-center text-sm font-bold text-muted-foreground mb-3 flex items-center justify-center gap-2">
-                  <span>💀</span> FALLEN WARRIORS <span>💀</span>
-                </h3>
-                <div className="flex flex-wrap justify-center gap-2">
-                  {eliminatedMembers.map(member => (
-                    <div
-                      key={member.user.id}
-                      className="bg-muted/30 rounded-lg px-3 py-1.5 text-xs text-muted-foreground"
-                    >
-                      <span className="opacity-50">RIP</span> {member.user.display_name}
-                      <span className="opacity-50 ml-1">(Week {member.eliminated_week})</span>
-                    </div>
-                  ))}
-                </div>
+          {/* Full Season Leaderboard */}
+          <Card className="mt-6 bg-gradient-to-br from-yellow-500/5 via-transparent to-yellow-500/5 border-yellow-500/20">
+            <div className="p-4">
+              <h3 className="text-center text-lg font-bold text-yellow-400 mb-4 flex items-center justify-center gap-2">
+                <span>🏆</span> SEASON LEADERBOARD <span>🏆</span>
+              </h3>
+              <div className="space-y-1">
+                {(() => {
+                  // Sort all members: active first (by lives), then eliminated (by week desc)
+                  const sortedMembers = [...members].sort((a, b) => {
+                    // Active players come first
+                    if (!a.is_eliminated && b.is_eliminated) return -1
+                    if (a.is_eliminated && !b.is_eliminated) return 1
+                    // Among active, sort by lives remaining
+                    if (!a.is_eliminated && !b.is_eliminated) {
+                      return b.lives_remaining - a.lives_remaining
+                    }
+                    // Among eliminated, sort by elimination week (later = better)
+                    return (b.eliminated_week || 0) - (a.eliminated_week || 0)
+                  })
+
+                  // Calculate positions with ties
+                  let currentPosition = 1
+                  let previousWeek: number | null = null
+                  let previousLives: number | null = null
+                  let samePositionCount = 0
+
+                  return sortedMembers.map((member, index) => {
+                    // Determine position
+                    let position = currentPosition
+                    if (!member.is_eliminated) {
+                      // Active players: position by lives
+                      if (previousLives !== null && member.lives_remaining === previousLives) {
+                        position = currentPosition - samePositionCount
+                      } else {
+                        position = currentPosition
+                        samePositionCount = 0
+                      }
+                      previousLives = member.lives_remaining
+                      previousWeek = null
+                    } else {
+                      // Eliminated players: position by elimination week
+                      if (previousWeek !== null && member.eliminated_week === previousWeek) {
+                        position = currentPosition - samePositionCount
+                      } else {
+                        position = currentPosition
+                        samePositionCount = 0
+                      }
+                      previousWeek = member.eliminated_week || 0
+                      previousLives = null
+                    }
+
+                    // Track for next iteration
+                    if (index > 0) {
+                      const prev = sortedMembers[index - 1]
+                      if (!member.is_eliminated && !prev.is_eliminated && member.lives_remaining === prev.lives_remaining) {
+                        samePositionCount++
+                      } else if (member.is_eliminated && prev.is_eliminated && member.eliminated_week === prev.eliminated_week) {
+                        samePositionCount++
+                      } else {
+                        samePositionCount = 0
+                      }
+                    }
+                    currentPosition++
+
+                    // Position display
+                    const positionDisplay = position <= 3
+                      ? ['🥇', '🥈', '🥉'][position - 1]
+                      : `#${position}`
+
+                    const isCurrentUser = member.user.id === user.id
+
+                    return (
+                      <div
+                        key={member.user.id}
+                        className={`flex items-center justify-between p-2 rounded-lg ${
+                          isCurrentUser
+                            ? 'bg-yellow-500/20 border border-yellow-500/50'
+                            : member.is_eliminated
+                            ? 'bg-muted/20 opacity-60'
+                            : 'bg-surface/50'
+                        }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <span className="text-lg w-8 text-center">{positionDisplay}</span>
+                          <div>
+                            <p className={`font-medium text-sm ${isCurrentUser ? 'text-yellow-400' : ''}`}>
+                              {member.user.display_name}
+                              {isCurrentUser && <span className="ml-1 text-xs">(You)</span>}
+                            </p>
+                            <p className="text-xs text-muted-foreground">@{member.user.username}</p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          {member.is_eliminated ? (
+                            <div>
+                              <p className="text-xs text-red-400/80">Eliminated</p>
+                              <p className="text-xs text-muted-foreground">Week {member.eliminated_week}</p>
+                            </div>
+                          ) : (
+                            <div className="flex items-center gap-1">
+                              {Array.from({ length: member.lives_remaining }).map((_, i) => (
+                                <span key={i} className="text-sm">❤️</span>
+                              ))}
+                              <span className="text-xs text-green-400 ml-1">ALIVE</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )
+                  })
+                })()}
               </div>
-            </Card>
-          )}
+              <div className="text-center mt-4 pt-3 border-t border-border/30">
+                <p className="text-xs text-muted-foreground">
+                  {activeMembers.length} player{activeMembers.length !== 1 ? 's' : ''} still alive • {eliminatedMembers.length} eliminated
+                </p>
+              </div>
+            </div>
+          </Card>
 
           {/* Quick Actions */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-2 mt-6 mb-20">
