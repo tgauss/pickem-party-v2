@@ -29,8 +29,15 @@ const supabase = createClient(
 
 async function fetchESPNOdds(week: string, season: string) {
   try {
+    // Use seasontype=3 for playoffs (Week 19+), seasontype=2 for regular season
+    const weekNum = parseInt(week)
+    const seasonType = weekNum >= 19 ? 3 : 2
+    // For playoffs, week 19 = Wild Card (week 1 in postseason)
+    const apiWeek = weekNum >= 19 ? weekNum - 18 : weekNum
+
     // Fetch from ESPN API
-    const url = `https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?week=${week}&seasontype=2&dates=${season}`
+    const url = `https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?week=${apiWeek}&seasontype=${seasonType}&dates=${season}`
+    console.log(`[Betting Lines] Fetching ESPN odds: ${url}`)
     
     const response = await fetch(url, {
       headers: {
