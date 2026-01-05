@@ -566,6 +566,261 @@ export default function LeaguePage({
   // Season start date (first game of NFL season)
   const seasonStartDate = new Date('2025-09-04') // Week 1 Thursday Night Game
 
+  // Check if we're in playoff mode (Week 19+)
+  const isPlayoffMode = selectedWeek >= 19
+  const activeMembers = members.filter(m => !m.is_eliminated)
+
+  // Playoff Mode UI
+  if (isPlayoffMode && currentWeek >= 19) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-[#0B0E0C] via-[#1a1d1a] to-[#0B0E0C] p-2 sm:p-4">
+        {/* RIP Popup for newly eliminated players */}
+        <RIPPopup
+          eliminatedThisWeek={eliminatedThisWeek}
+          currentWeek={currentWeek}
+          onClose={() => {}}
+        />
+
+        <div className="max-w-4xl mx-auto">
+          {/* Playoff Header */}
+          <div className="text-center mb-6">
+            <div className="mb-3">
+              <div className="text-6xl sm:text-8xl mb-2">🏆</div>
+              <h1 className="text-2xl sm:text-4xl font-black tracking-tight bg-gradient-to-r from-yellow-400 via-yellow-200 to-yellow-400 bg-clip-text text-transparent">
+                PLAYOFF MODE
+              </h1>
+              <p className="text-yellow-500/80 text-sm sm:text-base font-medium mt-1">
+                Wild Card Round
+              </p>
+            </div>
+
+            {/* Remaining Fighters Count */}
+            <div className="inline-flex items-center gap-2 bg-yellow-500/10 border border-yellow-500/30 rounded-full px-4 py-2 mb-4">
+              <span className="text-2xl">⚔️</span>
+              <span className="text-yellow-400 font-bold text-lg">
+                {activeMembers.length} FIGHTER{activeMembers.length !== 1 ? 'S' : ''} REMAIN
+              </span>
+              <span className="text-2xl">⚔️</span>
+            </div>
+
+            {/* Live Score Sync Status */}
+            {isSyncing && (
+              <div className="flex items-center justify-center gap-2 mb-3 text-xs text-yellow-500/70">
+                <div className="animate-spin">⚡</div>
+                <span>Syncing playoff scores...</span>
+              </div>
+            )}
+          </div>
+
+          {/* The Final Contenders */}
+          <Card className="mb-6 bg-gradient-to-br from-yellow-500/10 via-transparent to-yellow-500/5 border-yellow-500/30">
+            <div className="p-4 sm:p-6">
+              <h2 className="text-center text-lg sm:text-xl font-bold text-yellow-400 mb-4 flex items-center justify-center gap-2">
+                <span>👑</span> THE FINAL CONTENDERS <span>👑</span>
+              </h2>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                {activeMembers.map((member, index) => (
+                  <div
+                    key={member.user.id}
+                    className={`relative p-4 rounded-xl border-2 text-center ${
+                      member.user.id === user.id
+                        ? 'bg-yellow-500/20 border-yellow-500 shadow-lg shadow-yellow-500/20'
+                        : 'bg-surface/50 border-border'
+                    }`}
+                  >
+                    {member.user.id === user.id && (
+                      <div className="absolute -top-2 -right-2 text-xl">⭐</div>
+                    )}
+                    <div className="text-3xl mb-2">
+                      {index === 0 ? '🥇' : index === 1 ? '🥈' : '🥉'}
+                    </div>
+                    <p className="font-bold text-base sm:text-lg">{member.user.display_name}</p>
+                    <p className="text-xs text-muted-foreground">@{member.user.username}</p>
+                    <div className="flex items-center justify-center gap-1 mt-2">
+                      {Array.from({ length: member.lives_remaining }).map((_, i) => (
+                        <span key={i} className="text-lg">❤️</span>
+                      ))}
+                    </div>
+                    <p className="text-xs text-yellow-500/70 mt-1">
+                      {member.lives_remaining} {member.lives_remaining === 1 ? 'life' : 'lives'} remaining
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </Card>
+
+          {/* Week Navigation - Simplified for Playoffs */}
+          <div className="bg-surface rounded-lg border border-yellow-500/30 mb-4 p-3">
+            <div className="flex items-center justify-center gap-4">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => handleWeekChange(Math.max(1, selectedWeek - 1))}
+                disabled={selectedWeek <= 1}
+              >
+                <span className="text-xl">◀</span>
+              </Button>
+              <div className="text-center">
+                <p className="text-xs text-yellow-500/70 uppercase tracking-wider">
+                  {selectedWeek >= 19 ? 'Playoff Week' : 'Regular Season'}
+                </p>
+                <p className="text-xl sm:text-2xl font-bold text-yellow-400">
+                  {selectedWeek === 19 ? 'Wild Card' : `Week ${selectedWeek}`}
+                </p>
+              </div>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => handleWeekChange(Math.min(22, selectedWeek + 1))}
+                disabled={selectedWeek >= 22}
+              >
+                <span className="text-xl">▶</span>
+              </Button>
+            </div>
+            {selectedWeek !== currentWeek && (
+              <div className="text-center mt-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleWeekChange(currentWeek)}
+                  className="border-yellow-500/50 text-yellow-400 hover:bg-yellow-500/10"
+                >
+                  Jump to Current Week
+                </Button>
+              </div>
+            )}
+          </div>
+
+          {/* Conditional Week Views */}
+          {loading ? (
+            <div className="text-center py-12">
+              <div className="text-4xl mb-2 animate-bounce">🏈</div>
+              <p className="text-yellow-500/70">Loading playoff matchups...</p>
+            </div>
+          ) : (
+            <>
+              {weekViewType === 'past' && (
+                <PastWeekResults
+                  week={selectedWeek}
+                  games={games}
+                  picks={picks as (Pick & { user: User })[]}
+                  members={members}
+                  gameLines={gameLines}
+                />
+              )}
+
+              {weekViewType === 'current' && (
+                <>
+                  {/* Your Pick Status */}
+                  {userCurrentPick ? (
+                    <Card className="mb-4 bg-green-500/10 border-green-500/30">
+                      <div className="p-4 text-center">
+                        <div className="text-3xl mb-2">✅</div>
+                        <p className="text-green-400 font-bold">PICK LOCKED IN!</p>
+                        <p className="text-sm text-muted-foreground">
+                          You picked: <span className="text-green-400 font-medium">
+                            {userCurrentPick.teams?.city} {userCurrentPick.teams?.name}
+                          </span>
+                        </p>
+                      </div>
+                    </Card>
+                  ) : (
+                    <Card className="mb-4 bg-red-500/10 border-red-500/30 animate-pulse">
+                      <div className="p-4 text-center">
+                        <div className="text-3xl mb-2">⚠️</div>
+                        <p className="text-red-400 font-bold">NO PICK YET!</p>
+                        <p className="text-sm text-muted-foreground">
+                          Make your playoff pick below before games start
+                        </p>
+                      </div>
+                    </Card>
+                  )}
+
+                  <CurrentWeekPicker
+                    week={selectedWeek}
+                    games={games}
+                    usedTeamIds={usedTeamIds}
+                    currentPick={userCurrentPick}
+                    gameLines={gameLines}
+                    byeWeekTeams={byeWeekTeams}
+                    members={members}
+                    picks={picks}
+                    onPickSubmit={submitPick}
+                    league={league}
+                    currentUser={user}
+                  />
+
+                  {/* Live Scores Component */}
+                  <LiveScores week={selectedWeek} className="mt-4" />
+                </>
+              )}
+
+              {weekViewType === 'future' && (
+                <FutureWeekSchedule
+                  week={selectedWeek}
+                  games={games}
+                  gameLines={gameLines}
+                  byeWeekTeams={byeWeekTeams}
+                />
+              )}
+            </>
+          )}
+
+          {/* Fallen Warriors Section (Simplified Cemetery) */}
+          {eliminatedMembers.length > 0 && (
+            <Card className="mt-6 bg-surface/50 border-border/50">
+              <div className="p-4">
+                <h3 className="text-center text-sm font-bold text-muted-foreground mb-3 flex items-center justify-center gap-2">
+                  <span>💀</span> FALLEN WARRIORS <span>💀</span>
+                </h3>
+                <div className="flex flex-wrap justify-center gap-2">
+                  {eliminatedMembers.map(member => (
+                    <div
+                      key={member.user.id}
+                      className="bg-muted/30 rounded-lg px-3 py-1.5 text-xs text-muted-foreground"
+                    >
+                      <span className="opacity-50">RIP</span> {member.user.display_name}
+                      <span className="opacity-50 ml-1">(Week {member.eliminated_week})</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </Card>
+          )}
+
+          {/* Quick Actions */}
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-2 mt-6 mb-20">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => window.location.href = `/league/${resolvedParams.slug}/schedule`}
+              className="border-yellow-500/30 text-yellow-400/70 hover:bg-yellow-500/10"
+            >
+              📅 Full Schedule
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handleWeekChange(18)}
+              className="border-yellow-500/30 text-yellow-400/70 hover:bg-yellow-500/10"
+            >
+              📜 Regular Season
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => window.location.href = '/dashboard'}
+              className="border-border text-muted-foreground hover:bg-surface"
+            >
+              ← Dashboard
+            </Button>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-background p-2 sm:p-4">
       {/* RIP Popup for newly eliminated players */}
