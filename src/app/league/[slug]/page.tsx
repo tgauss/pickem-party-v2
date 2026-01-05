@@ -237,7 +237,8 @@ export default function LeaguePage({
       }
 
       // Wild Card Playoffs - Week 19 (January 10-13, 2026)
-      const wildCardStart = new Date('2026-01-07T00:00:00')
+      // Week 18 completed, open Week 19 for picks starting Jan 5
+      const wildCardStart = new Date('2026-01-05T00:00:00')
       if (now >= wildCardStart) {
         calculatedWeek = 19
       }
