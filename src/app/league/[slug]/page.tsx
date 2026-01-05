@@ -236,6 +236,12 @@ export default function LeaguePage({
         calculatedWeek = Math.min(Math.floor(daysSinceStart / 7) + 1, 18)
       }
 
+      // Wild Card Playoffs - Week 19 (January 10-13, 2026)
+      const wildCardStart = new Date('2026-01-07T00:00:00')
+      if (now >= wildCardStart) {
+        calculatedWeek = 19
+      }
+
       console.log('Week calculation:', {
         now: now.toISOString(),
         calculatedWeek,
@@ -754,7 +760,7 @@ export default function LeaguePage({
           currentWeek={currentWeek}
           selectedWeek={selectedWeek}
           onWeekChange={handleWeekChange}
-          maxWeek={18}
+          maxWeek={19}
           minWeek={1}
         />
 

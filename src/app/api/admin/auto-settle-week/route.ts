@@ -96,7 +96,7 @@ async function getCurrentWeek(): Promise<number> {
   const now = new Date()
   const diffDays = Math.floor((now.getTime() - seasonStart.getTime()) / (1000 * 60 * 60 * 24))
   const week = Math.floor(diffDays / 7) + 1
-  return Math.max(1, Math.min(18, week))
+  return Math.max(1, Math.min(19, week)) // 19 = Wild Card playoffs
 }
 
 /**
@@ -154,8 +154,11 @@ async function syncScoresFromESPN(week: number): Promise<number> {
         .eq('season_year', 2025)
 
       const matchingGame = dbGames?.find(
-        (g: { away_team: { key: string }; home_team: { key: string } }) =>
-          g.away_team.key === awayKey && g.home_team.key === homeKey
+        (g: { away_team: { key: string } | { key: string }[]; home_team: { key: string } | { key: string }[] }) => {
+          const awayTeamKey = Array.isArray(g.away_team) ? g.away_team[0]?.key : g.away_team?.key
+          const homeTeamKey = Array.isArray(g.home_team) ? g.home_team[0]?.key : g.home_team?.key
+          return awayTeamKey === awayKey && homeTeamKey === homeKey
+        }
       )
 
       if (!matchingGame) continue

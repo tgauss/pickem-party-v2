@@ -14,11 +14,11 @@ interface WeekNavigationProps {
   minWeek?: number
 }
 
-export function WeekNavigation({ 
-  currentWeek, 
-  selectedWeek, 
+export function WeekNavigation({
+  currentWeek,
+  selectedWeek,
   onWeekChange,
-  maxWeek = 18,
+  maxWeek = 19,
   minWeek = 1
 }: WeekNavigationProps) {
   const getWeekType = (week: number) => {
