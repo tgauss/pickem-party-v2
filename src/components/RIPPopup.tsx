@@ -89,6 +89,10 @@ export function RIPPopup({ eliminatedThisWeek, currentWeek, onClose }: RIPPopupP
   const currentPlayer = eliminatedThisWeek[currentIndex]
   const isLastPlayer = currentIndex === eliminatedThisWeek.length - 1
 
+  // Check if this is Tyler Roberts taking the tie payout in Week 19
+  const isTylerTiePayout = currentPlayer.eliminated_week === 19 &&
+    (currentPlayer.user.display_name === 'Tyler Roberts' || currentPlayer.user.username === 't$')
+
   const getRandomRIPMessage = (displayName: string) => {
     const messages = [
       `${displayName} has fallen in battle...`,
@@ -104,12 +108,22 @@ export function RIPPopup({ eliminatedThisWeek, currentWeek, onClose }: RIPPopupP
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogContent className="max-w-md bg-gradient-to-b from-slate-800 to-slate-900 border-red-600 text-white">
+      <DialogContent className={`max-w-md ${isTylerTiePayout ? 'bg-gradient-to-b from-yellow-900/90 to-amber-900/90 border-yellow-500' : 'bg-gradient-to-b from-slate-800 to-slate-900 border-red-600'} text-white`}>
         <DialogHeader>
-          <DialogTitle className="text-center text-red-400 flex items-center justify-center gap-2">
-            <CustomIcon name="skull" fallback="💀" alt="RIP" size="lg" />
-            R.I.P.
-            <CustomIcon name="skull" fallback="💀" alt="RIP" size="lg" />
+          <DialogTitle className={`text-center flex items-center justify-center gap-2 ${isTylerTiePayout ? 'text-yellow-400' : 'text-red-400'}`}>
+            {isTylerTiePayout ? (
+              <>
+                <span className="text-2xl">🤝</span>
+                TIE PAYOUT
+                <span className="text-2xl">🤝</span>
+              </>
+            ) : (
+              <>
+                <CustomIcon name="skull" fallback="💀" alt="RIP" size="lg" />
+                R.I.P.
+                <CustomIcon name="skull" fallback="💀" alt="RIP" size="lg" />
+              </>
+            )}
           </DialogTitle>
         </DialogHeader>
 
@@ -121,31 +135,62 @@ export function RIPPopup({ eliminatedThisWeek, currentWeek, onClose }: RIPPopupP
         />
 
         <div className="text-center space-y-4">
-          {/* Gravestone */}
-          <div className="relative mx-auto w-32 h-40">
-            <Image
-              src="/Kevyn-Gravestone-Small.png"
-              alt={`${currentPlayer.user.display_name} eliminated`}
-              width={128}
-              height={160}
-              className="mx-auto filter drop-shadow-lg"
-            />
-          </div>
+          {isTylerTiePayout ? (
+            <>
+              {/* Trophy/Medal for tie payout */}
+              <div className="text-6xl">🥉</div>
 
-          {/* Elimination message */}
-          <div className="space-y-2">
-            <h3 className="text-lg font-bold text-red-300">
-              {getRandomRIPMessage(currentPlayer.user.display_name || currentPlayer.user.username)}
-            </h3>
-            <p className="text-slate-300 text-sm">
-              Eliminated in Week {currentPlayer.eliminated_week}
-            </p>
-            <div className="flex items-center justify-center gap-2 text-sm text-slate-400">
-              <CustomIcon name="skull" fallback="⚰️" alt="Coffin" size="sm" />
-              Their survivor journey has come to an end
-              <CustomIcon name="skull" fallback="⚰️" alt="Coffin" size="sm" />
-            </div>
-          </div>
+              {/* Tie payout message */}
+              <div className="space-y-2">
+                <h3 className="text-xl font-bold text-yellow-300">
+                  {currentPlayer.user.display_name} Takes 3rd Place!
+                </h3>
+                <p className="text-amber-200/90 text-sm">
+                  Accepted the end-of-season split payout
+                </p>
+                <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-3 mt-3">
+                  <p className="text-sm text-yellow-100">
+                    <span className="font-bold">Brandon O&apos;Dore</span> and <span className="font-bold">Taylor Gaussoin</span> continue battling for the championship!
+                  </p>
+                  <p className="text-xs text-yellow-400/70 mt-2">
+                    🏆 Winner takes all in the Wild Card round!
+                  </p>
+                </div>
+              </div>
+
+              <div className="text-sm text-amber-300/80">
+                Great season, Tyler! 🎉
+              </div>
+            </>
+          ) : (
+            <>
+              {/* Gravestone */}
+              <div className="relative mx-auto w-32 h-40">
+                <Image
+                  src="/Kevyn-Gravestone-Small.png"
+                  alt={`${currentPlayer.user.display_name} eliminated`}
+                  width={128}
+                  height={160}
+                  className="mx-auto filter drop-shadow-lg"
+                />
+              </div>
+
+              {/* Elimination message */}
+              <div className="space-y-2">
+                <h3 className="text-lg font-bold text-red-300">
+                  {getRandomRIPMessage(currentPlayer.user.display_name || currentPlayer.user.username)}
+                </h3>
+                <p className="text-slate-300 text-sm">
+                  Eliminated in Week {currentPlayer.eliminated_week}
+                </p>
+                <div className="flex items-center justify-center gap-2 text-sm text-slate-400">
+                  <CustomIcon name="skull" fallback="⚰️" alt="Coffin" size="sm" />
+                  Their survivor journey has come to an end
+                  <CustomIcon name="skull" fallback="⚰️" alt="Coffin" size="sm" />
+                </div>
+              </div>
+            </>
+          )}
 
           {/* Week 2 Recap Audio Button */}
           {currentPlayer.eliminated_week === 2 && (
@@ -204,9 +249,9 @@ export function RIPPopup({ eliminatedThisWeek, currentWeek, onClose }: RIPPopupP
               variant="ghost"
               size="sm"
               onClick={handleClose}
-              className="text-slate-400 hover:text-white"
+              className={isTylerTiePayout ? "text-yellow-400/70 hover:text-yellow-300" : "text-slate-400 hover:text-white"}
             >
-              Pay Respects & Continue
+              {isTylerTiePayout ? "Congrats Tyler! Continue" : "Pay Respects & Continue"}
             </Button>
           </div>
         </div>
