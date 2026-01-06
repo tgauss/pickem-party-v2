@@ -651,6 +651,23 @@ export default function LeaguePage({
             </div>
           </Card>
 
+          {/* Tyler's Tie Payout Announcement */}
+          <div className="mb-6 p-4 rounded-xl bg-gradient-to-r from-amber-500/10 via-yellow-500/5 to-amber-500/10 border border-yellow-500/30">
+            <div className="flex items-start gap-3">
+              <span className="text-2xl">🤝</span>
+              <div>
+                <p className="font-bold text-yellow-400 mb-1">Wild Card Settlement</p>
+                <p className="text-sm text-muted-foreground">
+                  <span className="text-yellow-300">Tyler Roberts</span> has accepted the negotiated tie payout and officially finishes in <span className="text-amber-400 font-semibold">3rd Place</span>.
+                  Congrats on a great season, Tyler! 🎉
+                </p>
+                <p className="text-xs text-yellow-500/60 mt-2">
+                  Brandon O&apos;Dore and Taylor Gaussoin continue the battle for the championship!
+                </p>
+              </div>
+            </div>
+          </div>
+
           {/* Week Navigation - Simplified for Playoffs */}
           <div className="bg-surface rounded-lg border border-yellow-500/30 mb-4 p-3">
             <div className="flex items-center justify-center gap-4">
